@@ -1,0 +1,10 @@
+chrom.pos	sample	ref	alt	genotype	DeNovo_LoH	TiTv	WhattoWhat	MutantAlleleDepth	NormalAlleleDepth	TrueorFalse
+chr1.15587	sample1	A	G	A/G,21,8,99	LoH	Transition	GtoA	41	19	False	IsCoding
+chr1.2143157	sample1	C	G	C/G,123,17,99	LoH	Transversion	GtoC	210	34	False	NotCoding
+chr1.2480619	sample1	G	A	G/A,11,4,99	LoH	Transition	AtoG	33	5	False	NotCoding
+chr1.2816781	sample1	G	C	C/C,0,37,99	DeNovo	Transversion	CtoG	0	66	True	NotCoding
+chr1.2868570	sample1	G	C	G/C,8,42,99	LoH	Transversion	GtoC	108	13	False	NotCoding
+chr1.3450277	sample1	T	G	T/T,66,3,72	DeNovo	Transversion	TtoG	8	133	False	NotCoding
+chr1.4522766	sample1	T	A	T/A,14,3,74	LoH	Transversion	AtoT	35	6	True	NotCoding
+chr1.5090316	sample1	G	A	G/A,18,3,72	LoH	Transition	AtoG	41	5	False	NotCoding
+chr1.6439692	sample1	T	C	T/T,66,0,99	DeNovo	Transition	TtoC	6	114	False	NotCoding

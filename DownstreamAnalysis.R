@@ -1,0 +1,966 @@
+###AH75###
+setwd("~/Documents/GitHub/Germline/")
+library("reshape2")
+library(ggplot2)
+library(stringr)
+library(sciplot)
+library(sinaplot)
+library(ggforce)
+library(gridExtra)
+library(dplyr)
+sessionInfo()
+
+noreplicatesmutationcount<-c(35290, 86641, 31446, 80126, 94972, 92588, 95348, 78499, 47429, 97193, 90480)
+
+withreplicatesmutationcount<- c( 10584, 16468, 10930, 18738, 25898, 22058, 24558, 12250, 14706, 14022, 18714)
+plot(noreplicatesmutationcount,withreplicatesmutationcount)
+proportion = withreplicatesmutationcount/noreplicatesmutationcount
+percentdiff = (noreplicatesmutationcount - withreplicatesmutationcount)/ noreplicatesmutationcount
+mean(percentdiff)
+mean(proportion)
+df = rbind(noreplicatesmutationcount,withreplicatesmutationcount)
+barplot(df,beside=TRUE,ylim=c(0,100000), ylab="Number of first-pass putative mutations")
+CAcolony60<-read.delim("CAcolony60_ii_output20191126.txt")
+mdf<-melt(CAcolony60, id.vars="Chrom.pos", measure.vars=c("sample1","sample2","sample3","sample4", "sample5", "sample6", "sample7", "sample8", "sample9", "sample10", "sample11", "sample12"), value.name="genotype",variable.name="sample")
+write.table(mdf, file="meltedCAcolony60_ii_output20191126.txt",sep="\t",quote=FALSE, row.name=FALSE)
+
+CAcolony60_CAP23<-read.delim("CAcolony60_ii_output20191126CAP23.txt")
+mdf<-melt(CAcolony60_CAP23, id.vars="Chrom.pos", measure.vars=c("sample1","sample2","sample3","sample4", "sample5", "sample6", "sample7", "sample8", "sample9", "sample10", "sample11", "sample12"), value.name="genotype",variable.name="sample")
+write.table(mdf, file="meltedCAcolony60_ii_output20191126CAP23.txt",sep="\t",quote=FALSE, row.name=FALSE)
+
+CAcolony60_CAP24<-read.delim("CAcolony60_ii_output20191126CAP24.txt")
+mdf<-melt(CAcolony60_CAP24, id.vars="Chrom.pos", measure.vars=c("sample1","sample2","sample3","sample4", "sample5", "sample6", "sample7", "sample8", "sample9", "sample10", "sample11", "sample12"), value.name="genotype",variable.name="sample")
+write.table(mdf, file="meltedCAcolony60_ii_output20191126CAP24.txt",sep="\t",quote=FALSE, row.name=FALSE)
+
+CAcolony56_CAP12<-read.delim("CAcolony56_ii_output20191205CAP12.txt")
+mdf<-melt(CAcolony56_CAP12, id.vars="Chrom.pos", measure.vars=c("sample1","sample2","sample3","sample4", "sample5", "sample6", "sample7", "sample8", "sample9"), value.name="genotype",variable.name="sample")
+write.table(mdf, file="meltedCAcolony56_ii_output20191205CAP12.txt",sep="\t",quote=FALSE, row.name=FALSE)
+
+CAcolony56_CAP6<-read.delim("CAcolony56_ii_output20191205CAP6.txt")
+mdf<-melt(CAcolony56_CAP6, id.vars="Chrom.pos", measure.vars=c("sample1","sample2","sample3","sample4", "sample5", "sample6", "sample7", "sample8", "sample9"), value.name="genotype",variable.name="sample")
+write.table(mdf, file="meltedCAcolony56_ii_output20191205CAP6.txt",sep="\t",quote=FALSE, row.name=FALSE)
+
+CAcolony56_CAP8<-read.delim("CAcolony56_ii_output20191205CAP8.txt")
+mdf<-melt(CAcolony56_CAP8, id.vars="Chrom.pos", measure.vars=c("sample1","sample2","sample3","sample4", "sample5", "sample6", "sample7", "sample8", "sample9"), value.name="genotype",variable.name="sample")
+write.table(mdf, file="meltedCAcolony56_ii_output20191205CAP8.txt",sep="\t",quote=FALSE, row.name=FALSE)
+
+
+CAcolony65_CAP11<-read.delim("CAcolony65_ii_output20200107CAP11.txt")
+mdf<-melt(CAcolony65_CAP11, id.vars="Chrom.pos", measure.vars=c("sample1","sample2","sample3","sample4", "sample5", "sample6", "sample7", "sample8"), value.name="genotype",variable.name="sample")
+write.table(mdf, file="meltedCAcolony65_ii_output20200107CAP11.txt",sep="\t",quote=FALSE, row.name=FALSE)
+
+CAcolony65_CAP9<-read.delim("CAcolony65_ii_output20200107CAP9.txt")
+mdf<-melt(CAcolony65_CAP9, id.vars="Chrom.pos", measure.vars=c("sample1","sample2","sample3","sample4", "sample5", "sample6", "sample7", "sample8"), value.name="genotype",variable.name="sample")
+write.table(mdf, file="meltedCAcolony65_ii_output20200107CAP9.txt",sep="\t",quote=FALSE, row.name=FALSE)
+
+par(mfrow=c(1,1))
+
+##to look at all data combined together:
+files<-list.files(path="~/Documents/GitHub/Germline", pattern="*muts_relabeled*", full.names=T, recursive=FALSE) #path to all the files you want to include in the analysis
+metadata= NULL
+for (i in 1:length(files)) { 
+  file =files[i]
+  data<-read.delim(file) #read in each file in "files"
+  data<-data.frame(data) # transform the data from each file into a dataframe
+  base<-basename(file)
+  colony<-strsplit(base, "\\_")[[1]][2]
+  len<-nrow(data) 
+  colonyrep<-rep(colony, len)
+  withcolony<-data.frame(data, colonyrep) #combines the colonyname column with each dataframe
+  metadata <- rbind(metadata, withcolony) #adds each dataframe to the overall metatadata, so that the information from all of the files are now in "metadata"
+}
+
+genoanddepth<-(metadata$genotype) #names the column
+split<-str_split_fixed(genoanddepth, ",", 4) #split the genotype, depths, and GQ score into their own separate strings
+
+genotypes<-split[,1] #defines the genotype as the first string in "split"
+position<-metadata$chrom.pos #names the column
+positionsplit<-str_split_fixed(position, "[.]", 2) #split the chromosome number and the position on the chromosome into their own separate strings
+
+chr<-positionsplit[,1] #defines the chromosome as the first string in "positionsplit"
+pos<-positionsplit[,2] #defines the position as the second string in "positionsplit"
+#totaldepth<-as.numeric(split[,2])
+refdepth<-as.numeric(split[,2])
+altdepth<-as.numeric(split[,3])
+what<-metadata$WhattoWhat
+allelesplit<-str_split_fixed(what, "to", 2)
+normalallele<-allelesplit[,1]
+mutantallele<-allelesplit[,2]
+totaldepth<-refdepth+altdepth
+GQscore<-as.numeric(split[,4])
+
+mutant_alleledepth = rep("A", nrow(metadata))
+for (i in 1:nrow(metadata)){
+  if (mutantallele[i] == metadata$alt[i]) {
+    mutant_alleledepth[i] = altdepth[i]
+    print(mutant_alleledepth[i])
+  } else {
+    mutant_alleledepth[i] = refdepth[i]
+    print(mutant_alleledepth[i])
+  }  #print("ALT", mutant_alleledepth, refdepth)
+}
+print(mutant_alleledepth[1:10])
+print(refdepth[1:10])
+print(altdepth[1:10])
+
+metadatadf<-data.frame("chrom.pos" = metadata$chrom.pos, "chrom"=chr, "pos"=pos,	"sample"= metadata$sample, "ref" = metadata$ref, "alt" = 	metadata$alt, "normal_allele"= normalallele, "mutant_allele" = mutantallele, "mutant_allele_depth" = as.numeric(mutant_alleledepth), "genotype"= genotypes, "totaldepth"=totaldepth, 	"refdepth"=refdepth, "altdepth"=altdepth, "GQscore"= GQscore,	"GoH_or_LoH"=metadata$DeNovo_LoH, "Ti/Tv"=metadata$TiTv, 	"WhattoWhat" = metadata$WhattoWhat,"TrueorFalse" =metadata$TrueorFalse)#  ColonyName"=metadata$colonyrep)
+
+DepthMeansdf<-aggregate(totaldepth~chrom.pos, metadatadf, 			FUN=mean)
+
+DepthMinsdf<-aggregate(totaldepth~chrom.pos, metadatadf, 			FUN=min)
+
+GQaverage<-aggregate(GQscore~chrom.pos, metadatadf, FUN=mean)
+
+GQmin<-aggregate(GQscore~chrom.pos, metadatadf, FUN=min)
+
+
+
+metadatadf.00<-merge(metadatadf, DepthMeansdf[, c("chrom.pos", 	"totaldepth")], by="chrom.pos")
+metadatadf.0<-merge(metadatadf.00, GQaverage[,c("chrom.pos","GQscore")], by="chrom.pos")
+metadatadf.0<-merge(metadatadf.0, DepthMinsdf[,c("chrom.pos","totaldepth")], by="chrom.pos")
+metadatadf.0<-merge(metadatadf.0, GQmin[,c("chrom.pos","GQscore")], by="chrom.pos")
+
+DeNovos<-subset(metadatadf.0, GoH_or_LoH=="DeNovo")
+sample3<-subset(DeNovos, sample== "sample3")
+trueDenovos_sample3<-subset(sample3, refdepth =="0" | altdepth=="0")
+
+sample4<-subset(DeNovos, sample== "sample4")
+trueDenovos_sample4<-subset(sample4, refdepth =="0" | altdepth=="0")
+
+sample5<-subset(DeNovos, sample== "sample5")
+trueDenovos_sample5<-subset(sample5, refdepth =="0" | altdepth=="0")
+
+sample6<-subset(DeNovos, sample== "sample6")
+trueDenovos_sample6<-subset(sample6, refdepth =="0" | altdepth=="0")
+
+sample7<-subset(DeNovos, sample== "sample7")
+trueDenovos_sample7<-subset(sample7, refdepth =="0" | altdepth=="0")
+
+sample8<-subset(DeNovos, sample== "sample8")
+trueDenovos_sample8<-subset(sample8, refdepth =="0" | altdepth=="0")
+
+truedenovos3_8<-rbind(trueDenovos_sample3, trueDenovos_sample4, trueDenovos_sample5, trueDenovos_sample6, trueDenovos_sample7, trueDenovos_sample8)
+
+LoH<-subset(metadatadf.0, GoH_or_LoH =="LoH")#
+trueLoHp<-subset(LoH,refdepth =="0" | altdepth=="0")
+trueLoHp1<-subset(trueLoHp, sample=="mutparent1")
+trueLoHp2<-subset(trueLoHp, sample=="mutparent2")
+metadatadf<-rbind( DeNovos, trueLoHp1, trueLoHp2)
+#write.table(metadatadf, file="CAcolony60_CAP22-23-24muts_20191125.txt",sep="\t",quote=FALSE, row.name=FALSE)
+
+uniquemetadatadf<- metadatadf[match(unique(metadatadf$chrom.pos), 					metadatadf$chrom.pos),]
+
+x<-c(0,2,3,"a","d")
+y<-c(3, 2, 0, "a", "d")
+xy<-data.frame(x,y)
+for (i in 1:nrow(xy)){
+  if (xy$x[i] == xy$y[i]) {
+    jk = 2
+    print("yes")
+  } else {
+    print("no")
+    jk = 5
+  }  
+}
+print(mutant)
+
+
+#for (i in 1:nrow(metadatadf.0)){
+#  if (metadatadf.0$mutant_allele[i] == metadatadf.0$ref[i]) {
+#    mutant_alleledepth = refdepth
+    
+#  } else mutant_alleledepth = altdepth
+#}
+##alt allele correlation when inheritance is TRUE:
+
+
+mutantparentdf_true<-subset(metadatadf.0, sample=="mutparent1" & TrueorFalse=="True") #for CAP22-1 and CAP22-2
+mutantparentdf_true<- mutantparentdf_true[match(uniquemetadatadf$chrom.pos, mutantparentdf_true$chrom.pos),]
+
+mutantparents2_true<-subset(metadatadf.0,sample=="mutparent2" & TrueorFalse=="True")
+mutantparents2_true<- mutantparents2_true[match(uniquemetadatadf$chrom.pos, mutantparents2_true$chrom.pos),]
+
+props1_true<-mutantparentdf_true$mutant_allele_depth/mutantparentdf_true$totaldepth.x
+props2_true<-mutantparents2_true$mutant_allele_depth/mutantparents2_true$totaldepth.x
+
+
+
+parentsaverage_true<-(props1_true+props2_true)/2
+parentsaverage_true<-na.omit(parentsaverage_true)
+
+
+spermdf_true<-subset(metadatadf.0, sample=="mutsperm" & TrueorFalse=="True")
+spermdf_true<- spermdf_true[match(uniquemetadatadf$chrom.pos, spermdf_true$chrom.pos),]
+
+spermprops_true<- spermdf_true$mutant_allele_depth/spermdf_true$totaldepth.x
+spermprops_true<-na.omit(spermprops_true)
+
+parentspermcomparison_true<-lm(spermprops_true~parentsaverage_true)
+plot(parentsaverage_true, spermprops_true)
+abline(parentspermcomparison_true, lwd=2)
+abline(0,1,lwd=4,col="red")
+cor.test(parentsaverage_true, spermprops_true)
+summary(parentspermcomparison_true)$r.squared
+##alt allele correlation when inheritance isFALSE:
+mutantparentdf_false<-subset(metadatadf.0, sample=="mutparent1" & TrueorFalse=="False") #for CAP22-1 and CAP22-2
+mutantparentdf_false<- mutantparentdf_false[match(uniquemetadatadf$chrom.pos, mutantparentdf_false$chrom.pos),]
+
+mutantparents2_false<-subset(metadatadf.0,sample=="mutparent2" & TrueorFalse=="False")
+mutantparents2_false<- mutantparents2_false[match(uniquemetadatadf$chrom.pos, mutantparents2_false$chrom.pos),]
+
+props1_false<-mutantparentdf_false$mutant_allele_depth/mutantparentdf_false$totaldepth.x
+props2_false<-mutantparents2_false$mutant_allele_depth/mutantparents2_false$totaldepth.x
+#plot(props1, props2)
+
+#propslm<-lm(props2~props1)
+
+parentsaverage_false<-(props1_false+props2_false)/2
+parentsaverage_false<-na.omit(parentsaverage_false)
+
+
+spermdf_false<-subset(metadatadf.0, sample=="mutsperm" & TrueorFalse=="False")
+spermdf_false<- spermdf_false[match(uniquemetadatadf$chrom.pos, spermdf_false$chrom.pos),]
+
+spermprops_false<- spermdf_false$mutant_allele_depth/spermdf_false$totaldepth.x
+spermprops_false<-na.omit(spermprops_false)
+
+parentspermcomparison_false<-lm(spermprops_false~parentsaverage_false)
+plot(parentsaverage_false, spermprops_false)
+points(parentsaverage_true,spermprops_true,col="blue")
+abline(parentspermcomparison_false)
+abline(parentspermcomparison_true,col="blue")
+abline(0,1,lwd=3,col="red")
+summary(parentspermcomparison_false)$r.squared
+cor.test(parentsaverage_false,spermprops_false)
+
+##comparing GOH and LOH when inheritance is false:
+#LOH:
+mutantparentdf_false_LOH<-subset(mutantparentdf_false, GoH_or_LoH=="LoH")
+mutantparents2_false_LOH<-subset(mutantparents2_false, GoH_or_LoH=="LoH")
+
+props1_false_LOH<-mutantparentdf_false_LOH$mutant_allele_depth/mutantparentdf_false_LOH$totaldepth.x
+props2_false_LOH<-mutantparents2_false_LOH$mutant_allele_depth/mutantparents2_false_LOH$totaldepth.x
+
+parentsaverage_false_LOH<-(props1_false_LOH+props2_false_LOH)/2
+parentsaverage_false_LOH<-na.omit(parentsaverage_false_LOH)
+
+spermdf_false_LOH<- subset(spermdf_false, GoH_or_LoH=="LoH")
+
+spermprops_false_LOH<-spermdf_false_LOH$mutant_allele_depth/spermdf_false_LOH$totaldepth.x
+spermprops_false_LOH<-na.omit(spermprops_false_LOH)
+
+parentspermcomparison_false_LOH<-lm(spermprops_false_LOH~parentsaverage_false_LOH)
+plot(parentsaverage_false_LOH, spermprops_false_LOH)
+abline(parentspermcomparison_false_LOH)
+summary(parentspermcomparison_false_LOH)$r.squared
+
+#GOH:
+mutantparentdf_false_GOH<-subset(mutantparentdf_false, GoH_or_LoH=="DeNovo")
+mutantparents2_false_GOH<-subset(mutantparents2_false, GoH_or_LoH=="DeNovo")
+
+props1_false_GOH<-mutantparentdf_false_GOH$mutant_allele_depth/mutantparentdf_false_GOH$totaldepth.x
+props2_false_GOH<-mutantparents2_false_GOH$mutant_allele_depth/mutantparents2_false_GOH$totaldepth.x
+
+parentsaverage_false_GOH<-(props1_false_GOH+props2_false_GOH)/2
+parentsaverage_false_GOH<-na.omit(parentsaverage_false_GOH)
+
+spermdf_false_GOH<- subset(spermdf_false, GoH_or_LoH=="DeNovo")
+
+spermprops_false_GOH<-spermdf_false_GOH$mutant_allele_depth/spermdf_false_GOH$totaldepth.x
+spermprops_false_GOH<-na.omit(spermprops_false_GOH)
+
+parentspermcomparison_false_GOH<-lm(spermprops_false_GOH~parentsaverage_false_GOH)
+plot(parentsaverage_false_GOH, spermprops_false_GOH,xlab="Proportion of alt allele in the parent",ylab="Proportion of alt allele in sperm",xlim=c(0,.5),ylim=c(0,0.5))
+
+
+summary(parentspermcomparison_false_GOH)$r.squared  
+cor.test(parentsaverage_false_LOH, spermprops_false_LOH)
+cor.test(parentsaverage_false_GOH, spermprops_false_GOH)
+
+##comparing GOH and LOH when inheritance is true:
+#LOH:
+mutantparentdf_true_LOH<-subset(mutantparentdf_true, GoH_or_LoH=="LoH")
+mutantparents2_true_LOH<-subset(mutantparents2_true, GoH_or_LoH=="LoH")
+
+props1_true_LOH<-mutantparentdf_true_LOH$mutant_allele_depth/mutantparentdf_true_LOH$totaldepth.x
+props2_true_LOH<-mutantparents2_true_LOH$mutant_allele_depth/mutantparents2_true_LOH$totaldepth.x
+
+parentsaverage_true_LOH<-(props1_true_LOH+props2_true_LOH)/2
+parentsaverage_true_LOH<-na.omit(parentsaverage_true_LOH)
+
+
+spermdf_true<-subset(metadatadf.0, sample=="mutsperm" & TrueorFalse=="True")
+spermdf_true<- spermdf_true[match(uniquemetadatadf$chrom.pos, spermdf_true$chrom.pos),]
+
+spermdf_true_LOH<- subset(spermdf_true, GoH_or_LoH=="LoH")
+
+spermprops_true_LOH<-spermdf_true_LOH$mutant_allele_depth/spermdf_true_LOH$totaldepth.x
+spermprops_true_LOH<-na.omit(spermprops_true_LOH)
+
+parentspermcomparison_true_LOH<-lm(spermprops_true_LOH~parentsaverage_true_LOH)
+plot(parentsaverage_true_LOH, spermprops_true_LOH, col="pink")
+abline(parentspermcomparison_true_LOH,col="pink")
+summary(parentspermcomparison_true_LOH)$r.squared
+
+#GOH:
+mutantparentdf_true_GOH<-subset(mutantparentdf_true, GoH_or_LoH=="DeNovo")
+mutantparents2_true_GOH<-subset(mutantparents2_true, GoH_or_LoH=="DeNovo")
+
+props1_true_GOH<-mutantparentdf_true_GOH$mutant_allele_depth/mutantparentdf_true_GOH$totaldepth.x
+props2_true_GOH<-mutantparents2_true_GOH$mutant_allele_depth/mutantparents2_true_GOH$totaldepth.x
+
+parentsaverage_true_GOH<-(props1_true_GOH+props2_true_GOH)/2
+parentsaverage_true_GOH<-na.omit(parentsaverage_true_GOH)
+
+
+spermdf_true<-subset(metadatadf.0, sample=="mutsperm" & TrueorFalse=="True")
+spermdf_true<- spermdf_true[match(uniquemetadatadf$chrom.pos, spermdf_true$chrom.pos),]
+
+spermdf_true_GOH<- subset(spermdf_true, GoH_or_LoH=="DeNovo")
+
+spermprops_true_GOH<-spermdf_true_GOH$mutant_allele_depth/spermdf_true_GOH$totaldepth.x
+spermprops_true_GOH<-na.omit(spermprops_true_GOH)
+
+parentspermcomparison_true_GOH<-lm(spermprops_true_GOH~parentsaverage_true_GOH)
+plot(parentsaverage_true_GOH, spermprops_true_GOH,xlim=c(0,1),ylim=c(0,1))
+points(parentsaverage_true_LOH, spermprops_true_LOH, col="blue")
+abline(parentspermcomparison_true_GOH)
+abline(parentspermcomparison_true_LOH,col="blue")
+summary(parentspermcomparison_true_GOH)$r.squared  
+cor.test(parentsaverage_true_LOH, spermprops_true_LOH)
+cor.test(parentsaverage_true_GOH, spermprops_true_GOH)
+
+plot(parentsaverage_false_GOH, spermprops_false_GOH, col="green", xlab="Proportion of mutant allele in the parent",ylab="Proportion of mutant allele in sperm",xlim=c(0,1),ylim=c(0,1))
+points(parentsaverage_false_LOH, spermprops_false_LOH, col="blue")
+points(parentsaverage_true_GOH, spermprops_true_GOH, col="red")
+points(parentsaverage_true_LOH,spermprops_true_LOH,col="pink")
+abline(parentspermcomparison_false_GOH,col="green")
+abline(parentspermcomparison_false_LOH,col="blue")
+abline(parentspermcomparison_true_GOH,col="red")
+abline(parentspermcomparison_true_LOH,col="pink")
+abline(0,1, lwd=3)
+legend("bottomright",
+       legend = c("Not inherited+GOH","Not inherited+LOH","Inherited+GOH","Inherited+LOH"),
+       col=c("green", "blue","red","pink"),
+       pch=c(16,16))
+
+summary(parentspermcomparison_true_GOH)$r.squared  
+summary(parentspermcomparison_true_LOH)$r.squared 
+summary(parentspermcomparison_false_GOH)$r.squared 
+summary(parentspermcomparison_false_LOH)$r.squared 
+cor.test(parentsaverage_true_GOH, spermprops_true_GOH)
+cor.test(parentsaverage_true_LOH, spermprops_true_LOH)
+cor.test(parentsaverage_false_GOH, spermprops_false_GOH)
+cor.test(parentsaverage_false_LOH, spermprops_false_LOH)
+par(mfrow=c(1,4))
+residtrueGOH<-resid(parentspermcomparison_true_GOH)
+plot((mutantparents2_true_GOH$totaldepth.x + mutantparentdf_true_GOH$totaldepth.x)/2, residtrueGOH, xlim=c(0,500), ylim=c(-0.6,0.8), col="red",xlab="Total Parent Read Depth", ylab="Parent-Sperm Residuals", main = "Inherited +GOH")
+points((mutantparents2_true_LOH$totaldepth.x + mutantparentdf_true_LOH$totaldepth.x)/2, residtrueLOH, col="pink")
+points((mutantparents2_false_GOH$totaldepth.x + mutantparentdf_false_GOH$totaldepth.x)/2,residfalseGOH, col="green")
+plot((mutantparents2_false_LOH$totaldepth.x + mutantparentdf_false_LOH$totaldepth.x)/2,residefalseLOH, col="blue",xlim=c(0,500), ylim=c(-0.6,0.5), xlab="Total Parent Read Depth", ylab="Parent-Sperm Residuals")
+points(mutantparents2_true_GOH$totaldepth.x, residtrueGOH,col="red")
+#abline(lm(residtrueGOH~mutantparents2_true_GOH$totaldepth.x))
+
+residtrueLOH<-resid(parentspermcomparison_true_LOH)
+plot(mutantparents2_true_LOH$totaldepth.x, residtrueLOH, xlim=c(0,500), ylim=c(-0.6,0.8), col="pink", main="Inherited+LOH",xlab="Total Parent Read Depth", ylab="Parent-Sperm Residuals")
+
+residfalseGOH<-resid(parentspermcomparison_false_GOH)
+plot(mutantparents2_false_GOH$totaldepth.x,residfalseGOH, col="green", xlim=c(0,500), ylim=c(-0.6,0.8), xlab="Total Parent Read Depth", ylab="Parent-Sperm Residuals", main="Not Inherited + GOH")
+
+residefalseLOH<-resid(parentspermcomparison_false_LOH)
+plot(mutantparents2_false_LOH$totaldepth.x,residefalseLOH, col="blue" , xlim=c(0,500), ylim=c(-0.6,0.8), xlab="Total Parent Read Depth", ylab="Parent-Sperm Residuals", main="Not Inherited + LOH")
+
+cor.test(parentsaverage_true_LOH, spermprops_true_LOH)
+cor.test(parentsaverage_false_GOH, spermprops_false_GOH)
+cor.test(parentsaverage_false_LOH, spermprops_false_LOH)
+
+
+#######
+######
+######
+falseGOH<-data.frame(parentsaverage_false_GOH, spermprops_false_GOH)
+falseGOH0.5<-falseGOH[falseGOH$parentsaverage_false_GOH <=0.5,]
+falseGOH0.5.1<-falseGOH0.5[falseGOH0.5$spermprops_false_GOH <=0.5, ]
+plot(falseGOH0.5.1, ylim=c(0,0.5),xlim=c(0,0.5))
+falseGOHlm<-lm(falseGOH0.5.1$spermprops_false_GOH~falseGOH0.5.1$parentsaverage_false_GOH)
+abline(falseGOHlm)
+cor.test(falseGOH0.5.1$parentsaverage_false_GOH, falseGOH0.5.1$spermprops_false_GOH)
+
+falseLOH<-data.frame(parentsaverage_false_LOH, spermprops_false_LOH)
+falseLOH0.5<-falseLOH[falseLOH$parentsaverage_false_LOH <=0.5,]
+falseLOH0.5.1<-falseLOH0.5[falseLOH0.5$spermprops_false_LOH <=0.5, ]
+plot(falseLOH0.5.1, ylim=c(0,0.5),xlim=c(0,0.5))
+falseLOHlm<-lm(falseLOH0.5.1$spermprops_false_LOH~falseLOH0.5.1$parentsaverage_false_LOH)
+abline(falseLOHlm)
+cor.test(falseLOH0.5.1$parentsaverage_false_LOH, falseLOH0.5.1$spermprops_false_LOH)
+
+trueGOH<-data.frame(parentsaverage_true_GOH, spermprops_true_GOH)
+trueGOH0.5<-trueGOH[trueGOH$parentsaverage_true_GOH <=0.5,]
+trueGOH0.5.1<-trueGOH0.5[trueGOH0.5$spermprops_true_GOH <=0.5, ]
+plot(trueGOH0.5.1, ylim=c(0,0.5),xlim=c(0,0.5))
+trueGOHlm<-lm(trueGOH0.5.1$spermprops_true_GOH~trueGOH0.5.1$parentsaverage_true_GOH)
+abline(trueGOHlm)
+cor.test(trueGOH0.5.1$parentsaverage_true_GOH, trueGOH0.5.1$spermprops_true_GOH)
+
+trueLOH<-data.frame(parentsaverage_true_LOH, spermprops_true_LOH)
+trueLOH0.5<-trueLOH[trueLOH$parentsaverage_true_LOH <=0.5,]
+trueLOH0.5.1<-trueLOH0.5[trueLOH0.5$spermprops_true_LOH <=0.5, ]
+plot(trueLOH0.5.1, ylim=c(0,0.5),xlim=c(0,0.5))
+trueLOHlm<-lm(trueLOH0.5.1$spermprops_true_LOH~trueLOH0.5.1$parentsaverage_true_LOH)
+abline(trueLOHlm)
+cor.test(trueLOH0.5.1$parentsaverage_true_LOH, trueLOH0.5.1$spermprops_true_LOH)
+
+plot(falseGOH0.5.1, xlim=c(0,0.5),ylim=c(0,0.5))
+
+points(falseLOH0.5.1, col="blue")
+points(trueGOH0.5.1,col="red")
+points(trueLOH0.5.1,col="pink")
+abline(falseGOHlm, lwd=4)
+abline(falseLOHlm, col="blue",lwd=4)
+abline(trueGOHlm, col="red", lwd=4)
+abline(trueLOHlm, col="pink",lwd=4)
+legend("bottomright",
+       legend = c("Not inherited+GOH","Not inherited+LOH","Inherited+GOH","Inherited+LOH"),
+       col=c("black", "blue","red","pink"),
+       pch=c(16,16))
+
+summary(falseGOH0.5.1$parentsaverage_false_GOH)
+newxfalseGOH<-seq(min(falseGOH0.5.1), max(falseGOH0.5.1),by = 0.01)#length.out=length(falseGOH0.5.1$parentsaverage_false_GOH))
+conffalseGOH<-predict(falseGOHlm, newdata=data.frame(parentsaverage_false_GOH=newxfalseGOH), interval="confidence", level=0.95)
+lines(newxfalseGOH, conffalseGOH[,2])
+lines(newxfalseGOH, conffalseGOH[,3])
+
+#plot(trueGOH,col="red")
+#newxtrueGOH<-seq(min(trueGOH), max(trueGOH),length.out=length(trueGOH0.5.1$parentsaverage_true_GOH))
+#conftrueGOH<-predict(trueGOHlm, newdata=data.frame(newxtrueGOH), interval="confidence")
+#lines(newxtrueGOH, conftrueGOH[,2], col="black", lty=2)
+#lines(newxtrueGOH, conftrueGOH[,3], col="black",lty=2)
+#plot(spermprops_true_GOH~parentsaverage_true_GOH)
+#lines(lm(spermprops_true_GOH~parentsaverage_true_GOH), col = Pal()[1], lwd = 2, lty = "solid",
+      type = "l", n = 100, conf.level = 0.95, args.cband = NULL,
+      pred.level = NA, args.pband = NULL)
+uniquemetadatadf<- metadatadf[match(unique(metadatadf$chrom.pos), 					metadatadf$chrom.pos),]
+
+par(mfrow=c(1,1))
+
+#write.table(uniquemetadatadf, file="CAcolony60_CAP23-24muts_unique_20191125.txt",sep="\t",quote=FALSE, row.name=FALSE)
+
+
+TRUEset<-subset(uniquemetadatadf, TrueorFalse=="True")
+print(nrow(TRUEset))
+TRUEsetLoH<-subset(TRUEset, GoH_or_LoH =="LoH")
+TRUEsetGoH<-subset(TRUEset, GoH_or_LoH =="DeNovo")
+
+TRUEsetdepth<-TRUEset$totaldepth.y
+TRUEsetmindepth<-TRUEset$totaldepth
+TRUEsetGQ<-TRUEset$GQscore.y
+TRUEsetminGQ<-TRUEset$GQscore
+FALSEset<-subset(uniquemetadatadf, TrueorFalse=="False")
+print(nrow(FALSEset))
+FALSEsetLoH<-subset(FALSEset, GoH_or_LoH =="LoH")
+FALSEsetGoH<-subset(FALSEset, GoH_or_LoH =="DeNovo")
+
+FALSEsetGQ<-FALSEset$GQscore.y
+FALSEsetminGQ<-FALSEset$GQscore
+
+FALSEsetdepth<-FALSEset$totaldepth.y
+FALSEsetmindepth<-FALSEset$totaldepth
+
+#plot minimum depth fortrue vs FALSE
+x<- c(TRUEsetmindepth, FALSEsetmindepth)
+groups<-c(rep("Inherited",nrow(TRUEset)),rep("Not inherited",nrow(FALSEset)))
+df<-data.frame(groups, x)
+p<- ggplot(df, aes(groups,x))
+depthsplots<- p +geom_boxplot() + geom_sina(aes(color=groups),size=1 ) + theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) + labs(x = "", y = "Read Depth") # here is your depths plot, FIGURE S1
+depthsplots
+wilcox.test(TRUEsetmindepth,FALSEsetmindepth) #use wilcoxon instead of t test
+hist(FALSEsetmindepth)
+mean(TRUEsetmindepth)
+mean(FALSEsetmindepth)
+#plot minimum GQ score for true vs false
+x<- c(TRUEsetminGQ, FALSEsetminGQ)
+groups<-c(rep("Inherited",nrow(TRUEset)),rep("Not inherited",nrow(FALSEset)))
+df<-data.frame(groups, x)
+p<- ggplot(df, aes(groups,x))
+GQplots<- p +geom_boxplot() + geom_sina(aes(color=groups),size=1 ) + theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) + labs(x = "", y = "Average GQ at locus") # here is your depths plot, FIGURE S1
+wilcox.test(TRUEsetminGQ,FALSEsetminGQ) #use wilcoxon instead of t test
+hist(FALSEsetminGQ)
+hist(TRUEsetminGQ)
+mean(FALSEsetminGQ)
+mean(TRUEsetminGQ)
+GQplots
+#plot min depthvs min gq
+lminherited<-lm(TRUEsetmindepth~TRUEsetminGQ)
+
+lmnotinherited<-lm(FALSEsetmindepth~FALSEsetminGQ)
+
+#plot(TRUEsetdepth, TRUEsetGQ)
+plot(FALSEsetdepth, FALSEsetGQ, ylim=c(30,100),xlab="Read Depth",ylab="GQ Score", xlim=c(0,500)) #only this plot!!
+points(TRUEsetdepth, TRUEsetGQ,col="red")
+
+
+abline(lmnotinherited)
+abline(lminherited, col="red")
+
+#plot where each mutation occurs
+TRUEscaffolds<-TRUEset$chrom
+
+FALSEscaffolds<-FALSEset$chrom
+
+TRUEtable<-table(TRUEscaffolds)
+head(TRUEtable,14)
+FALSEtable<-table(FALSEscaffolds)
+head(FALSEtable,14)
+barplot(head(TRUEtable,14))
+
+barplot(head(FALSEtable,14))
+
+TOTALscaffolds<-uniquemetadatadf$chrom
+TOTALtable<-table(TOTALscaffolds)
+barplot(head(TOTALtable,14))
+barplot(head(TRUEtable,14), col="blue")
+barplot(head(FALSEtable,14),col="red", beside=TRUE)
+
+table<-table(FALSEscaffolds,TRUEscaffolds)
+#FOR PLOTS OF EACH INDIV SAMPLE:
+files<-list.files(path="~/Documents/GitHub/Germline", pattern="*muts.txt", full.names=T, recursive=FALSE)
+
+par(mfrow=c(3,2))
+
+lapply(files,function(x) {
+  metadata<-read.delim(x)
+  genoanddepth<-(metadata$genotype)
+  split<-str_split_fixed(genoanddepth, ",", 4)
+  genotypes<-split[,1]
+  #totaldepth<-as.numeric(split[,2])
+  refdepth<-as.numeric(split[,2])
+  altdepth<-as.numeric(split[,3])
+  totaldepth<-refdepth+altdepth
+  GQscore<-as.numeric(split[,4])
+  
+  position<-metadata$chrom.pos
+  positionsplit<-str_split_fixed(position, "[.]", 2)
+  
+  chr<-positionsplit[,1]
+  pos<-positionsplit[,2]
+  
+  metadatadf<-data.frame("chrom.pos" = metadata$chrom.pos, "chrom"=chr, "pos"=pos,	"sample"= metadata$sample, "ref" = metadata$ref, "alt" = 	metadata$alt, "genotype"= genotypes, "totaldepth"=totaldepth, 	"refdepth"=refdepth, "altdepth"=altdepth, "GQscore"= GQscore,	"GoH_or_LoH"=metadata$DeNovo_LoH, "Ti/Tv"=metadata$TiTv, 	"WhattoWhat" = metadata$WhattoWhat,"TrueorFalse" =metadata$TrueorFalse)#  ColonyName"=metadata$colonyrep)
+  
+  DepthMeansdf<-aggregate(totaldepth~chrom.pos, metadatadf, 			FUN=mean)
+  
+  DepthMinsdf<-aggregate(totaldepth~chrom.pos, metadatadf, 			FUN=min)
+  
+  GQaverage<-aggregate(GQscore~chrom.pos, metadatadf, FUN=mean)
+  
+  GQmin<-aggregate(GQscore~chrom.pos, metadatadf, FUN=min)
+  
+  metadatadf.00<-merge(metadatadf, DepthMeansdf[, c("chrom.pos", 	"totaldepth")], by="chrom.pos")
+  metadatadf.0<-merge(metadatadf.00, GQaverage[,c("chrom.pos","GQscore")], by="chrom.pos")
+  metadatadf.0<-merge(metadatadf.0, DepthMinsdf[,c("chrom.pos","totaldepth")], by="chrom.pos")
+  metadatadf.0<-merge(metadatadf.0, GQmin[,c("chrom.pos","GQscore")], by="chrom.pos")
+  
+  DeNovos<-subset(metadatadf.0, GoH_or_LoH=="DeNovo")
+  sample3<-subset(DeNovos, sample== "sample3")
+  trueDenovos_sample3<-subset(sample3, refdepth =="0" | altdepth=="0")
+  
+  sample4<-subset(DeNovos, sample== "sample4")
+  trueDenovos_sample4<-subset(sample4, refdepth =="0" | altdepth=="0")
+  
+  sample5<-subset(DeNovos, sample== "sample5")
+  trueDenovos_sample5<-subset(sample5, refdepth =="0" | altdepth=="0")
+  
+  sample6<-subset(DeNovos, sample== "sample6")
+  trueDenovos_sample6<-subset(sample6, refdepth =="0" | altdepth=="0")
+  
+  sample7<-subset(DeNovos, sample== "sample7")
+  trueDenovos_sample7<-subset(sample7, refdepth =="0" | altdepth=="0")
+  
+  sample8<-subset(DeNovos, sample== "sample8")
+  trueDenovos_sample8<-subset(sample8, refdepth =="0" | altdepth=="0")
+  
+  truedenovos3_8<-rbind(trueDenovos_sample3, trueDenovos_sample4, trueDenovos_sample5, trueDenovos_sample6, trueDenovos_sample7, trueDenovos_sample8)
+  
+  LoH<-subset(metadatadf.0, GoH_or_LoH =="LoH")#
+  trueLoH<-subset(LoH, refdepth =="0" | altdepth=="0")
+  metadatadf<-rbind( DeNovos, trueLoH)
+  #write.table(metadatadf, file="CAcolony60_CAP22-23-24muts_20191125.txt",sep="\t",quote=FALSE, row.name=FALSE)
+  
+  uniquemetadatadf<- metadatadf[match(unique(metadatadf$chrom.pos), 					metadatadf$chrom.pos),]
+  #write.table(uniquemetadatadf, file="CAcolony60_CAP23-24muts_unique_20191125.txt",sep="\t",quote=FALSE, row.name=FALSE)
+  
+  ##alt allele correlation when inheritance is TRUE:
+  mutantparentdf_true<-subset(metadatadf.0, sample=="mutparent1" & TrueorFalse=="True") #for CAP22-1 and CAP22-2
+  mutantparentdf_true<- mutantparentdf_true[match(uniquemetadatadf$chrom.pos, mutantparentdf_true$chrom.pos),]
+  
+  mutantparents2_true<-subset(metadatadf.0,sample=="mutparent2" & TrueorFalse=="True")
+  mutantparents2_true<- mutantparents2_true[match(uniquemetadatadf$chrom.pos, mutantparents2_true$chrom.pos),]
+  
+  props1_true<-mutantparentdf_true$altdepth/mutantparentdf_true$totaldepth.x
+  props2_true<-mutantparents2_true$altdepth/mutantparents2_true$totaldepth.x
+  #plot(props1, props2)
+  
+  #propslm<-lm(props2~props1)
+  
+  parentsaverage_true<-(props1_true+props2_true)/2
+  parentsaverage_true<-na.omit(parentsaverage_true)
+  
+  
+  spermdf_true<-subset(metadatadf.0, sample=="mutsperm" & TrueorFalse=="True")
+  spermdf_true<- spermdf_true[match(uniquemetadatadf$chrom.pos, spermdf_true$chrom.pos),]
+  
+  spermprops_true<- spermdf_true$altdepth/spermdf_true$totaldepth.x
+  spermprops_true<-na.omit(spermprops_true)
+  
+  parentspermcomparison_true<-lm(spermprops_true~parentsaverage_true)
+  #plot(parentsaverage_true, spermprops_true)
+  #abline(parentspermcomparison_true)
+  
+  
+  ##alt allele correlation when inheritance isFALSE:
+  mutantparentdf_false<-subset(metadatadf.0, sample=="mutparent1" & TrueorFalse=="False") #for CAP22-1 and CAP22-2
+  mutantparentdf_false<- mutantparentdf_false[match(uniquemetadatadf$chrom.pos, mutantparentdf_false$chrom.pos),]
+  
+  mutantparents2_false<-subset(metadatadf.0,sample=="mutparent2" & TrueorFalse=="False")
+  mutantparents2_false<- mutantparents2_false[match(uniquemetadatadf$chrom.pos, mutantparents2_false$chrom.pos),]
+  
+  props1_false<-mutantparentdf_false$altdepth/mutantparentdf_false$totaldepth.x
+  props2_false<-mutantparents2_false$altdepth/mutantparents2_false$totaldepth.x
+  #plot(props1, props2)
+  
+  #propslm<-lm(props2~props1)
+  
+  parentsaverage_false<-(props1_false+props2_false)/2
+  parentsaverage_false<-na.omit(parentsaverage_false)
+  
+  
+  spermdf_false<-subset(metadatadf.0, sample=="mutsperm" & TrueorFalse=="False")
+  spermdf_false<- spermdf_false[match(uniquemetadatadf$chrom.pos, spermdf_false$chrom.pos),]
+  
+  spermprops_false<- spermdf_false$altdepth/spermdf_false$totaldepth.x
+  spermprops_false<-na.omit(spermprops_false)
+  
+  parentspermcomparison_false<-lm(spermprops_false~parentsaverage_false)
+  #plot(parentsaverage_false, spermprops_false)
+  #points(parentsaverage_true,spermprops_true,col="blue")
+  #abline(parentspermcomparison_false)
+  #abline(parentspermcomparison_true,col="blue")
+  summary(parentspermcomparison_false)$r.squared
+  cor.test(parentsaverage_false,spermprops_false)
+  
+  ##comparing GOH and LOH when inheritance is false:
+  #LOH:
+  mutantparentdf_false_LOH<-subset(mutantparentdf_false, GoH_or_LoH=="LoH")
+  mutantparents2_false_LOH<-subset(mutantparents2_false, GoH_or_LoH=="LoH")
+  
+  props1_false_LOH<-mutantparentdf_false_LOH$altdepth/mutantparentdf_false_LOH$totaldepth.x
+  props2_false_LOH<-mutantparents2_false_LOH$altdepth/mutantparents2_false_LOH$totaldepth.x
+  
+  parentsaverage_false_LOH<-(props1_false_LOH+props2_false_LOH)/2
+  parentsaverage_false_LOH<-na.omit(parentsaverage_false_LOH)
+  
+  spermdf_false_LOH<- subset(spermdf_false, GoH_or_LoH=="LoH")
+  
+  spermprops_false_LOH<-spermdf_false_LOH$altdepth/spermdf_false_LOH$totaldepth.x
+  spermprops_false_LOH<-na.omit(spermprops_false_LOH)
+  
+  parentspermcomparison_false_LOH<-lm(spermprops_false_LOH~parentsaverage_false_LOH)
+  #plot(parentsaverage_false_LOH, spermprops_false_LOH)
+  #abline(parentspermcomparison_false_LOH)
+  summary(parentspermcomparison_false_LOH)$r.squared
+  
+  #GOH:
+  mutantparentdf_false_GOH<-subset(mutantparentdf_false, GoH_or_LoH=="DeNovo")
+  mutantparents2_false_GOH<-subset(mutantparents2_false, GoH_or_LoH=="DeNovo")
+  
+  props1_false_GOH<-mutantparentdf_false_GOH$altdepth/mutantparentdf_false_GOH$totaldepth.x
+  props2_false_GOH<-mutantparents2_false_GOH$altdepth/mutantparents2_false_GOH$totaldepth.x
+  
+  parentsaverage_false_GOH<-(props1_false_GOH+props2_false_GOH)/2
+  parentsaverage_false_GOH<-na.omit(parentsaverage_false_GOH)
+  
+  spermdf_false_GOH<- subset(spermdf_false, GoH_or_LoH=="DeNovo")
+  
+  spermprops_false_GOH<-spermdf_false_GOH$altdepth/spermdf_false_GOH$totaldepth.x
+  spermprops_false_GOH<-na.omit(spermprops_false_GOH)
+  
+  parentspermcomparison_false_GOH<-lm(spermprops_false_GOH~parentsaverage_false_GOH)
+  #plot(parentsaverage_false_GOH, spermprops_false_GOH,xlab="Proportion of alt allele in the parent",ylab="Proportion of alt allele in sperm",xlim=c(0,.5),ylim=c(0,0.5))
+  
+  
+  summary(parentspermcomparison_false_GOH)$r.squared  
+  cor.test(parentsaverage_false_LOH, spermprops_false_LOH)
+  cor.test(parentsaverage_false_GOH, spermprops_false_GOH)
+  
+  ##comparing GOH and LOH when inheritance is true:
+  #LOH:
+  mutantparentdf_true_LOH<-subset(mutantparentdf_true, GoH_or_LoH=="LoH")
+  mutantparents2_true_LOH<-subset(mutantparents2_true, GoH_or_LoH=="LoH")
+  
+  props1_true_LOH<-mutantparentdf_true_LOH$altdepth/mutantparentdf_true_LOH$totaldepth.x
+  props2_true_LOH<-mutantparents2_true_LOH$altdepth/mutantparents2_true_LOH$totaldepth.x
+  
+  parentsaverage_true_LOH<-(props1_true_LOH+props2_true_LOH)/2
+  parentsaverage_true_LOH<-na.omit(parentsaverage_true_LOH)
+  
+  
+  spermdf_true<-subset(metadatadf.0, sample=="mutsperm" & TrueorFalse=="True")
+  spermdf_true<- spermdf_true[match(uniquemetadatadf$chrom.pos, spermdf_true$chrom.pos),]
+  
+  spermdf_true_LOH<- subset(spermdf_true, GoH_or_LoH=="LoH")
+  
+  spermprops_true_LOH<-spermdf_true_LOH$altdepth/spermdf_true_LOH$totaldepth.x
+  spermprops_true_LOH<-na.omit(spermprops_true_LOH)
+  
+  parentspermcomparison_true_LOH<-lm(spermprops_true_LOH~parentsaverage_true_LOH)
+  #plot(parentsaverage_true_LOH, spermprops_true_LOH)
+  #abline(parentspermcomparison_true_LOH)
+  summary(parentspermcomparison_true_LOH)$r.squared
+  
+  #GOH:
+  mutantparentdf_true_GOH<-subset(mutantparentdf_true, GoH_or_LoH=="DeNovo")
+  mutantparents2_true_GOH<-subset(mutantparents2_true, GoH_or_LoH=="DeNovo")
+  
+  props1_true_GOH<-mutantparentdf_true_GOH$altdepth/mutantparentdf_true_GOH$totaldepth.x
+  props2_true_GOH<-mutantparents2_true_GOH$altdepth/mutantparents2_true_GOH$totaldepth.x
+  
+  parentsaverage_true_GOH<-(props1_true_GOH+props2_true_GOH)/2
+  parentsaverage_true_GOH<-na.omit(parentsaverage_true_GOH)
+  
+  
+  spermdf_true<-subset(metadatadf.0, sample=="mutsperm" & TrueorFalse=="True")
+  spermdf_true<- spermdf_true[match(uniquemetadatadf$chrom.pos, spermdf_true$chrom.pos),]
+  
+  spermdf_true_GOH<- subset(spermdf_true, GoH_or_LoH=="DeNovo")
+  
+  spermprops_true_GOH<-spermdf_true_GOH$altdepth/spermdf_true_GOH$totaldepth.x
+  spermprops_true_GOH<-na.omit(spermprops_true_GOH)
+  
+  parentspermcomparison_true_GOH<-lm(spermprops_true_GOH~parentsaverage_true_GOH)
+  #plot(parentsaverage_true_GOH, spermprops_true_GOH)
+  #points(parentsaverage_true_LOH, spermprops_true_LOH, col="blue")
+  #abline(parentspermcomparison_true_GOH)
+  #abline(parentspermcomparison_true_LOH,col="blue")
+  summary(parentspermcomparison_true_GOH)$r.squared  
+  cor.test(parentsaverage_true_LOH, spermprops_true_LOH)
+  cor.test(parentsaverage_true_GOH, spermprops_true_GOH)
+  #plot(parentsaverage_false_GOH, spermprops_false_GOH,xlab="Proportion of alt allele in the parent",ylab="Proportion of alt allele in sperm")#,xlim=c(0,.5),ylim=c(0,0.5))
+  #points(parentsaverage_false_LOH, spermprops_false_LOH, col="blue")
+  #points(parentsaverage_true_GOH, spermprops_true_GOH, col="red")
+  #points(parentsaverage_true_LOH,spermprops_true_LOH,col="pink")
+  #abline(parentspermcomparison_false_GOH)
+  #abline(parentspermcomparison_false_LOH,col="blue")
+  #abline(parentspermcomparison_true_GOH,col="red")
+  #abline(parentspermcomparison_true_LOH,col="pink")
+  
+  falseGOH<-data.frame(parentsaverage_false_GOH, spermprops_false_GOH)
+  falseGOH0.5<-falseGOH[falseGOH$parentsaverage_false_GOH <=0.5,]
+  falseGOH0.5.1<-falseGOH0.5[falseGOH0.5$spermprops_false_GOH <=0.5, ]
+  #plot(falseGOH0.5.1, ylim=c(0,0.5),xlim=c(0,0.5))
+  falseGOHlm<-lm(falseGOH0.5.1$spermprops_false_GOH~falseGOH0.5.1$parentsaverage_false_GOH)
+  #abline(falseGOHlm)
+  cor.test(falseGOH0.5.1$parentsaverage_false_GOH, falseGOH0.5.1$spermprops_false_GOH)
+  
+  falseLOH<-data.frame(parentsaverage_false_LOH, spermprops_false_LOH)
+  falseLOH0.5<-falseLOH[falseLOH$parentsaverage_false_LOH <=0.5,]
+  falseLOH0.5.1<-falseLOH0.5[falseLOH0.5$spermprops_false_LOH <=0.5, ]
+  #plot(falseLOH0.5.1, ylim=c(0,0.5),xlim=c(0,0.5))
+  falseLOHlm<-lm(falseLOH0.5.1$spermprops_false_LOH~falseLOH0.5.1$parentsaverage_false_LOH)
+  #abline(falseLOHlm)
+  cor.test(falseLOH0.5.1$parentsaverage_false_LOH, falseLOH0.5.1$spermprops_false_LOH)
+  
+  trueGOH<-data.frame(parentsaverage_true_GOH, spermprops_true_GOH)
+  trueGOH0.5<-trueGOH[trueGOH$parentsaverage_true_GOH <=0.5,]
+  trueGOH0.5.1<-trueGOH0.5[trueGOH0.5$spermprops_true_GOH <=0.5, ]
+  #plot(trueGOH0.5.1, ylim=c(0,0.5),xlim=c(0,0.5))
+  trueGOHlm<-lm(trueGOH0.5.1$spermprops_true_GOH~trueGOH0.5.1$parentsaverage_true_GOH)
+  #abline(trueGOHlm)
+  cor.test(trueGOH0.5.1$parentsaverage_true_GOH, trueGOH0.5.1$spermprops_true_GOH)
+  
+  trueLOH<-data.frame(parentsaverage_true_LOH, spermprops_true_LOH)
+  trueLOH0.5<-trueLOH[trueLOH$parentsaverage_true_LOH <=0.5,]
+  trueLOH0.5.1<-trueLOH0.5[trueLOH0.5$spermprops_true_LOH <=0.5, ]
+  #plot(trueLOH0.5.1, ylim=c(0,0.5),xlim=c(0,0.5))
+  trueLOHlm<-lm(trueLOH0.5.1$spermprops_true_LOH~trueLOH0.5.1$parentsaverage_true_LOH)
+  #abline(trueLOHlm)
+  cor.test(trueLOH0.5.1$parentsaverage_true_LOH, trueLOH0.5.1$spermprops_true_LOH)
+  
+  #plot(falseGOH0.5.1, xlim=c(0,0.5),ylim=c(0,0.5))
+  points(falseLOH0.5.1, col="blue")
+  points(trueGOH0.5.1,col="red")
+  points(trueLOH0.5.1,col="pink")
+  abline(falseGOHlm, lwd=4)
+  abline(falseLOHlm, col="blue",lwd=4)
+  abline(trueGOHlm, col="red", lwd=4)
+  abline(trueLOHlm, col="pink",lwd=4)
+  legend("bottomright",
+         legend = c("Not inherited+GOH","Not inherited+LOH","Inherited+GOH","Inherited+LOH"),
+         col=c("black", "blue","red","pink"),
+         pch=c(16,16))
+})
+lapply(files,function(x) {
+  metadata<-read.delim(x)
+  genoanddepth<-(metadata$genotype)
+  split<-str_split_fixed(genoanddepth, ",", 4)
+  genotypes<-split[,1]
+  #totaldepth<-as.numeric(split[,2])
+  refdepth<-as.numeric(split[,2])
+  altdepth<-as.numeric(split[,3])
+  totaldepth<-refdepth+altdepth
+  GQscore<-as.numeric(split[,4])
+  
+  position<-metadata$chrom.pos
+  positionsplit<-str_split_fixed(position, "[.]", 2)
+  
+  chr<-positionsplit[,1]
+  pos<-positionsplit[,2]
+  
+  metadatadf<-data.frame("chrom.pos" = metadata$chrom.pos, "chrom"=chr, "pos"=pos,	"sample"= metadata$sample, "ref" = metadata$ref, "alt" = 	metadata$alt, "genotype"= genotypes, "totaldepth"=totaldepth, 	"refdepth"=refdepth, "altdepth"=altdepth, "GQscore"= GQscore,	"GoH_or_LoH"=metadata$DeNovo_LoH, "Ti/Tv"=metadata$TiTv, 	"WhattoWhat" = metadata$WhattoWhat,"TrueorFalse" =metadata$TrueorFalse)#  ColonyName"=metadata$colonyrep)
+  
+  DepthMeansdf<-aggregate(totaldepth~chrom.pos, metadatadf, 			FUN=mean)
+  
+  DepthMinsdf<-aggregate(totaldepth~chrom.pos, metadatadf, 			FUN=min)
+  
+  GQaverage<-aggregate(GQscore~chrom.pos, metadatadf, FUN=mean)
+  
+  GQmin<-aggregate(GQscore~chrom.pos, metadatadf, FUN=min)
+  
+  metadatadf.00<-merge(metadatadf, DepthMeansdf[, c("chrom.pos", 	"totaldepth")], by="chrom.pos")
+  metadatadf.0<-merge(metadatadf.00, GQaverage[,c("chrom.pos","GQscore")], by="chrom.pos")
+  metadatadf.0<-merge(metadatadf.0, DepthMinsdf[,c("chrom.pos","totaldepth")], by="chrom.pos")
+  metadatadf.0<-merge(metadatadf.0, GQmin[,c("chrom.pos","GQscore")], by="chrom.pos")
+  
+  DeNovos<-subset(metadatadf.0, GoH_or_LoH=="DeNovo")
+  sample3<-subset(DeNovos, sample== "sample3")
+  trueDenovos_sample3<-subset(sample3, refdepth =="0" | altdepth=="0")
+  
+  sample4<-subset(DeNovos, sample== "sample4")
+  trueDenovos_sample4<-subset(sample4, refdepth =="0" | altdepth=="0")
+  
+  sample5<-subset(DeNovos, sample== "sample5")
+  trueDenovos_sample5<-subset(sample5, refdepth =="0" | altdepth=="0")
+  
+  sample6<-subset(DeNovos, sample== "sample6")
+  trueDenovos_sample6<-subset(sample6, refdepth =="0" | altdepth=="0")
+  
+  sample7<-subset(DeNovos, sample== "sample7")
+  trueDenovos_sample7<-subset(sample7, refdepth =="0" | altdepth=="0")
+  
+  sample8<-subset(DeNovos, sample== "sample8")
+  trueDenovos_sample8<-subset(sample8, refdepth =="0" | altdepth=="0")
+  
+  truedenovos3_8<-rbind(trueDenovos_sample3, trueDenovos_sample4, trueDenovos_sample5, trueDenovos_sample6, trueDenovos_sample7, trueDenovos_sample8)
+  
+  LoH<-subset(metadatadf.0, GoH_or_LoH =="LoH")#
+  trueLoH<-subset(LoH, refdepth =="0" | altdepth=="0")
+  metadatadf<-rbind( DeNovos, trueLoH)
+  #write.table(metadatadf, file="CAcolony60_CAP22-23-24muts_20191125.txt",sep="\t",quote=FALSE, row.name=FALSE)
+  
+  uniquemetadatadf<- metadatadf[match(unique(metadatadf$chrom.pos), 					metadatadf$chrom.pos),]
+  #write.table(uniquemetadatadf, file="CAcolony60_CAP23-24muts_unique_20191125.txt",sep="\t",quote=FALSE, row.name=FALSE)
+  TRUEset<-subset(uniquemetadatadf, TrueorFalse=="True")
+  print(nrow(TRUEset))
+  TRUEsetLoH<-subset(TRUEset, GoH_or_LoH =="LoH")
+  TRUEsetGoH<-subset(TRUEset, GoH_or_LoH =="DeNovo")
+  
+  TRUEsetdepth<-TRUEset$totaldepth.y
+  TRUEsetmindepth<-TRUEset$totaldepth
+  TRUEsetGQ<-TRUEset$GQscore.y
+  TRUEsetminGQ<-TRUEset$GQscore
+  FALSEset<-subset(uniquemetadatadf, TrueorFalse=="False")
+  print(nrow(FALSEset))
+  FALSEsetLoH<-subset(FALSEset, GoH_or_LoH =="LoH")
+  FALSEsetGoH<-subset(FALSEset, GoH_or_LoH =="DeNovo")
+  
+  FALSEsetGQ<-FALSEset$GQscore.y
+  FALSEsetminGQ<-FALSEset$GQscore
+  
+  FALSEsetdepth<-FALSEset$totaldepth.y
+  FALSEsetmindepth<-FALSEset$totaldepth
+  plot(FALSEsetdepth, FALSEsetGQ, ylim=c(30,100),xlab="Read Depth",ylab="GQ Score", xlim=c(0,500)) #only this plot!!
+  points(TRUEsetdepth, TRUEsetGQ,col="red")
+})
+  #plot minimum depth fortrue vs FALSE
+  x<- c(TRUEsetmindepth, FALSEsetmindepth)
+  groups<-c(rep("Inherited",nrow(TRUEset)),rep("Not inherited",nrow(FALSEset)))
+  df<-data.frame(groups, x)
+  p<- ggplot(df, aes(groups,x))
+  depthsplots<- p +geom_boxplot() + geom_sina(aes(color=groups),size=1 ) + theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) + labs(x = "", y = "Read Depth") # here is your depths plot, FIGURE S1
+  #depthsplots
+  wilcox.test(TRUEsetmindepth,FALSEsetmindepth) #use wilcoxon instead of t test
+  #hist(FALSEsetmindepth)
+  mean(TRUEsetmindepth)
+  mean(FALSEsetmindepth)
+  #plot minimum GQ score for true vs false
+  x<- c(TRUEsetminGQ, FALSEsetminGQ)
+  groups<-c(rep("Inherited",nrow(TRUEset)),rep("Not inherited",nrow(FALSEset)))
+  df<-data.frame(groups, x)
+  p<- ggplot(df, aes(groups,x))
+  GQplots<- p +geom_boxplot() + geom_sina(aes(color=groups),size=1 ) + theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) + labs(x = "", y = "Average GQ at locus") # here is your depths plot, FIGURE S1
+  wilcox.test(TRUEsetminGQ,FALSEsetminGQ) #use wilcoxon instead of t test
+  #hist(FALSEsetminGQ)
+  #hist(TRUEsetminGQ)
+  mean(FALSEsetminGQ)
+  mean(TRUEsetminGQ)
+  #GQplots
+  #plot min depthvs min gq
+  lminherited<-lm(TRUEsetmindepth~TRUEsetminGQ)
+  
+  lmnotinherited<-lm(FALSEsetmindepth~FALSEsetminGQ)
+  
+  plot(TRUEsetdepth, TRUEsetGQ)
+  #plot(FALSEsetmindepth, FALSEsetminGQ, ylim=c(0,100))
+  points(FALSEsetdepth, FALSEsetGQ,col="red")
+  #abline(lmnotinherited)
+  #abline(lminherited, col="red")
+  
+  #plot where each mutation occurs
+  TRUEscaffolds<-TRUEset$chrom
+  
+  FALSEscaffolds<-FALSEset$chrom
+  
+  TRUEtable<-table(TRUEscaffolds)
+  head(TRUEtable,14)
+  FALSEtable<-table(FALSEscaffolds)
+  head(FALSEtable,14)
+  #barplot(head(TRUEtable,14))
+  
+  #barplot(head(FALSEtable,14))
+  
+  TOTALscaffolds<-uniquemetadatadf$chrom
+  TOTALtable<-table(TOTALscaffolds)
+  barplot(head(TOTALtable,14))
+})
+
+
+mat<-matrix(c((138/(138+804)), (139/(139+546)), (147/(147+1159)), (760/(760+1363)), (699/(699+793)), (484/(484+838)), (375/(375+861)), (328/(328+899)), (804/(138+804)), (546/(139+546)), (1159/(147+1159)), (1363/(760+1363)), (793/(699+793)), (838/(484+838)), (861/(375+861)), (899/(328+899))), ncol=8, byrow=TRUE)
+rownames(mat)<-c("Inherited","Not Inherited")    
+rownames(mat)<-c("CAP22")
+mat<-as.table(mat)
+barplot(mat,col=c("red","black"), ylab="Proportion of somatic mutations")      
+
+(804/(138+804)), (546/(139+546)), (1159/(147+1159)), (1363/(760+1363)), (793/(699+793)), (838/(484+838)), (861/(375+861)), (899/(328+899))
+
+
+runs<-c((138/(138+804)), (139/(139+546)), (147/(147+1159)), (760/(760+1363)), (699/(699+793)), (484/(484+838)), (375/(375+861)), (328/(328+899)))#, (804/(138+804)), (546/(139+546)), (1159/(147+1159)), (1363/(760+1363)), (793/(699+793)), (838/(484+838)), (861/(375+861)), (899/(328+899)))
+group<-c("CA60", "CA60", "CA60",  "CA65", "CA65", "CA56", "CA56", "CA56")  
+withinRunStats = function(x) c(sum = sum(x), mean = mean(x), var = var(x), n = length(x))
+tapply(runs, group, withinRunStats)
+data = data.frame(y = runs, group = factor(group))
+data
+fit = lm(runs ~ group, data)
+fit
+anova(fit)
+oneway<-aov(runs~group)
+summary(oneway)
+plot(oneway)
+
+degreesOfFreedom = anova(fit)[, "Df"]
+names(degreesOfFreedom) = c("treatment", "error")
+degreesOfFreedom
+anova(fit)["Residuals", "Mean Sq"]
+anova(fit)["group", "Mean Sq"]
+boxplot(runs~group, xlab="Colony Name", ylab="Proportion of Somatic Mutations Inherited by Sperm", las=1, col=c("light blue","light gray","light green"))
+stripchart(runs ~ group,
+           vertical = TRUE, 
+           pch = 21, col = "red", bg = "bisque",
+           add = TRUE)

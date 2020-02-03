@@ -1,0 +1,12 @@
+building snpeff database:
+1. edit .config file
+2. cd ~/snpEff/data
+unzip Amil_v2.01
+cd Amil_v2.01
+cp Amil.coding.gff3  genes.gff
+cp Amil.all.maker.proteins.fasta protein.fa
+cp Amil.v2.01.chrs.fasta sequences.fa
+
+3. ml load java
+java -jar snpEff.jar build -gff3 -v Amil_v2.01
+4. java -Xmx64g -jar /scratch/users/elora/snpEff/snpEff.jar -v -c /scratch/users/elora/snpEff/snpEff.config Amil_v2.01 CAcolony56.vcf_genotyped.vcf_filtered_nomissing.vcf > CAcolony56.vcf_genotyped.vcf_filtered_nomissing.vcf.ann.vcf

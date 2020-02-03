@@ -1,0 +1,10 @@
+Chrom.pos	sample	genotype
+chr1.15587	sample1	A/G,21,8,99
+chr1.2143157	sample1	C/G,123,17,99
+chr1.2480619	sample1	G/A,11,4,99
+chr1.2816781	sample1	C/C,0,37,99
+chr1.2868570	sample1	G/C,8,42,99
+chr1.3450277	sample1	T/T,66,3,72
+chr1.4522766	sample1	T/A,14,3,74
+chr1.5090316	sample1	G/A,18,3,72
+chr1.6439692	sample1	T/T,66,0,99
