@@ -1,12 +1,17 @@
-#DESCRIPTION:this script calls two input files. Each input file contains genotype information for two replicate genomic DNA samples. The "fileinfo" function defined at the top of the script generates a list of all of the sites where the two replicate samples in a single file have the SAME GENOTYPE. Then, the two lists of matches are compared to each other and the final writeout gives just the sites where the genotypes differ between the two lists.
+#DESCRIPTION:this script calls a multi-sample VCF that contains genotypes for both parents and sperm samples from a single colony. The "fileinfo" function defined at the top of the script generates a list of all of the sites where the two replicate (you designate which two) samples in a single file have the SAME GENOTYPE. Then, the  list of matches is compared to the other parent genotypes in the file and keeps only those where the matching replicates have a UNIQUE genotype not seen in any of the other parent samples. Then the corresponding sperm genotype is checked and deemed "inherited" if the sperm genotype matches the unique parent genotype and "not inherited" if it does not match. 
 
-#USAGE: python3 mutationfinder20190820.py testAHAS57.txt testAHAS59.txt
+#USAGE: python3 inheritanceinvestigator.py x.vcf
 
 import sys
 
 
 input1 = sys.argv[1]
-#input2 = sys.argv[2]
+replicate1 = int(sys.argv[2])
+replicate2 = int(sys.argv[3])
+replicate3 = int(sys.argv[4]) #THIS IS THE SAMPLE YOU WILL LOOK FOR UNIQUE MUTATIONS IN
+replicate4 = int(sys.argv[5]) #THIS IS THE SAMPLE YOU WILL LOOK FOR UNIQUE MUTATIONS IN
+numberofparents = int(sys.argv[6]) #the number of parent samples in the VCF.
+sperm = int(sys.argv[7]) # the position of the desired sperm sample in the list of sample columns
 
 def fileinfo(inputfile, rep1, rep2): 
     listofoutlist = [] #starts an empty list to which the matches between replicate libraries will be added later
@@ -103,9 +108,9 @@ def fileinfo(inputfile, rep1, rep2):
 
     f.close()
 
-genos1=fileinfo(input1, 0, 1)#, "geno_list[1]", "geno_list[2]") #calls the function for the first input file    
-# print(genos1)
-genos2=fileinfo(input1, 4, 5) #calls the function for CAP24
+genos1=fileinfo(input1, replicate1, replicate2) #calls the function for a given set of replicate libraries (whichever 2 columns you want)   #FLAG
+#print(genos1)
+genos2=fileinfo(input1, replicate3, replicate4) #calls the function for CAP24
 #print(genos2)
 # genos3=fileinfo(input1, 4, 5)
 # #
@@ -122,7 +127,7 @@ for line1 in genos1: #goes line by line in the first input file's list of matche
         conc1 = items1[0]
 
         genotypes1 = items1[3:]
-        geno1 = genotypes1[1]
+        geno1 = genotypes1[replicate2] #FLAG
         #print(geno1)
 
         conc1list.append(conc1)
@@ -132,6 +137,7 @@ for line1 in genos1: #goes line by line in the first input file's list of matche
 conc1_and_geno1 = zip(conc1list, geno1list)
 
 dictOfWords = dict(conc1_and_geno1)
+#print(dictOfWords)
 # conc3list = []
 # geno3list = []
 # for line3 in genos3: #goes line by line in the first input file's list of matches
@@ -182,7 +188,7 @@ geno2list = []
 header = "Chrom.pos","ref", "alt", "sample1","sample2","sample3","sample4","sample5","sample6","sample7", "sample8", "sample9", "sample10", "sample11", "sample12", "TrueorFalse"
 header_string = '\t'.join(header)
 print(header_string)
-for line2 in genos2: #now goes line by line in the second input file's list of matches
+for line2 in genos2: #now goes line by line in the list of matches from the second set of replicates
 
             line2 = line2.strip()
 
@@ -194,17 +200,17 @@ for line2 in genos2: #now goes line by line in the second input file's list of m
             alt = items2[2]
 
             genotypes2= items2[3:]
-           # print(genotypes2)
-            geno2= genotypes2[4]
+            #print(genotypes2)
+            geno2= genotypes2[replicate3]
             #print(geno2)
             if conc2 in dictOfWords:
-                geno1 = dictOfWords[conc2]
+                geno1 = dictOfWords[conc2] #outputs just the geno1 values that match conc2 (that is, just the sites that are present in the lists from genos1 and genos2)
                 # geno3 = dictOfWords3[conc2]
                 # geno4 = dictOfWords4[conc2]
                 #if geno2 != geno1
                 if geno1 != geno2 and geno2 != genotypes2[2] and geno2 != genotypes2[3] and geno2 != genotypes2[6] and geno2 != genotypes2[7]:
                     genolist = genotypes2[7:]
-                    if genotypes2[4] == genotypes2[10]:
+                    if genotypes2[replicate1] == genotypes2[sperm]:
                         Match = True
                     else:
                         Match = False
@@ -215,7 +221,10 @@ for line2 in genos2: #now goes line by line in the second input file's list of m
                     # header = "Chrom.pos","ref", "alt", "sample1","sample2","sample3","sample4","sample5","sample6","sample7", "sample8", "sample9", "sample10", "sample11", "sample12"
                     # header_string = '\t'.join(header)
                     # print(header_string)
-                    print(writeout_string)
+                    #print(writeout_string)
+                    
+                    filteredVCF = line2
+                    print(filteredVCF)
 
 
 
