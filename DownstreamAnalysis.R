@@ -1,5 +1,5 @@
 ###AH75###
-setwd("~/Documents/GitHub/Germline/")
+setwd("~/Documents/GitHub/CoralGermline/")
 library("reshape2")
 library(ggplot2)
 library(stringr)
@@ -56,7 +56,7 @@ write.table(mdf, file="meltedCAcolony65_ii_output20200107CAP9.txt",sep="\t",quot
 par(mfrow=c(1,1))
 
 ##to look at all data combined together:
-files<-list.files(path="~/Documents/GitHub/Germline", pattern="*muts_relabeled*", full.names=T, recursive=FALSE) #path to all the files you want to include in the analysis
+files<-list.files(path="~/Documents/GitHub/CoralGermline", pattern="CAcolony60_CAP22muts_relabeled60.txt", full.names=T, recursive=FALSE) #path to all the files you want to include in the analysis
 metadata= NULL
 for (i in 1:length(files)) { 
   file =files[i]
@@ -149,6 +149,7 @@ metadatadf<-rbind( DeNovos, trueLoHp1, trueLoHp2)
 #write.table(metadatadf, file="CAcolony60_CAP22-23-24muts_20191125.txt",sep="\t",quote=FALSE, row.name=FALSE)
 
 uniquemetadatadf<- metadatadf[match(unique(metadatadf$chrom.pos), 					metadatadf$chrom.pos),]
+write.table(uniquemetadatadf, file="CAcolony60CAP22uniquemuts.txt",sep="\t",quote=FALSE, row.name=FALSE)
 
 x<-c(0,2,3,"a","d")
 y<-c(3, 2, 0, "a", "d")

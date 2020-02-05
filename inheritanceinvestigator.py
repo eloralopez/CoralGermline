@@ -102,7 +102,7 @@ def fileinfo(inputfile, rep1, rep2):
                     #print(concatenated, outlist)
                 #else:
                     #continue #skips all sites that have different genotype calls betweeen the two technical replicates
-    
+
     return listofoutlist
     return dictionary #returns the full list of genotype matches in the file
 

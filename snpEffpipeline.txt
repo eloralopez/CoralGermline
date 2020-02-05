@@ -10,3 +10,23 @@ cp Amil.v2.01.chrs.fasta sequences.fa
 3. ml load java
 java -jar snpEff.jar build -gff3 -v Amil_v2.01
 4. java -Xmx64g -jar /scratch/users/elora/snpEff/snpEff.jar -v -c /scratch/users/elora/snpEff/snpEff.config Amil_v2.01 CAcolony56.vcf_genotyped.vcf_filtered_nomissing.vcf > CAcolony56.vcf_genotyped.vcf_filtered_nomissing.vcf.ann.vcf
+
+
+Germline Pipeline:
+1. hisat2AHB152-2.sh up to 8 hrs
+2. dedupetc.sh
+3. pbhapotypecallerGVCF_GPUpartition.sh (parabricks) or haplotypecaller_GVCFnotBP.sh (nonparabricks)
+4. combineGVCFsAHB152.sh
+5a. genotypeGVCFsAHB154.sh #gives just the variant sites
+5b. genotypeGVCFsallsites.sh #gives all sites
+6. use filterVCF.sh on the outputfile from 5a
+7. inheritanceinvestigator.py
+8. melt
+9.definemutationtypes.py
+10. downstream analyses.r : output write.table(uniquemetadatadf, file="CAcolony60CAP22uniquemuts.txt",sep="\t",quote=FALSE, row.name=FALSE)
+
+to get the verified mutations (output from 10) in VCF format:
+MatchVerifiedMutswithOriginalVCF.py 
+
+to get just the coding muts:
+compare mutsfile (*relabeled*) with annotated vcf, add a column in the mutsfile that gives the annotation (missense, nonsense, intergenic, etc)
