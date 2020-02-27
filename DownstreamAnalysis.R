@@ -56,7 +56,7 @@ write.table(mdf, file="meltedCAcolony65_ii_output20200107CAP9.txt",sep="\t",quot
 par(mfrow=c(1,1))
 
 ##to look at all data combined together:
-files<-list.files(path="~/Documents/GitHub/CoralGermline", pattern="CAcolony60_CAP22muts_relabeled60.txt", full.names=T, recursive=FALSE) #path to all the files you want to include in the analysis
+files<-list.files(path="~/Documents/GitHub/CoralGermline/annotatedfiles", pattern="CAcolony65_CAP11muts_relabeled65.txt.ann.txt", full.names=T, recursive=FALSE) #path to all the files you want to include in the analysis
 metadata= NULL
 for (i in 1:length(files)) { 
   file =files[i]
@@ -88,22 +88,25 @@ normalallele<-allelesplit[,1]
 mutantallele<-allelesplit[,2]
 totaldepth<-refdepth+altdepth
 GQscore<-as.numeric(split[,4])
+mutationtype<-metadata$MutationType
+mutationstrength<-metadata$MutationStrength
 
 mutant_alleledepth = rep("A", nrow(metadata))
 for (i in 1:nrow(metadata)){
   if (mutantallele[i] == metadata$alt[i]) {
     mutant_alleledepth[i] = altdepth[i]
-    print(mutant_alleledepth[i])
+    #print(mutant_alleledepth[i])
   } else {
     mutant_alleledepth[i] = refdepth[i]
-    print(mutant_alleledepth[i])
+    #print(mutant_alleledepth[i])
   }  #print("ALT", mutant_alleledepth, refdepth)
 }
-print(mutant_alleledepth[1:10])
-print(refdepth[1:10])
-print(altdepth[1:10])
+#print(mutant_alleledepth[1:10])
+#print(refdepth[1:10])
+#print(altdepth[1:10])
 
-metadatadf<-data.frame("chrom.pos" = metadata$chrom.pos, "chrom"=chr, "pos"=pos,	"sample"= metadata$sample, "ref" = metadata$ref, "alt" = 	metadata$alt, "normal_allele"= normalallele, "mutant_allele" = mutantallele, "mutant_allele_depth" = as.numeric(mutant_alleledepth), "genotype"= genotypes, "totaldepth"=totaldepth, 	"refdepth"=refdepth, "altdepth"=altdepth, "GQscore"= GQscore,	"GoH_or_LoH"=metadata$DeNovo_LoH, "Ti/Tv"=metadata$TiTv, 	"WhattoWhat" = metadata$WhattoWhat,"TrueorFalse" =metadata$TrueorFalse)#  ColonyName"=metadata$colonyrep)
+metadatadf<-data.frame("chrom.pos" = metadata$chrom.pos, "chrom"=chr, "pos"=pos,	"sample"= metadata$sample, "ref" = metadata$ref, "alt" = 	metadata$alt, "normal_allele"= normalallele, "mutant_allele" = mutantallele, "mutant_allele_depth" = as.numeric(mutant_alleledepth), "genotype"= genotypes, "totaldepth"=totaldepth, 	"refdepth"=refdepth, "altdepth"=altdepth, "GQscore"= GQscore,	"GoH_or_LoH"=metadata$DeNovo_LoH, "Ti/Tv"=metadata$TiTv, 	"WhattoWhat" = metadata$WhattoWhat,"TrueorFalse" =metadata$TrueorFalse, "MutationType"=mutationtype, "MutationStrength"=mutationstrength)#  ColonyName"=metadata$colonyrep)
+
 
 DepthMeansdf<-aggregate(totaldepth~chrom.pos, metadatadf, 			FUN=mean)
 
@@ -121,65 +124,83 @@ metadatadf.0<-merge(metadatadf.0, DepthMinsdf[,c("chrom.pos","totaldepth")], by=
 metadatadf.0<-merge(metadatadf.0, GQmin[,c("chrom.pos","GQscore")], by="chrom.pos")
 
 DeNovos<-subset(metadatadf.0, GoH_or_LoH=="DeNovo")
-sample3<-subset(DeNovos, sample== "sample3")
-trueDenovos_sample3<-subset(sample3, refdepth =="0" | altdepth=="0")
-
-sample4<-subset(DeNovos, sample== "sample4")
-trueDenovos_sample4<-subset(sample4, refdepth =="0" | altdepth=="0")
-
-sample5<-subset(DeNovos, sample== "sample5")
-trueDenovos_sample5<-subset(sample5, refdepth =="0" | altdepth=="0")
-
-sample6<-subset(DeNovos, sample== "sample6")
-trueDenovos_sample6<-subset(sample6, refdepth =="0" | altdepth=="0")
-
-sample7<-subset(DeNovos, sample== "sample7")
-trueDenovos_sample7<-subset(sample7, refdepth =="0" | altdepth=="0")
-
-sample8<-subset(DeNovos, sample== "sample8")
-trueDenovos_sample8<-subset(sample8, refdepth =="0" | altdepth=="0")
-
-truedenovos3_8<-rbind(trueDenovos_sample3, trueDenovos_sample4, trueDenovos_sample5, trueDenovos_sample6, trueDenovos_sample7, trueDenovos_sample8)
+# sample3<-subset(DeNovos, sample== "sample3")
+# trueDenovos_sample3<-subset(sample3, refdepth =="0" | altdepth=="0")
+# 
+# sample4<-subset(DeNovos, sample== "sample4")
+# trueDenovos_sample4<-subset(sample4, refdepth =="0" | altdepth=="0")
+# 
+# sample5<-subset(DeNovos, sample== "sample5")
+# trueDenovos_sample5<-subset(sample5, refdepth =="0" | altdepth=="0")
+# 
+# sample6<-subset(DeNovos, sample== "sample6")
+# trueDenovos_sample6<-subset(sample6, refdepth =="0" | altdepth=="0")
+# 
+# sample7<-subset(DeNovos, sample== "sample7")
+# trueDenovos_sample7<-subset(sample7, refdepth =="0" | altdepth=="0")
+# 
+# sample8<-subset(DeNovos, sample== "sample8")
+# trueDenovos_sample8<-subset(sample8, refdepth =="0" | altdepth=="0")
+# 
+# truedenovos3_8<-rbind(trueDenovos_sample3, trueDenovos_sample4, trueDenovos_sample5, trueDenovos_sample6, trueDenovos_sample7, trueDenovos_sample8)
 
 LoH<-subset(metadatadf.0, GoH_or_LoH =="LoH")#
 trueLoHp<-subset(LoH,refdepth =="0" | altdepth=="0")
-trueLoHp1<-subset(trueLoHp, sample=="mutparent1")
-trueLoHp2<-subset(trueLoHp, sample=="mutparent2")
-metadatadf<-rbind( DeNovos, trueLoHp1, trueLoHp2)
+trueLoHp1<-subset(trueLoHp, sample=="mutparent1" | sample=="mutparent2")
+trueLoHp2<-trueLoHp1[trueLoHp1$chrom.pos %in% names(which(table(trueLoHp1$chrom.pos) > 1)), ]
+sperm<-subset(metadatadf.0, sample =="mutsperm")
+trueLoHsperm<-sperm[match(trueLoHp2$chrom.pos, sperm$chrom.pos),]
+trueLoHsperm<-unique(trueLoHsperm)
+
+#trueLoHp2<-subset(trueLoHp, sample=="mutparent2")
+metadatadf<-rbind( DeNovos, trueLoHp2,trueLoHsperm)#, trueLoHp2)
+
 #write.table(metadatadf, file="CAcolony60_CAP22-23-24muts_20191125.txt",sep="\t",quote=FALSE, row.name=FALSE)
 
 uniquemetadatadf<- metadatadf[match(unique(metadatadf$chrom.pos), 					metadatadf$chrom.pos),]
-write.table(uniquemetadatadf, file="CAcolony60CAP22uniquemuts.txt",sep="\t",quote=FALSE, row.name=FALSE)
+unique_inherited<-subset(uniquemetadatadf, TrueorFalse=="True")
+unique_notinherited<-subset(uniquemetadatadf,TrueorFalse=="False")
 
-x<-c(0,2,3,"a","d")
-y<-c(3, 2, 0, "a", "d")
-xy<-data.frame(x,y)
-for (i in 1:nrow(xy)){
-  if (xy$x[i] == xy$y[i]) {
-    jk = 2
-    print("yes")
-  } else {
-    print("no")
-    jk = 5
-  }  
-}
-print(mutant)
+dndscvdf<- data.frame("sampleID"= uniquemetadatadf$sample,"chr"= uniquemetadatadf$chrom,"pos"= uniquemetadatadf$pos, "ref" = uniquemetadatadf$ref, "alt"= uniquemetadatadf$alt) # do not use ref and alt!
+dndscvdf_inherited<- data.frame("sampleID"= unique_inherited$sample,"chr"= unique_inherited$chrom,"pos"= unique_inherited$pos, "ref" = unique_inherited$ref, "alt"= unique_inherited$alt) # do not use ref and alt!
+dndscvdf_notinherited<- data.frame("sampleID"= unique_notinherited$sample,"chr"= unique_notinherited$chrom,"pos"= unique_notinherited$pos, "ref" = unique_notinherited$ref, "alt"= unique_notinherited$alt) # do not use ref and alt!
+
+write.table(dndscvdf, file="~/Documents/GitHub/CoralGermline/dndscv/CAcolony65CAP11_dndscv.txt",sep="\t",quote=FALSE, row.name=FALSE)
+write.table(dndscvdf_inherited, file="~/Documents/GitHub/CoralGermline/dndscv/CAcolony65CAP11_inherited_dndscv.txt",sep="\t",quote=FALSE, row.name=FALSE)
+write.table(dndscvdf_notinherited, file="~/Documents/GitHub/CoralGermline/dndscv/CAcolony65CAP11_notinherited_dndscv.txt",sep="\t",quote=FALSE, row.name=FALSE)
+
+#dndscvdf_mutparent1<- subset(dndscvdf,sampleID=="mutparent1")
+#write.table(uniquemetadatadf, file="CAcolony60CAP22uniquemuts.txt",sep="\t",quote=FALSE, row.name=FALSE)
+
+#x<-c(0,2,3,"a","d")
+#y<-c(3, 2, 0, "a", "d")
+#xy<-data.frame(x,y)
+# for (i in 1:nrow(xy)){
+#   if (xy$x[i] == xy$y[i]) {
+#     jk = 2
+#     print("yes")
+#   } else {
+#     print("no")
+#     jk = 5
+#   }  
+# }
+# print(mutant)
 
 
 #for (i in 1:nrow(metadatadf.0)){
 #  if (metadatadf.0$mutant_allele[i] == metadatadf.0$ref[i]) {
 #    mutant_alleledepth = refdepth
-    
+
 #  } else mutant_alleledepth = altdepth
 #}
 ##alt allele correlation when inheritance is TRUE:
 
 
-mutantparentdf_true<-subset(metadatadf.0, sample=="mutparent1" & TrueorFalse=="True") #for CAP22-1 and CAP22-2
-mutantparentdf_true<- mutantparentdf_true[match(uniquemetadatadf$chrom.pos, mutantparentdf_true$chrom.pos),]
+mutantparentdf_true<-subset(metadatadf, sample=="mutparent1" & TrueorFalse=="True") #for CAP22-1 and CAP22-2
+#mutantparentdf_true<- mutantparentdf_true[match(uniquemetadatadf$chrom.pos, mutantparentdf_true$chrom.pos),]
 
-mutantparents2_true<-subset(metadatadf.0,sample=="mutparent2" & TrueorFalse=="True")
-mutantparents2_true<- mutantparents2_true[match(uniquemetadatadf$chrom.pos, mutantparents2_true$chrom.pos),]
+mutantparents2_true<-subset(metadatadf,sample=="mutparent2" & TrueorFalse=="True")
+#mutantparents2_true<- mutantparents2_true[match(uniquemetadatadf$chrom.pos, mutantparents2_true$chrom.pos),]
 
 props1_true<-mutantparentdf_true$mutant_allele_depth/mutantparentdf_true$totaldepth.x
 props2_true<-mutantparents2_true$mutant_allele_depth/mutantparents2_true$totaldepth.x
@@ -190,24 +211,24 @@ parentsaverage_true<-(props1_true+props2_true)/2
 parentsaverage_true<-na.omit(parentsaverage_true)
 
 
-spermdf_true<-subset(metadatadf.0, sample=="mutsperm" & TrueorFalse=="True")
-spermdf_true<- spermdf_true[match(uniquemetadatadf$chrom.pos, spermdf_true$chrom.pos),]
+spermdf_true<-subset(metadatadf, sample=="mutsperm" & TrueorFalse=="True")
+#spermdf_true<- spermdf_true[match(uniquemetadatadf$chrom.pos, spermdf_true$chrom.pos),]
 
 spermprops_true<- spermdf_true$mutant_allele_depth/spermdf_true$totaldepth.x
 spermprops_true<-na.omit(spermprops_true)
 
 parentspermcomparison_true<-lm(spermprops_true~parentsaverage_true)
-plot(parentsaverage_true, spermprops_true)
+plot(parentsaverage_true, spermprops_true, col=ifelse(mutantparentdf_true$GoH_or_LoH=="DeNovo","red","black"))
 abline(parentspermcomparison_true, lwd=2)
 abline(0,1,lwd=4,col="red")
 cor.test(parentsaverage_true, spermprops_true)
 summary(parentspermcomparison_true)$r.squared
 ##alt allele correlation when inheritance isFALSE:
-mutantparentdf_false<-subset(metadatadf.0, sample=="mutparent1" & TrueorFalse=="False") #for CAP22-1 and CAP22-2
-mutantparentdf_false<- mutantparentdf_false[match(uniquemetadatadf$chrom.pos, mutantparentdf_false$chrom.pos),]
+mutantparentdf_false<-subset(metadatadf, sample=="mutparent1" & TrueorFalse=="False") #for CAP22-1 and CAP22-2
+#mutantparentdf_false<- mutantparentdf_false[match(uniquemetadatadf$chrom.pos, mutantparentdf_false$chrom.pos),]
 
-mutantparents2_false<-subset(metadatadf.0,sample=="mutparent2" & TrueorFalse=="False")
-mutantparents2_false<- mutantparents2_false[match(uniquemetadatadf$chrom.pos, mutantparents2_false$chrom.pos),]
+mutantparents2_false<-subset(metadatadf,sample=="mutparent2" & TrueorFalse=="False")
+#mutantparents2_false<- mutantparents2_false[match(uniquemetadatadf$chrom.pos, mutantparents2_false$chrom.pos),]
 
 props1_false<-mutantparentdf_false$mutant_allele_depth/mutantparentdf_false$totaldepth.x
 props2_false<-mutantparents2_false$mutant_allele_depth/mutantparents2_false$totaldepth.x
@@ -219,15 +240,22 @@ parentsaverage_false<-(props1_false+props2_false)/2
 parentsaverage_false<-na.omit(parentsaverage_false)
 
 
-spermdf_false<-subset(metadatadf.0, sample=="mutsperm" & TrueorFalse=="False")
-spermdf_false<- spermdf_false[match(uniquemetadatadf$chrom.pos, spermdf_false$chrom.pos),]
+spermdf_false<-subset(metadatadf, sample=="mutsperm" & TrueorFalse=="False")
+#spermdf_false<- spermdf_false[match(uniquemetadatadf$chrom.pos, spermdf_false$chrom.pos),]
 
 spermprops_false<- spermdf_false$mutant_allele_depth/spermdf_false$totaldepth.x
 spermprops_false<-na.omit(spermprops_false)
 
 parentspermcomparison_false<-lm(spermprops_false~parentsaverage_false)
-plot(parentsaverage_false, spermprops_false)
-points(parentsaverage_true,spermprops_true,col="blue")
+##PLOT ALL OF THE MUTS!
+#plot(parentsaverage_false, spermprops_false, col=ifelse(mutantparentdf_false$GoH_or_LoH=="DeNovo","green","white"))
+plot(parentsaverage_false, spermprops_false, col=ifelse(mutantparentdf_false_GOH$MutationType=="missense_variant","black","green"))
+
+#points(parentsaverage_true,spermprops_true,col=ifelse(mutantparentdf_true$GoH_or_LoH=="DeNovo","red","white"))
+points(parentsaverage_true,spermprops_true,col=ifelse(mutantparentdf_false_GOH$MutationType=="missense_variant","black","green"))
+###
+
+
 abline(parentspermcomparison_false)
 abline(parentspermcomparison_true,col="blue")
 abline(0,1,lwd=3,col="red")
@@ -290,13 +318,13 @@ parentsaverage_true_LOH<-(props1_true_LOH+props2_true_LOH)/2
 parentsaverage_true_LOH<-na.omit(parentsaverage_true_LOH)
 
 
-spermdf_true<-subset(metadatadf.0, sample=="mutsperm" & TrueorFalse=="True")
-spermdf_true<- spermdf_true[match(uniquemetadatadf$chrom.pos, spermdf_true$chrom.pos),]
+#spermdf_true<-subset(metadatadf.0, sample=="mutsperm" & TrueorFalse=="True")
+#spermdf_true<- spermdf_true[match(uniquemetadatadf$chrom.pos, spermdf_true$chrom.pos),]
 
 spermdf_true_LOH<- subset(spermdf_true, GoH_or_LoH=="LoH")
 
 spermprops_true_LOH<-spermdf_true_LOH$mutant_allele_depth/spermdf_true_LOH$totaldepth.x
-spermprops_true_LOH<-na.omit(spermprops_true_LOH)
+#spermprops_true_LOH<-na.omit(spermprops_true_LOH)
 
 parentspermcomparison_true_LOH<-lm(spermprops_true_LOH~parentsaverage_true_LOH)
 plot(parentsaverage_true_LOH, spermprops_true_LOH, col="pink")
@@ -314,8 +342,8 @@ parentsaverage_true_GOH<-(props1_true_GOH+props2_true_GOH)/2
 parentsaverage_true_GOH<-na.omit(parentsaverage_true_GOH)
 
 
-spermdf_true<-subset(metadatadf.0, sample=="mutsperm" & TrueorFalse=="True")
-spermdf_true<- spermdf_true[match(uniquemetadatadf$chrom.pos, spermdf_true$chrom.pos),]
+#spermdf_true<-subset(metadatadf.0, sample=="mutsperm" & TrueorFalse=="True")
+#spermdf_true<- spermdf_true[match(uniquemetadatadf$chrom.pos, spermdf_true$chrom.pos),]
 
 spermdf_true_GOH<- subset(spermdf_true, GoH_or_LoH=="DeNovo")
 
@@ -331,10 +359,10 @@ summary(parentspermcomparison_true_GOH)$r.squared
 cor.test(parentsaverage_true_LOH, spermprops_true_LOH)
 cor.test(parentsaverage_true_GOH, spermprops_true_GOH)
 
-plot(parentsaverage_false_GOH, spermprops_false_GOH, col="green", xlab="Proportion of mutant allele in the parent",ylab="Proportion of mutant allele in sperm",xlim=c(0,1),ylim=c(0,1))
-points(parentsaverage_false_LOH, spermprops_false_LOH, col="blue")
-points(parentsaverage_true_GOH, spermprops_true_GOH, col="red")
-points(parentsaverage_true_LOH,spermprops_true_LOH,col="pink")
+plot(parentsaverage_false_GOH, spermprops_false_GOH, col=ifelse(mutantparentdf_false_GOH$MutationType=="missense_variant","red","black"), xlab="Proportion of mutant allele in the parent",ylab="Proportion of mutant allele in sperm",xlim=c(0,1),ylim=c(0,1))
+points(parentsaverage_false_LOH, spermprops_false_LOH, col=ifelse(mutantparentdf_false_LOH$MutationType=="missense_variant","red","black"))
+points(parentsaverage_true_GOH, spermprops_true_GOH, col=ifelse(mutantparentdf_true_GOH$MutationType=="missense_variant","red","black"))
+points(parentsaverage_true_LOH,spermprops_true_LOH,col=ifelse(mutantparentdf_true_LOH$MutationType=="missense_variant","red","black"))
 abline(parentspermcomparison_false_GOH,col="green")
 abline(parentspermcomparison_false_LOH,col="blue")
 abline(parentspermcomparison_true_GOH,col="red")
@@ -353,7 +381,7 @@ cor.test(parentsaverage_true_GOH, spermprops_true_GOH)
 cor.test(parentsaverage_true_LOH, spermprops_true_LOH)
 cor.test(parentsaverage_false_GOH, spermprops_false_GOH)
 cor.test(parentsaverage_false_LOH, spermprops_false_LOH)
-par(mfrow=c(1,4))
+par(mfrow=c(1,1))
 residtrueGOH<-resid(parentspermcomparison_true_GOH)
 plot((mutantparents2_true_GOH$totaldepth.x + mutantparentdf_true_GOH$totaldepth.x)/2, residtrueGOH, xlim=c(0,500), ylim=c(-0.6,0.8), col="red",xlab="Total Parent Read Depth", ylab="Parent-Sperm Residuals", main = "Inherited +GOH")
 points((mutantparents2_true_LOH$totaldepth.x + mutantparentdf_true_LOH$totaldepth.x)/2, residtrueLOH, col="pink")
@@ -438,8 +466,8 @@ lines(newxfalseGOH, conffalseGOH[,3])
 #lines(newxtrueGOH, conftrueGOH[,3], col="black",lty=2)
 #plot(spermprops_true_GOH~parentsaverage_true_GOH)
 #lines(lm(spermprops_true_GOH~parentsaverage_true_GOH), col = Pal()[1], lwd = 2, lty = "solid",
-      type = "l", n = 100, conf.level = 0.95, args.cband = NULL,
-      pred.level = NA, args.pband = NULL)
+type = "l", n = 100, conf.level = 0.95, args.cband = NULL,
+pred.level = NA, args.pband = NULL)
 uniquemetadatadf<- metadatadf[match(unique(metadatadf$chrom.pos), 					metadatadf$chrom.pos),]
 
 par(mfrow=c(1,1))
@@ -880,68 +908,68 @@ lapply(files,function(x) {
   plot(FALSEsetdepth, FALSEsetGQ, ylim=c(30,100),xlab="Read Depth",ylab="GQ Score", xlim=c(0,500)) #only this plot!!
   points(TRUEsetdepth, TRUEsetGQ,col="red")
 })
-  #plot minimum depth fortrue vs FALSE
-  x<- c(TRUEsetmindepth, FALSEsetmindepth)
-  groups<-c(rep("Inherited",nrow(TRUEset)),rep("Not inherited",nrow(FALSEset)))
-  df<-data.frame(groups, x)
-  p<- ggplot(df, aes(groups,x))
-  depthsplots<- p +geom_boxplot() + geom_sina(aes(color=groups),size=1 ) + theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) + labs(x = "", y = "Read Depth") # here is your depths plot, FIGURE S1
-  #depthsplots
-  wilcox.test(TRUEsetmindepth,FALSEsetmindepth) #use wilcoxon instead of t test
-  #hist(FALSEsetmindepth)
-  mean(TRUEsetmindepth)
-  mean(FALSEsetmindepth)
-  #plot minimum GQ score for true vs false
-  x<- c(TRUEsetminGQ, FALSEsetminGQ)
-  groups<-c(rep("Inherited",nrow(TRUEset)),rep("Not inherited",nrow(FALSEset)))
-  df<-data.frame(groups, x)
-  p<- ggplot(df, aes(groups,x))
-  GQplots<- p +geom_boxplot() + geom_sina(aes(color=groups),size=1 ) + theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) + labs(x = "", y = "Average GQ at locus") # here is your depths plot, FIGURE S1
-  wilcox.test(TRUEsetminGQ,FALSEsetminGQ) #use wilcoxon instead of t test
-  #hist(FALSEsetminGQ)
-  #hist(TRUEsetminGQ)
-  mean(FALSEsetminGQ)
-  mean(TRUEsetminGQ)
-  #GQplots
-  #plot min depthvs min gq
-  lminherited<-lm(TRUEsetmindepth~TRUEsetminGQ)
-  
-  lmnotinherited<-lm(FALSEsetmindepth~FALSEsetminGQ)
-  
-  plot(TRUEsetdepth, TRUEsetGQ)
-  #plot(FALSEsetmindepth, FALSEsetminGQ, ylim=c(0,100))
-  points(FALSEsetdepth, FALSEsetGQ,col="red")
-  #abline(lmnotinherited)
-  #abline(lminherited, col="red")
-  
-  #plot where each mutation occurs
-  TRUEscaffolds<-TRUEset$chrom
-  
-  FALSEscaffolds<-FALSEset$chrom
-  
-  TRUEtable<-table(TRUEscaffolds)
-  head(TRUEtable,14)
-  FALSEtable<-table(FALSEscaffolds)
-  head(FALSEtable,14)
-  #barplot(head(TRUEtable,14))
-  
-  #barplot(head(FALSEtable,14))
-  
-  TOTALscaffolds<-uniquemetadatadf$chrom
-  TOTALtable<-table(TOTALscaffolds)
-  barplot(head(TOTALtable,14))
+#plot minimum depth fortrue vs FALSE
+x<- c(TRUEsetmindepth, FALSEsetmindepth)
+groups<-c(rep("Inherited",nrow(TRUEset)),rep("Not inherited",nrow(FALSEset)))
+df<-data.frame(groups, x)
+p<- ggplot(df, aes(groups,x))
+depthsplots<- p +geom_boxplot() + geom_sina(aes(color=groups),size=1 ) + theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) + labs(x = "", y = "Read Depth") # here is your depths plot, FIGURE S1
+#depthsplots
+wilcox.test(TRUEsetmindepth,FALSEsetmindepth) #use wilcoxon instead of t test
+#hist(FALSEsetmindepth)
+mean(TRUEsetmindepth)
+mean(FALSEsetmindepth)
+#plot minimum GQ score for true vs false
+x<- c(TRUEsetminGQ, FALSEsetminGQ)
+groups<-c(rep("Inherited",nrow(TRUEset)),rep("Not inherited",nrow(FALSEset)))
+df<-data.frame(groups, x)
+p<- ggplot(df, aes(groups,x))
+GQplots<- p +geom_boxplot() + geom_sina(aes(color=groups),size=1 ) + theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) + labs(x = "", y = "Average GQ at locus") # here is your depths plot, FIGURE S1
+wilcox.test(TRUEsetminGQ,FALSEsetminGQ) #use wilcoxon instead of t test
+#hist(FALSEsetminGQ)
+#hist(TRUEsetminGQ)
+mean(FALSEsetminGQ)
+mean(TRUEsetminGQ)
+#GQplots
+#plot min depthvs min gq
+lminherited<-lm(TRUEsetmindepth~TRUEsetminGQ)
+
+lmnotinherited<-lm(FALSEsetmindepth~FALSEsetminGQ)
+
+plot(TRUEsetdepth, TRUEsetGQ)
+#plot(FALSEsetmindepth, FALSEsetminGQ, ylim=c(0,100))
+points(FALSEsetdepth, FALSEsetGQ,col="red")
+#abline(lmnotinherited)
+#abline(lminherited, col="red")
+
+#plot where each mutation occurs
+TRUEscaffolds<-TRUEset$chrom
+
+FALSEscaffolds<-FALSEset$chrom
+
+TRUEtable<-table(TRUEscaffolds)
+head(TRUEtable,14)
+FALSEtable<-table(FALSEscaffolds)
+head(FALSEtable,14)
+#barplot(head(TRUEtable,14))
+
+#barplot(head(FALSEtable,14))
+
+TOTALscaffolds<-uniquemetadatadf$chrom
+TOTALtable<-table(TOTALscaffolds)
+barplot(head(TOTALtable,14))
 })
 
 
 mat<-matrix(c((138/(138+804)), (139/(139+546)), (147/(147+1159)), (760/(760+1363)), (699/(699+793)), (484/(484+838)), (375/(375+861)), (328/(328+899)), (804/(138+804)), (546/(139+546)), (1159/(147+1159)), (1363/(760+1363)), (793/(699+793)), (838/(484+838)), (861/(375+861)), (899/(328+899))), ncol=8, byrow=TRUE)
 rownames(mat)<-c("Inherited","Not Inherited")    
-rownames(mat)<-c("CAP22")
+#rownames(mat)<-c("CAP22")
 mat<-as.table(mat)
 barplot(mat,col=c("red","black"), ylab="Proportion of somatic mutations")      
 
 (804/(138+804)), (546/(139+546)), (1159/(147+1159)), (1363/(760+1363)), (793/(699+793)), (838/(484+838)), (861/(375+861)), (899/(328+899))
 
-
+##ANOVA AND BOXPLOTS: proportion of inherited som muts ##
 runs<-c((138/(138+804)), (139/(139+546)), (147/(147+1159)), (760/(760+1363)), (699/(699+793)), (484/(484+838)), (375/(375+861)), (328/(328+899)))#, (804/(138+804)), (546/(139+546)), (1159/(147+1159)), (1363/(760+1363)), (793/(699+793)), (838/(484+838)), (861/(375+861)), (899/(328+899)))
 group<-c("CA60", "CA60", "CA60",  "CA65", "CA65", "CA56", "CA56", "CA56")  
 withinRunStats = function(x) c(sum = sum(x), mean = mean(x), var = var(x), n = length(x))
@@ -954,14 +982,33 @@ anova(fit)
 oneway<-aov(runs~group)
 summary(oneway)
 plot(oneway)
-
+df<-data.frame(runs,group)
 degreesOfFreedom = anova(fit)[, "Df"]
 names(degreesOfFreedom) = c("treatment", "error")
 degreesOfFreedom
 anova(fit)["Residuals", "Mean Sq"]
 anova(fit)["group", "Mean Sq"]
-boxplot(runs~group, xlab="Colony Name", ylab="Proportion of Somatic Mutations Inherited by Sperm", las=1, col=c("light blue","light gray","light green"))
+inheritedpropplot<-boxplot(runs~group, xlab="Colony Name", ylab="Proportion of Somatic Mutations Inherited by Sperm", las=1, col=c("light blue","light gray","light green"))
+a<-ggplot(df,aes(y=runs, x=group))
+a2<- a+ geom_boxplot()+theme_bw() + ylim(0, 0.5) + labs(x = "", y = "Proportion of Somatic Mutations Inherited by Sperm")
+
+
 stripchart(runs ~ group,
            vertical = TRUE, 
            pch = 21, col = "red", bg = "bisque",
            add = TRUE)
+## ##
+
+coding<-read.delim("~/Documents/GitHub/CoralGermline/codingsommut_types.txt")
+
+data("ToothGrowth")
+ToothGrowth$dose <- as.factor(ToothGrowth$dose)
+head(ToothGrowth)
+e <- ggplot(coding, aes(x = type, y = percent))
+e<- e + geom_boxplot()
+e2 <- e + labs(x="Coding Mutation Type", y="Percent of Total Coding Mutations") + geom_boxplot(
+  aes(fill = colonynumber),
+  position = position_dodge(0.9)
+) +
+  scale_fill_manual(values = c("#999999", "#E69F00","red"))
+e2 

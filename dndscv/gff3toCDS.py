@@ -2,11 +2,19 @@ import sys
 import random
 import string
 
+# here is a function that will create a 10-character string of lowercase letters
 def randomString(stringLength=10):
     """Generate a random string of fixed length """
     letters = string.ascii_lowercase
     return ''.join(random.choice(letters) for i in range(stringLength))
 
+# here is a function that will create a 10-character string of uppercase letters
+def randomStringUPPER(stringLength=10):
+    """Generate a random string of fixed length """
+    letters = string.ascii_uppercase
+    return ''.join(random.choice(letters) for i in range(stringLength))    
+
+#read in the gff3:
 gff3_file = sys.argv[1]
 
 with open(gff3_file, 'r') as gff3:
@@ -32,7 +40,7 @@ with open(gff3_file, 'r') as gff3:
             
             feature_end = items[4]
             
-            length = int(feature_end) - int(feature_start)
+            length = int(feature_end) - int(feature_start) + 1 #the length of the 
             
             strand = items[6]
             
@@ -59,11 +67,14 @@ with open(gff3_file, 'r') as gff3:
                 gene_name_list.append(gene_name)
                 feature_start_list.append(feature_start)
                 feature_end_list.append(feature_end)
-                
+
                 start_end = gene_name, feature_start, feature_end
                 start_end_string = '\t'.join(start_end)
                 start_end_list.append(start_end_string)
                 #print(start_end_list)
+                writeout = gene_id,gene_name,cds_id, chromosome, str(chromosome_start), str(chromosome_end), str(feature_start_adj), str(feature_end_adj), str(length), strand_type
+                writeout_string = '\t'.join(writeout)
+                print(writeout_string)
                 
             elif feature_type == "CDS":
                 # if int(feature_start) > int(dict_start_end)
@@ -74,29 +85,37 @@ with open(gff3_file, 'r') as gff3:
                     chromosome_end = int(number[2])
                     if int(feature_start) >= chromosome_start and int(feature_start) <= chromosome_end:
                         gene_id = name
-                        cds_id = gene_id+randomString()
-                        feature_start_adj = (int(feature_start) - chromosome_start) + 1
+                        gene_name = gene_id
+                        cds_id = gene_id+randomStringUPPER()
+                        length = chromosome_end - chromosome_start + 1
+                        feature_start_adj = (int(feature_start) - chromosome_start)
                         feature_end_adj = int(feature_start_adj) + int(length)
+                         
+                        if feature_start_adj == 0:
+                            feature_start_adj = feature_start_adj +1
+                        #feature_end_adj = int(feature_start_adj) + int(length)
+                        chromosome_start_CDS = str(chromosome_start)
+                        chromosome_end_CDS = str(chromosome_end)
                         
                     #print(start, end)
-                writeout = gene_id,gene_name,cds_id, chromosome, str(chromosome_start), str(chromosome_end), str(feature_start_adj), str(feature_end_adj), str(length), strand_type
+                writeout = gene_id,gene_name,cds_id, chromosome, chromosome_start_CDS, chromosome_end_CDS, str(feature_start_adj), str(feature_end_adj), str(length), strand_type
                 writeout_string = '\t'.join(writeout)
                 print(writeout_string)
     gff3.close()
     
-genename_and_featurestart = zip(gene_name_list, feature_start_list)
-
-genename_and_featureend = zip(gene_name_list, feature_end_list)
-
-start_and_end = zip(feature_start_list, feature_end_list)
-
-dict_featurestart = dict(genename_and_featurestart)
-
-dict_featureend = dict(genename_and_featureend)
-
-dict_start_end = dict(start_and_end)
-
-start_end_list = feature_start_list, feature_end_list 
+# genename_and_featurestart = zip(gene_name_list, feature_start_list)
+#
+# genename_and_featureend = zip(gene_name_list, feature_end_list)
+#
+# start_and_end = zip(feature_start_list, feature_end_list)
+#
+# dict_featurestart = dict(genename_and_featurestart)
+#
+# dict_featureend = dict(genename_and_featureend)
+#
+# dict_start_end = dict(start_and_end)
+#
+# start_end_list = feature_start_list, feature_end_list
 
 # print(start_end_list)
                 #print(dict_featurestart)
