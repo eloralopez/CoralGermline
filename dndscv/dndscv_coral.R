@@ -3,7 +3,7 @@ setwd("~/Documents/GitHub/CoralGermline/dndscv")
 library(dndscv)
 ?buildref()
 buildref("AmilCDStable20200225.txt", "~/Downloads/Amil_v2.01/Amil.v2.01.chrs.fasta", "AmilRefCDS20200226.rda", numcode = 1, excludechrs= NULL)
-
+filepath<-"CAcolony56_allmuts_dndscv.txt"
 dnds_func<-function(filepath) {
   dataset<-read.delim(filepath)
   base<-basename(filepath)
@@ -12,6 +12,11 @@ dnds_func<-function(filepath) {
   dndsout = dndscv(dataset, refdb="AmilRefCDS20200226.rda", cv=NULL)
   
   global<-dndsout$globaldnds
+  sel_loc<-dndsout$sel_loc
+  annot_muts<-dndsout$annotmuts
+  codon_sub<- annot_muts$codonsub
+  codon_sub<-factor(codon_sub)
+  return(codon_sub)
   dataglobal<-data.frame(global)
   mle_score<-global$mle
   wall<-subset(global,name=="wall")
@@ -150,7 +155,6 @@ dnds_func<-function(filepath) {
   return()
 }
 library(patchwork)
-dndsplot/a2
-
+dndsplot/a2 
 
 }  
