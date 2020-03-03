@@ -25,8 +25,22 @@ Germline Pipeline:
 9.definemutationtypes.py
 10. downstream analyses.r : output write.table(uniquemetadatadf, file="CAcolony60CAP22uniquemuts.txt",sep="\t",quote=FALSE, row.name=FALSE)
 
-to get the verified mutations (output from 10) in VCF format:
-MatchVerifiedMutswithOriginalVCF.py 
 
-to get just the coding muts:
-compare mutsfile (*relabeled*) with annotated vcf, add a column in the mutsfile that gives the annotation (missense, nonsense, intergenic, etc)
+
+snpeff:
+AnnotateVCF.sh on the full colony filtered VCFs
+ie:
+	
+	
+Then, MatchVerifiedMutswithAnnotatedVCF.py to match the muts_relabeled with the annotated VCF
+
+ie:
+	python3 MatchVerifiedMutswithAnnotatedVCF.py CAcolony56CAP12muts_relabeled56.txt ../../BikiniSequencing/NovaSeqS4_20191022/CAcolony56.vcf_genotyped.vcf_filtered_nomissing.vcf.ann.vcf > CAcolony56CAP12muts_relabeled56.txt.ann.txt
+	python3 MatchVerifiedMutswithAnnotatedVCF.py CAcolony56CAP6muts_relabeled56.txt ../../BikiniSequencing/NovaSeqS4_20191022/CAcolony56.vcf_genotyped.vcf_filtered_nomissing.vcf.ann.vcf > CAcolony56CAP6muts_relabeled56.txt.ann.txt
+	python3 MatchVerifiedMutswithAnnotatedVCF.py CAcolony56CAP8muts_relabeled56.txt ../../BikiniSequencing/NovaSeqS4_20191022/CAcolony56.vcf_genotyped.vcf_filtered_nomissing.vcf.ann.vcf > CAcolony56CAP8muts_relabeled56.txt.ann.txt
+	python3 MatchVerifiedMutswithAnnotatedVCF.py CAcolony60_CAP22muts_relabeled60.txt  ../../BikiniSequencing/NovaSeqS4_20191022/CAcolony60.vcf_genotyped.vcf_filtered_nomissing.vcf.ann.vcf > CAcolony60_CAP22muts_relabeled60.txt.ann.txt
+	python3 MatchVerifiedMutswithAnnotatedVCF.py CAcolony60_CAP23muts_relabeled60.txt  ../../BikiniSequencing/NovaSeqS4_20191022/CAcolony60.vcf_genotyped.vcf_filtered_nomissing.vcf.ann.vcf > CAcolony60_CAP23muts_relabeled60.txt.ann.txt
+	python3 MatchVerifiedMutswithAnnotatedVCF.py CAcolony60_CAP24muts_relabeled60.txt  ../../BikiniSequencing/NovaSeqS4_20191022/CAcolony60.vcf_genotyped.vcf_filtered_nomissing.vcf.ann.vcf > CAcolony60_CAP24muts_relabeled60.txt.ann.txt
+	python3 MatchVerifiedMutswithAnnotatedVCF.py CAcolony65_CAP11muts_relabeled65.txt ../../BikiniSequencing/NovaSeqS4_20191022/CAcolony65.vcf_genotyped.vcf_filtered_nomissing.vcf.ann.vcf > CAcolony65_CAP11muts_relabeled65.txt.ann.txt
+	python3 MatchVerifiedMutswithAnnotatedVCF.py CAcolony65_CAP9muts_relabeled65.txt ../../BikiniSequencing/NovaSeqS4_20191022/CAcolony65.vcf_genotyped.vcf_filtered_nomissing.vcf.ann.vcf > Acolony65_CAP9muts_relabeled65.txt.ann.txt
+
