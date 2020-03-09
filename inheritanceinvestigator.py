@@ -11,7 +11,8 @@ replicate2 = int(sys.argv[3])
 replicate3 = int(sys.argv[4]) #THIS IS THE SAMPLE YOU WILL LOOK FOR UNIQUE MUTATIONS IN
 replicate4 = int(sys.argv[5]) #THIS IS THE SAMPLE YOU WILL LOOK FOR UNIQUE MUTATIONS IN
 numberofparents = int(sys.argv[6]) #the number of parent samples in the VCF.
-sperm = int(sys.argv[7]) # the position of the desired sperm sample in the list of sample columns
+spermrep1 = int(sys.argv[7]) # the position of the desired sperm sample in the list of sample columns
+spermrep2 = int(sys.argv[8]) # the position of the desired sperm sample in the list of sample columns
 
 def fileinfo(inputfile, rep1, rep2): 
     listofoutlist = [] #starts an empty list to which the matches between replicate libraries will be added later
@@ -20,9 +21,24 @@ def fileinfo(inputfile, rep1, rep2):
         
         for line in f:
 
-            if line.startswith('#'): #ignores all the header lines
+            if line.startswith('#CHROM'): #ignores all the header lines
 
-                continue
+                line = line.strip()
+
+                items = line.split('\t')
+                
+                samplenames = items[9:]
+                samplenames = '\t'.join(samplenames)
+                #print(samplenames)
+                header = ["chrom.pos", "ref", "alt", samplenames, samplenames]
+                #print(header)
+                header = '\t'.join(header)
+               # print(header)
+                #print(samplenames_out)
+                listofoutlist.append(header)
+                #header = "Chrom.pos","ref", "alt", "sample1","sample2","sample3","sample4","sample5","sample6","sample7", "sample8", "sample9", "sample10", "sample11", "sample12", "TrueorFalse"
+                #header_string = '\t'.join(header)
+                #print(header_string)
 
             else:
 
@@ -102,7 +118,6 @@ def fileinfo(inputfile, rep1, rep2):
                     #print(concatenated, outlist)
                 #else:
                     #continue #skips all sites that have different genotype calls betweeen the two technical replicates
-
     return listofoutlist
     return dictionary #returns the full list of genotype matches in the file
 
@@ -111,6 +126,9 @@ def fileinfo(inputfile, rep1, rep2):
 genos1=fileinfo(input1, replicate1, replicate2) #calls the function for a given set of replicate libraries (whichever 2 columns you want)   #FLAG
 #print(genos1)
 genos2=fileinfo(input1, replicate3, replicate4) #calls the function for CAP24
+
+spermgenos=fileinfo(input1, spermrep1, spermrep2)
+#print(spermgenos)
 #print(genos2)
 # genos3=fileinfo(input1, 4, 5)
 # #
@@ -120,18 +138,21 @@ conc1list = []
 geno1list = []
 for line1 in genos1: #goes line by line in the first input file's list of matches
         #print(line1)
-        line1 = line1.strip()
+        if line1.startswith('CAP23'):
+            continue
+        else: 
+            line1 = line1.strip()
 
-        items1 = line1.split('\t')
-        #print(items1)
-        conc1 = items1[0]
+            items1 = line1.split('\t')
+            #print(items1)
+            conc1 = items1[0]
 
-        genotypes1 = items1[3:]
-        geno1 = genotypes1[replicate2] #FLAG
-        #print(geno1)
+            genotypes1 = items1[3:]
+            geno1 = genotypes1[replicate2] #FLAG
+            #print(geno1)
 
-        conc1list.append(conc1)
-        geno1list.append(geno1)
+            conc1list.append(conc1)
+            geno1list.append(geno1)
 
 
 conc1_and_geno1 = zip(conc1list, geno1list)
@@ -185,11 +206,21 @@ dictOfWords = dict(conc1_and_geno1)
 conc2list = []
 geno2list = []
 
-header = "Chrom.pos","ref", "alt", "sample1","sample2","sample3","sample4","sample5","sample6","sample7", "sample8", "sample9", "sample10", "sample11", "sample12", "TrueorFalse"
-header_string = '\t'.join(header)
-print(header_string)
-for line2 in genos2: #now goes line by line in the list of matches from the second set of replicates
 
+for line2 in genos2: #now goes line by line in the list of matches from the second set of replicates. this set is the MUTANT set.
+
+        if line2.startswith('chrom.pos'):
+            line2 = line2.strip()
+
+            items2 = line2.split('\t')
+            total = (numberofparents * 2) + 3 #this gives the number of columns from the first line to output. It is the sum of the number of parent samples, the number of sperm samples (Which is equal to the number of parent samples), and the three columns that denote chrom.pos, ref, and alt
+            header = items2[0:total]
+            header = '\t'.join(header)
+            finalheader = [header, "TrueorFalse"]
+            finalheader = '\t'.join(finalheader)
+            
+            print(finalheader) # this is the headerline for the file
+        else:    
             line2 = line2.strip()
 
             items2 = line2.split('\t')
@@ -202,30 +233,23 @@ for line2 in genos2: #now goes line by line in the list of matches from the seco
             genotypes2= items2[3:]
             #print(genotypes2)
             geno2= genotypes2[replicate3]
-            #print(geno2)
+            #print(genotypes2)
             if conc2 in dictOfWords:
                 geno1 = dictOfWords[conc2] #outputs just the geno1 values that match conc2 (that is, just the sites that are present in the lists from genos1 and genos2)
+                #print(geno1)
+                #print(geno2)
                 # geno3 = dictOfWords3[conc2]
                 # geno4 = dictOfWords4[conc2]
                 #if geno2 != geno1
-                if geno1 != geno2 and geno2 != genotypes2[2] and geno2 != genotypes2[3] and geno2 != genotypes2[6] and geno2 != genotypes2[7]:
+                if geno1 != geno2 and geno2 != genotypes2[4] and geno2 != genotypes2[5] and geno2 != genotypes2[6] and geno2 != genotypes2[7]: #this indicates that the mutation found in replicate3 and replicate4 (now referred to as geno2) is UNIQUE among the parent samples; that genotype is never seen at that site in any other parent sample
                     genolist = genotypes2[7:]
-                    if genotypes2[replicate1] == genotypes2[sperm]:
+                    #print(genotypes2)
+                    if genotypes2[replicate3] == genotypes2[spermrep1] == genotypes2[spermrep2]: #if the corresponding sperm pools are the same genotype as the mutant parent, inheritance is true. If not, inheritance is false.
+                        #print("yaaa")
                         Match = True
                     else:
                         Match = False
-                    writeout = [conc2, ref, alt, genotypes2[12],genotypes2[13], genotypes2[14], genotypes2[15], genotypes2[16], genotypes2[17], genotypes2[18], genotypes2[19], genotypes2[20], genotypes2[21], genotypes2[22], genotypes2[23],str(Match)]
-                    #writeout = [conc2, ref, alt, genolist]
+                    writeout = [conc2, ref, alt, genotypes2[16],genotypes2[17], genotypes2[18], genotypes2[19], genotypes2[20], genotypes2[21], genotypes2[22], genotypes2[23], genotypes2[24], genotypes2[25], genotypes2[26], genotypes2[27], genotypes2[28], genotypes2[29], genotypes2[30], genotypes2[31], str(Match)]
+                    #here is your writeout of all of the somatic mutations unique to a particular branch
                     writeout_string = '\t'.join(writeout)
-                    #print(writeout_string)
-                    # header = "Chrom.pos","ref", "alt", "sample1","sample2","sample3","sample4","sample5","sample6","sample7", "sample8", "sample9", "sample10", "sample11", "sample12"
-                    # header_string = '\t'.join(header)
-                    # print(header_string)
-                    #print(writeout_string)
-                    
-                    filteredVCF = line2
-                    print(filteredVCF)
-
-
-
-
+                    print(writeout_string)
