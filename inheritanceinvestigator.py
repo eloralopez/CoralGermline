@@ -3,7 +3,7 @@
 #USAGE: python3 inheritanceinvestigator.py x.vcf
 
 import sys
-
+import re
 
 input1 = sys.argv[1]
 replicate1 = int(sys.argv[2])
@@ -20,8 +20,10 @@ def fileinfo(inputfile, rep1, rep2):
     with open(inputfile, 'r') as f: #opens whichever file is specified
         
         for line in f:
-
-            if line.startswith('#CHROM'): #ignores all the header lines
+            if line.startswith('#'):
+                continue
+            
+            elif line.startswith('#CHROM'): #ignores all the header lines
 
                 line = line.strip()
 
@@ -66,9 +68,8 @@ def fileinfo(inputfile, rep1, rep2):
                 for genotype in genotypes:
 
                     genos = genotype.split(':') #splits the genotype column up by ":"
-
-                    alleles = genos[0].split('/') #splits the first part of the genotype column into its two respective alleles
-                    
+                    alleles = re.split('; |, |\||\/',genos[0])#genos[0].split('/') #splits the first part of the genotype column into its two respective alleles
+                    #print(alleles)
                     GQscore = genos[3]
                     
                     alleledepths = genos[1].split(',') #depth per allele at locus
