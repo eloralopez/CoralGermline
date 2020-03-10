@@ -137,28 +137,39 @@ spermgenos=fileinfo(input1, spermrep1, spermrep2)
 
 conc1list = []
 geno1list = []
-for line1 in genos1: #goes line by line in the first input file's list of matches
-        #print(line1)
-        if line1.startswith('CAP23'):
-            continue
-        else: 
-            line1 = line1.strip()
 
-            items1 = line1.split('\t')
-            #print(items1)
-            conc1 = items1[0]
+def makedictionary(fileinfo_output, replicatenumber):
+    conc1list = []
+    geno1list = []
+    for line1 in fileinfo_output: #goes line by line in the first input file's list of matches
+            #print(line1)
+            if line1.startswith('CAP23'):
+                continue
+            else: 
+                line1 = line1.strip()
 
-            genotypes1 = items1[3:]
-            geno1 = genotypes1[replicate2] #FLAG
-            #print(geno1)
+                items1 = line1.split('\t')
+                #print(items1)
+                conc1 = items1[0]
 
-            conc1list.append(conc1)
-            geno1list.append(geno1)
+                genotypes1 = items1[3:]
+                geno1 = genotypes1[replicatenumber] #FLAG
+                #print(geno1)
+
+                conc1list.append(conc1)
+                geno1list.append(geno1)
 
 
-conc1_and_geno1 = zip(conc1list, geno1list)
+    conc1_and_geno1 = zip(conc1list, geno1list)
 
-dictOfWords = dict(conc1_and_geno1)
+    dictionary = dict(conc1_and_geno1)
+    return dictionary
+
+dictOfWords = makedictionary(genos1, replicate1)
+#print(dictOfWords)
+
+spermdict = makedictionary(spermgenos, spermrep1)
+#print(spermdict)
 #print(dictOfWords)
 # conc3list = []
 # geno3list = []
@@ -253,4 +264,44 @@ for line2 in genos2: #now goes line by line in the list of matches from the seco
                     writeout = [conc2, ref, alt, genotypes2[16],genotypes2[17], genotypes2[18], genotypes2[19], genotypes2[20], genotypes2[21], genotypes2[22], genotypes2[23], genotypes2[24], genotypes2[25], genotypes2[26], genotypes2[27], genotypes2[28], genotypes2[29], genotypes2[30], genotypes2[31], str(Match)]
                     #here is your writeout of all of the somatic mutations unique to a particular branch
                     writeout_string = '\t'.join(writeout)
+                    print("somatic mutation")
                     print(writeout_string)
+            if conc2 in spermdict:
+                
+                spermgeno = spermdict[conc2]
+                #print(spermgeno, geno2)
+                genotypes_minusspermgeno = genotypes2[0:10]+ genotypes2[12:16]
+                #print(genotypes_minusspermgeno)
+                justparentgenotypes = genotypes2[0:8]
+                #print(justparentgenotypes)
+                justspermgenotypes = genotypes2[8:16]
+                #print(justspermgenotypes)
+                #print(genotypes2[0:2])
+                #print(genotypes2[10-15])
+                #print(genotypes_minusspermgeno)
+                #print(spermgeno, genotypes_minusspermgeno[2])
+                #print(spermdict)
+                #if spermgeno != genotypes_minusspermgeno[2]:
+                if not any(ele in spermgeno for ele in genotypes_minusspermgeno): # if the sperm genotype does not match the genotype of any other parent or sperm sample:
+                     #print(conc2)
+                     #print(spermgeno, genotypes_minusspermgeno[2], conc2)
+                     genolist = genotypes2[7:]
+                     writeout_uniqueglm = [conc2, ref, alt, genotypes2[16],genotypes2[17], genotypes2[18], genotypes2[19], genotypes2[20], genotypes2[21], genotypes2[22], genotypes2[23], genotypes2[24], genotypes2[25], genotypes2[26], genotypes2[27], genotypes2[28], genotypes2[29], genotypes2[30], genotypes2[31]]
+#                     #here is your writeout of all of the somatic mutations unique to a particular branch
+                     writeout_uniqueglm_string = '\t'.join(writeout_uniqueglm)
+                     print("Unique germ line mutation")
+                     print(writeout_uniqueglm_string)
+                if all(x==justspermgenotypes[0] for x in justspermgenotypes) and not any(ele in spermgeno for ele in justparentgenotypes): # if the sperm genotype matches all other sperm genotypes but none of the parent genotypes:
+                    #print(conc2,justspermgenotypes)
+                    genolist = genotypes2[7:]
+                    writeout_globalglm = [conc2, ref, alt, genotypes2[16],genotypes2[17], genotypes2[18], genotypes2[19], genotypes2[20], genotypes2[21], genotypes2[22], genotypes2[23], genotypes2[24], genotypes2[25], genotypes2[26], genotypes2[27], genotypes2[28], genotypes2[29], genotypes2[30], genotypes2[31]]
+                     #                     #here is your writeout of all of the somatic mutations unique to a particular branch
+                    writeout_globalglm_string = '\t'.join(writeout_globalglm)
+                    print("Global germ line mutation")
+                    print(writeout_globalglm_string)
+# #                     print(conc2)
+               # print(genotypes_minusspermgeno)
+                # if spermgeno !=
+                
+                
+                      
