@@ -4,101 +4,80 @@
 # python3 definemutationtypeS_CAcolony56.py *ii*.txt melted*ii*txt output*muts.txt
 import sys
 
-polymorphic = sys.argv[1] #example: /Users/eloralopez/Documents/SomaticMutations/OfuAug/AH09datatable20181029.txt
+datatable = sys.argv[1] #example: headCAcolony56_ii_20200317.txt
 #popdata = sys.argv[2] #example: /Users/eloralopez/Documents/SomaticMutations/RTE_new/Genotypes_trimmed.txt
 
 melted = sys.argv[2] #Example: /Users/eloralopez/Documents/SomaticMutations/OfuAug/meltedAH09datatable20181029.txt
-output = sys.argv[3] #example: /Users/eloralopez/Documents/SomaticMutations/OfuAug/meltedAH09datatable20181029_withtransitionandpopinfo.txt
+numberofparents = int(sys.argv[3]) 
+output = sys.argv[4] #example: /Users/eloralopez/Documents/SomaticMutations/OfuAug/meltedAH09datatable20181029_withtransitionandpopinfo.txt
 
 def most_common(lst):
     return max(set(lst), key=lst.count)
 def least_common(lst):
     return min(set(lst), key=lst.count)
-AtoG = 0
-AtoGstr = (str(AtoG))
-
-AtoC = 0
-AtoCstr = (str(AtoC))
-
-AtoT = 0
-AtoTstr = (str(AtoT))
-
-GtoA = 0
-GtoAstr = (str(GtoA))
-
-GtoC = 0
-GtoCstr = (str(GtoC))
-
-GtoT = 0
-GtoTstr = (str(GtoT))
-
-CtoT = 0
-CtoTstr = (str(CtoT))
-
-CtoG = 0
-CtoGstr = (str(CtoG))
-
-CtoA = 0
-CtoAstr = (str(CtoA))
-
-TtoC = 0
-TtoCstr = (str(TtoC))
-
-TtoA = 0
-TtoAstr = (str(TtoA))
-
-TtoG = 0
-TtoGstr = (str(TtoG))  
-het2homo = 0
-homo2het = 0 
-
-with open(polymorphic, "r") as vcf_file:
-    with open(output, "w") as out_file:
-        header = ["chrom.pos", "sample", "ref", "alt", "genotype", "DeNovo_LoH", "TiTv", "WhattoWhat", "TrueorFalse"]
-        header_output = "\t".join(header)
-        out_file.write(header_output + '\n')
-
-        for line in vcf_file:
-            if line.startswith('Chrom.pos'): #skips the header line
-
-                continue
-
-            else:
-                split = line.rstrip().split('\t')
-                concatenated = split[0]
-                TrueorFalse = split[12]
-                ref = split[1]
     
-                alt = split[2]
-                genotypes= split[3:8] #only include the parental genotypes, not the sperm genotypes
-                geno_list = []
+def definemutations(polymorphic, spermsample):
+    with open(polymorphic, "r") as mutations_table:
+        # with open(output, "w") as out_file:
+        #     header = ["chrom.pos", "sample", "ref", "alt", "genotype", "DeNovo_LoH", "TiTv", "WhattoWhat", "TrueorFalse"]
+        #     header_output = "\t".join(header)
+        #     out_file.write(header_output + '\n')
+
+            for line in mutations_table:
+                if line.startswith('chrom.pos'): #skips the header line
+
+                    continue
+
+                else:
+                    split = line.rstrip().split('\t')
+                    concatenated = split[0]
+                    TrueorFalse = split[((numberofparents*2)+3)]
+                    TypeofMutation = split[((numberofparents*2)+4)]
+                    ref = split[1]
+    
+                    alt = split[2]
+                    genotypes= split[3:((numberofparents)+3)]
+                    
+                    # if TypeofMutation == "SomaticMutation":
+#
+#                         genotypes= split[3:((numberofparents)+3)] #only include the parental genotypes, not the sperm genotypes
+#
+#                     elif TypeofMutation == "UniqueGermlineMutation":
+#                         genotypes= split[3:((numberofparents)+3)] + split[spermsample+3]
+#                         print(genotypes)
+                        
+                    # elif TypeofMutation == "GlobalGermlineMutation":
+                    #     genotypes = split[3:((numberofparents)+4)]   
+                    
+                    #print(genotypes)
+                    geno_list = []
                 for genotype in genotypes:
-                    
-                    split = genotype.split(',')
-                    
-                    the_genotype = split[0]
-                    the_depth = split[1]
+
+                    genosplit = genotype.split(',')
+
+                    the_genotype = genosplit[0]
+                    the_depth = genosplit[1]
+                    #print(genotype)
                 #
                     geno_list.append(the_genotype)
                     # the_genotype = '\t'.join(geno_list)
                 # makelist = list(the_genotype)
                 # print(geno_list)
-                TiTv = "Transversion" #"Transversion" if mutation is a transverstion at locus, "Transition" otherwise
-                DeNovo_or_LoH = "DeNovo" #"DeNovo" if mutation is homo2het, "LoH" if it is het2homo
-                PopulationPoly = False #False if not seen in population before, True if seen before
+                TiTv = "placeholder" #"Transversion" if mutation is a transverstion at locus, "Transition" otherwise
+                DeNovo_or_LoH = "placeholder" #"DeNovo" if mutation is homo2het, "LoH" if it is het2homo
                 WhattoWhat = "placeholder"
                 ToRef_or_ToAlt = "placeholder"
-
+            #
                 majgeno = (most_common(geno_list))
                 mingeno = (least_common(geno_list))
-
+                #print(geno_list)
                 if (majgeno == "C/T" or majgeno == "T/C") and mingeno == "C/C" in line:
                     TtoC +=1
                     het2homo+=1
                     TiTv = "Transition"
                     DeNovo_or_LoH = "LoH"
                     WhattoWhat = "TtoC"
-                    # if ref = "C":
+                    # if ref == "C":
                     #     ToRef_or_ToAlt = "ToRef"
                     # else:
                     #     ToRef_or_ToAlt = "ToAlt"
@@ -108,27 +87,34 @@ with open(polymorphic, "r") as vcf_file:
                     homo2het +=1
                     TiTv = "Transition"
                     WhattoWhat = "TtoC"
+                    DeNovo_or_LoH = "DeNovo"
 
                 elif (majgeno == "A/T" or majgeno == "T/A") and mingeno == "A/A" in line:
                     TtoA +=1
                     het2homo+=1
+                    TiTv = "Transversion"
                     DeNovo_or_LoH = "LoH"
                     WhattoWhat = "TtoA"
 
                 elif (mingeno == "T/A" or mingeno == "A/T") and majgeno == "T/T" in line:
                     TtoA +=1
                     homo2het +=1
+                    TiTv = "Transversion"
+                    DeNovo_or_LoH = "DeNovo"
                     WhattoWhat = "TtoA"
 
                 elif (majgeno == "G/T" or majgeno == "T/G") and mingeno == "G/G" in line:
                     TtoG +=1
                     het2homo+=1
+                    TiTv = "Transversion"
                     DeNovo_or_LoH = "LoH"
                     WhattoWhat = "TtoG"
 
                 elif (mingeno == "T/G" or mingeno == "G/T") and majgeno == "T/T" in line:
                     TtoG +=1
                     homo2het +=1
+                    TiTv = "Transversion"
+                    DeNovo_or_LoH = "DeNovo"
                     WhattoWhat = "TtoG"
 
                 elif (majgeno == "C/T" or majgeno == "T/C") and mingeno == "T/T" in line:
@@ -142,28 +128,35 @@ with open(polymorphic, "r") as vcf_file:
                     CtoT +=1
                     homo2het +=1
                     TiTv = "Transition"
+                    DeNovo_or_LoH = "DeNovo"
                     WhattoWhat = "CtoT"
 
                 elif (majgeno == "C/G" or majgeno == "G/C") and mingeno == "G/G" in line:
                     CtoG +=1
                     het2homo+=1
+                    TiTv = "Transversion"
                     DeNovo_or_LoH = "LoH"
                     WhattoWhat = "CtoG"
 
                 elif (mingeno == "C/G" or mingeno == "G/C") and majgeno == "C/C" in line:
                     CtoG +=1
                     homo2het +=1
+                    TiTv = "Transversion"
+                    DeNovo_or_LoH = "DeNovo"
                     WhattoWhat = "CtoG"
 
                 elif (majgeno == "C/A" or majgeno == "A/C") and mingeno == "A/A" in line:
                     CtoA +=1
                     het2homo+=1
+                    TiTv = "Transversion"
                     DeNovo_or_LoH = "LoH"
                     WhattoWhat = "CtoA"
 
                 elif (mingeno == "C/A" or mingeno == "A/C") and majgeno == "C/C" in line:
                     CtoA +=1
                     homo2het +=1
+                    TiTv = "Transversion"
+                    DeNovo_or_LoH = "DeNovo"
                     WhattoWhat = "CtoA"
 
                 elif (majgeno == "A/G" or majgeno == "G/A") and mingeno == "A/A" in line:
@@ -177,28 +170,35 @@ with open(polymorphic, "r") as vcf_file:
                     GtoA +=1
                     homo2het +=1
                     TiTv = "Transition"
+                    DeNovo_or_LoH = "DeNovo"
                     WhattoWhat = "GtoA"
 
                 elif (majgeno == "C/G" or majgeno == "G/C") and mingeno == "C/C" in line:
                     GtoC +=1
                     het2homo+=1
+                    TiTv = "Transversion"
                     DeNovo_or_LoH = "LoH"
                     WhattoWhat = "GtoC"
 
                 elif (mingeno == "C/G" or mingeno == "G/C") and majgeno == "G/G" in line:
                     GtoC +=1
                     homo2het +=1
+                    TiTv = "Transversion"
+                    DeNovo_or_LoH = "DeNovo"
                     WhattoWhat = "GtoC"
 
                 elif (majgeno == "T/G" or majgeno == "G/T") and mingeno == "T/T" in line:
                     GtoT +=1
                     het2homo+=1
+                    TiTv = "Transversion"
                     DeNovo_or_LoH = "LoH"
                     WhattoWhat = "GtoT"
 
                 elif (mingeno == "T/G" or mingeno == "G/T") and majgeno == "G/G" in line:
                     GtoT +=1
                     homo2het +=1
+                    TiTv = "Transversion"
+                    DeNovo_or_LoH = "DeNovo"
                     WhattoWhat = "GtoT"
 
                 if (majgeno == "A/G" or majgeno == "G/A") and mingeno == "G/G" in line:
@@ -212,46 +212,43 @@ with open(polymorphic, "r") as vcf_file:
                     AtoG +=1
                     homo2het +=1
                     TiTv = "Transition"
+                    DeNovo_or_LoH = "DeNovo"
                     WhattoWhat = "AtoG"
 
                 elif (majgeno == "A/C" or majgeno == "C/A") and mingeno == "C/C" in line:
                     AtoC +=1
                     het2homo+=1
+                    TiTv = "Transversion"
                     DeNovo_or_LoH = "LoH"
                     WhattoWhat = "AtoC"
 
                 elif (mingeno == "A/C" or mingeno == "C/A") and majgeno == "A/A" in line:
                     AtoC +=1
                     homo2het +=1
+                    TiTv = "Transversion"
+                    DeNovo_or_LoH = "DeNovo"
                     WhattoWhat = "AtoC"
 
                 elif (majgeno == "A/T" or majgeno == "T/A") and mingeno == "T/T" in line:
                     AtoT +=1
                     het2homo+=1
+                    TiTv = "Transversion"
                     DeNovo_or_LoH = "LoH"
                     WhattoWhat = "AtoT"
 
                 elif (mingeno == "A/T" or mingeno == "T/A") and majgeno == "A/A" in line:
                     AtoT +=1
                     homo2het +=1
+                    TiTv = "Transversion"
+                    DeNovo_or_LoH = "DeNovo"
                     WhattoWhat = "AtoT"
 
 
-                # with open(popdata, "r") as popdata_file:
-                #     for line in popdata_file:
-                #         split = line.rstrip().split('\t')
-                #         popdata_chrom = split[0]
-                #         popdata_pos = split[1]
-                #         popconcatenated = popdata_chrom + "." + popdata_pos
-                #
-                #         if concatenated == popconcatenated:
-                #             PopulationPoly = True
-                #             break
                 with open(melted, "r") as melted_file:
 
                     for line in melted_file:
 
-                        if line.startswith('Chrom.pos'):
+                        if line.startswith('chrom.pos'):
 
                             continue
 
@@ -260,42 +257,44 @@ with open(polymorphic, "r") as vcf_file:
                             meltconcatenated=meltsplit[0]
                             meltsample=meltsplit[1]
                             meltgenotypes=meltsplit[2]
+                            #print(meltconcatenated, meltsample, meltgenotypes)
                             for meltgenotype in meltgenotypes:
 
                                 split = genotype.split(',')
 
                                 melt_the_genotype = split[0]
                                 melt_the_depth = split[1]
-
-
+            #
+            #
                             if meltconcatenated ==concatenated:
-                                AtoGstr = (str(AtoG))
-                                AtoCstr = (str(AtoC))
-
-                                AtoTstr = (str(AtoT))
-
-                                GtoAstr = (str(GtoA))
-
-                                GtoCstr = (str(GtoC))
-
-                                GtoTstr = (str(GtoT))
-
-                                CtoTstr = (str(CtoT))
-
-                                CtoGstr = (str(CtoG))
-
-                                CtoAstr = (str(CtoA))
-
-                                TtoCstr = (str(TtoC))
-
-                                TtoAstr = (str(TtoA))
-
-                                TtoGstr = (str(TtoG))
 
                                 outlist = [meltconcatenated, meltsample, ref, alt, meltgenotypes, DeNovo_or_LoH, TiTv, WhattoWhat, TrueorFalse]
                                 outstring = '\t'.join(outlist)
                                 print(outstring)
-                                out_file.write(outstring+'\n')
+het2homo = 0
+homo2het = 0
 
+# with open(polymorphic, "r") as mutations_table:
+#     with open(output, "w") as out_file:
+#         header = ["chrom.pos", "sample", "ref", "alt", "genotype", "DeNovo_LoH", "TiTv", "WhattoWhat", "TrueorFalse"]
+#         header_output = "\t".join(header)
+#         out_file.write(header_output + '\n')
+#
+#         for line in mutations_table:
+#             if line.startswith('chrom.pos'): #skips the header line
+#
+#                 continue
+#
+#             else:
+#                 split = line.rstrip().split('\t')
+#                 concatenated = split[0]
+#                 TrueorFalse = split[((numberofparents*2)+3)]
+#                 ref = split[1]
+#
+#                 alt = split[2]
+#                 genotypes= split[3:(numberofparents+3)] #only include the parental genotypes, not the sperm genotypes
+#                 #print(genotypes)
+#                 geno_list = []
+definemutations(datatable, (numberofparents+4) )
 
 
