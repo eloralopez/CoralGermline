@@ -288,9 +288,9 @@ conc2list = []
 geno2list = []
 
 #to find CAP23 mutants:
-def findmutations(genos2, dictOfWords, replicatesample, replicate5, replicate6, replicate7, replicate8, spermrep3, spermrep4, spermdict2):
+def findmutations(genos_2nd, dictOfWords_given, replicatesample, replicate_A, replicate_B, replicate_C, replicate_D, spermrep_x, spermrep_y, spermedict_2nd):
     samplenames = []
-    for line2 in genos2: #now goes line by line in the list of matches from the second set of replicates. this set is the MUTANT set.
+    for line2 in genos_2nd: #now goes line by line in the list of matches from the second set of replicates. this set is the MUTANT set.
             #print(line2)
             if line2.startswith('chrom.pos'):
                 #print(line2)
@@ -325,16 +325,16 @@ def findmutations(genos2, dictOfWords, replicatesample, replicate5, replicate6, 
                 geno2= genotypes2[replicatesample]
 
                 #deal with somatic mutations for the second set of parent replicates:
-                if conc2 in dictOfWords:
-                    geno1 = dictOfWords[conc2] #outputs just the geno1 values that match conc2 (that is, just the sites that are present in the lists from genos1 and genos2)
+                if conc2 in dictOfWords_given:
+                    geno1 = dictOfWords_given[conc2] #outputs just the geno1 values that match conc2 (that is, just the sites that are present in the lists from genos1 and genos_2nd)
                     #print(geno1)
                     if numberofparents == 6:
-                        if geno1 != geno2 and geno2 != genotypes2[replicate5] and geno2 != genotypes2[replicate6]:# and geno2 != genotypes2[replicate7] and geno2 != genotypes2[replicate8]: #this indicates that the mutation found in replicate3 and replicate4 (now referred to as geno2) is UNIQUE among the parent samples; that genotype is never seen at that site in any other parent sample
+                        if geno1 != geno2 and geno2 != genotypes2[replicate_A] and geno2 != genotypes2[replicate_B]:# and geno2 != genotypes2[replicate_C] and geno2 != genotypes2[replicate_D]: #this indicates that the mutation found in replicatesample and replicate4 (now referred to as geno2) is UNIQUE among the parent samples; that genotype is never seen at that site in any other parent sample
                             genolist = genotypes2[7:]
                             Type_of_Mutation = "SomaticMutation"
-                            #print(*samplenames[replicate3+3])
+                            #print(*samplenames[replicatesample+3])
                             Mutant_Sample_ID = samplenames[replicatesample+3]
-                            if genotypes2[replicatesample] == genotypes2[spermrep3] == genotypes2[spermrep4]: #if the corresponding sperm pools are the same genotype as the mutant parent, inheritance is true. If not, inheritance is false.
+                            if genotypes2[replicatesample] == genotypes2[spermrep_x] == genotypes2[spermrep_y]: #if the corresponding sperm pools are the same genotype as the mutant parent, inheritance is true. If not, inheritance is false.
                                 #print("yaaa")
                                 Match = True
                             else:
@@ -347,11 +347,11 @@ def findmutations(genos2, dictOfWords, replicatesample, replicate5, replicate6, 
                             #print("somatic mutation")
                             print(writeout_string)
                     elif numberofparents == 8:
-                        if geno1 != geno2 and geno2 != genotypes2[replicate5] and geno2 != genotypes2[replicate6] and geno2 != genotypes2[replicate7] and geno2 != genotypes2[replicate8]: #this indicates that the mutation found in replicate3 and replicate4 (now referred to as geno2) is UNIQUE among the parent samples; that genotype is never seen at that site in any other parent sample
+                        if geno1 != geno2 and geno2 != genotypes2[replicate_A] and geno2 != genotypes2[replicate_B] and geno2 != genotypes2[replicate_C] and geno2 != genotypes2[replicate_D]: #this indicates that the mutation found in replicatesample and replicate4 (now referred to as geno2) is UNIQUE among the parent samples; that genotype is never seen at that site in any other parent sample
                             genolist = genotypes2[7:]
                             Type_of_Mutation = "SomaticMutation"
                             Mutant_Sample_ID = samplenames[replicatesample+3]
-                            if genotypes2[replicatesample] == genotypes2[spermrep3] == genotypes2[spermrep4]: #if the corresponding sperm pools are the same genotype as the mutant parent, inheritance is true. If not, inheritance is false.
+                            if genotypes2[replicatesample] == genotypes2[spermrep_x] == genotypes2[spermrep_y]: #if the corresponding sperm pools are the same genotype as the mutant parent, inheritance is true. If not, inheritance is false.
                                 #print("yaaa")
                                 Match = True
                             else:
@@ -364,30 +364,30 @@ def findmutations(genos2, dictOfWords, replicatesample, replicate5, replicate6, 
                             writeout_string = '\t'.join(writeout)
 
                             print(writeout_string)
-                if conc2 in spermdict2:
+                if conc2 in spermedict_2nd:
 
-                    spermgeno = spermdict2[conc2]
+                    spermgeno = spermedict_2nd[conc2]
                     #print(spermgeno, geno2)
                     #genotypes_minusspermgeno = genotypes2[0:8]+ genotypes2[12:16]
-                    #x= genotypes2.remove(genotypes2[spermrep3])
+                    #x= genotypes2.remove(genotypes2[spermrep_x])
 
-                    #genotypes_minusspermgeno = x.remove(x[spermrep4])
+                    #genotypes_minusspermgeno = x.remove(x[spermrep_y])
                     #print(genotypes_minusspermgeno)
                     justparentgenotypes = genotypes2[0:numberofparents]
                    
                     justspermgenotypes = genotypes2[numberofparents:doublenumber]
                     #print(justspermgenotypes)
                     genotypes_minusspermgeno = genotypes2[0:doublenumber]
-                    del genotypes_minusspermgeno[spermrep3:(spermrep4+1)]
+                    del genotypes_minusspermgeno[spermrep_x:(spermrep_y+1)]
                     #print(genotypes2)
                     #print(genotypes_minusspermgeno)
                     #print(conc2, genotypes2)
-                    #print(genotypes2[spermrep3])
+                    #print(genotypes2[spermrep_x])
                     if not any(ele in spermgeno for ele in genotypes_minusspermgeno): # if the sperm genotype does not match the genotype of any other parent or sperm sample:
                          Type_of_Mutation = "UniqueGermlineMutation"
                          Match = "NA"
-                         Mutant_Sample_ID = samplenames[spermrep3+3]
-                         #print(samplenames[spermrep3+3])
+                         Mutant_Sample_ID = samplenames[spermrep_x+3]
+                         #print(samplenames[spermrep_x+3])
                          #print(spermgeno, genotypes_minusspermgeno[2], conc2)
                          genolist = genotypes2[7:]
                          genotypes2string = genotypes2[doublenumber:(doublenumber*2)]
