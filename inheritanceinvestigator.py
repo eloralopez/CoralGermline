@@ -350,7 +350,7 @@ def findmutations(genos2, dictOfWords, replicatesample, replicate5, replicate6, 
                         if geno1 != geno2 and geno2 != genotypes2[replicate5] and geno2 != genotypes2[replicate6] and geno2 != genotypes2[replicate7] and geno2 != genotypes2[replicate8]: #this indicates that the mutation found in replicate3 and replicate4 (now referred to as geno2) is UNIQUE among the parent samples; that genotype is never seen at that site in any other parent sample
                             genolist = genotypes2[7:]
                             Type_of_Mutation = "SomaticMutation"
-                            Mutant_Sample_ID = samplenames[replicate3+3]
+                            Mutant_Sample_ID = samplenames[replicatesample+3]
                             if genotypes2[replicatesample] == genotypes2[spermrep3] == genotypes2[spermrep4]: #if the corresponding sperm pools are the same genotype as the mutant parent, inheritance is true. If not, inheritance is false.
                                 #print("yaaa")
                                 Match = True
