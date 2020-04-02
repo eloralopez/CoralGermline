@@ -56,14 +56,14 @@ write.table(mdf, file="meltedCAcolony65_ii_output20200107CAP9.txt",sep="\t",quot
 par(mfrow=c(1,1))
 
 ##to look at all data combined together:
-files<-list.files(path="~/Documents/GitHub/CoralGermline/annotatedfiles", pattern="CAcolony65_CAP11muts_relabeled65.txt.ann.txt", full.names=T, recursive=FALSE) #path to all the files you want to include in the analysis
+files<-list.files(path="~/Documents/GitHub/CoralGermline/WithSpermReplicates", pattern="*ann.txt", full.names=T, recursive=FALSE) #path to all the files you want to include in the analysis
 metadata= NULL
 for (i in 1:length(files)) { 
   file =files[i]
   data<-read.delim(file) #read in each file in "files"
   data<-data.frame(data) # transform the data from each file into a dataframe
   base<-basename(file)
-  colony<-strsplit(base, "\\_")[[1]][2]
+  colony<-strsplit(base, "\\_")[[1]][1]
   len<-nrow(data) 
   colonyrep<-rep(colony, len)
   withcolony<-data.frame(data, colonyrep) #combines the colonyname column with each dataframe
@@ -105,9 +105,10 @@ for (i in 1:nrow(metadata)){
 #print(refdepth[1:10])
 #print(altdepth[1:10])
 
-metadatadf<-data.frame("chrom.pos" = metadata$chrom.pos, "chrom"=chr, "pos"=pos,	"sample"= metadata$sample, "ref" = metadata$ref, "alt" = 	metadata$alt, "normal_allele"= normalallele, "mutant_allele" = mutantallele, "mutant_allele_depth" = as.numeric(mutant_alleledepth), "genotype"= genotypes, "totaldepth"=totaldepth, 	"refdepth"=refdepth, "altdepth"=altdepth, "GQscore"= GQscore,	"GoH_or_LoH"=metadata$DeNovo_LoH, "Ti/Tv"=metadata$TiTv, 	"WhattoWhat" = metadata$WhattoWhat,"TrueorFalse" =metadata$TrueorFalse, "MutationType"=mutationtype, "MutationStrength"=mutationstrength)#  ColonyName"=metadata$colonyrep)
-
-
+metadatadf<-data.frame("chrom.pos" = metadata$chrom.pos, "chrom"=chr, "pos"=pos,	"sample"= metadata$sample, "ref" = metadata$ref, "alt" = 	metadata$alt, "normal_allele"= normalallele, "mutant_allele" = mutantallele, "mutant_allele_depth" = as.numeric(mutant_alleledepth), "genotype"= genotypes, "totaldepth"=totaldepth, 	"refdepth"=refdepth, "altdepth"=altdepth, "GQscore"= GQscore,	"GoH_or_LoH"=metadata$DeNovo_LoH, "Ti/Tv"=metadata$TiTv, 	"WhattoWhat" = metadata$WhattoWhat,"TrueorFalse" =metadata$TrueorFalse, "MutationClass"=metadata$TypeofMutation, "MutantParent1"=metadata$MutantParent1,"MutantParent2"=metadata$MutantParent2, "MutantSperm1"=metadata$MutantSperm1, "MutantSperm2"=metadata$MutantSperm2,"MutationType"=mutationtype, "MutationStrength"=mutationstrength, stringsAsFactors=FALSE)#  ColonyName"=metadata$colonyrep)
+i <- sapply(metadatadf, is.factor)
+metadatadf[i] <- lapply(metadatadf[i], as.character)
+metadatadf[which(metadatadf$sample==metadatadf$MutantParent1),]
 DepthMeansdf<-aggregate(totaldepth~chrom.pos, metadatadf, 			FUN=mean)
 
 DepthMinsdf<-aggregate(totaldepth~chrom.pos, metadatadf, 			FUN=min)
@@ -124,6 +125,13 @@ metadatadf.0<-merge(metadatadf.0, DepthMinsdf[,c("chrom.pos","totaldepth")], by=
 metadatadf.0<-merge(metadatadf.0, GQmin[,c("chrom.pos","GQscore")], by="chrom.pos")
 
 DeNovos<-subset(metadatadf.0, GoH_or_LoH=="DeNovo")
+withoutmutparents<-subset(DeNovos,  MutationClass == "SomaticMutation" & (sample != MutantParent1 & sample != MutantParent2)) #subset the samples that are not the mutantparents
+withoutsperm<-subset(withoutmutparents, startsWith(withoutmutparents$sample, 'CAS')==FALSE) #subsets the non-sperm samples
+trueDeNovos_somatic<-subset(withoutsperm, refdepth != 0 & altdepth !=0)
+
+withoutmutsperm_uniqueglm<- subset(DeNovos, MutationClass == "UniqueGermlineMutation" & (sample != MutantSperm1 & sample != MutantSperm2))
+withoutparents<- subset(withoutmutsperm_uniqueglm, startsWith(withoutmutsperm_uniqueglm$sample, 'CAP')==FALSE)
+trueDeNovos_uniqueglm<-subset(withoutparents, refdepth != 0 & altdepth !=0)
 # sample3<-subset(DeNovos, sample== "sample3")
 # trueDenovos_sample3<-subset(sample3, refdepth =="0" | altdepth=="0")
 # 
@@ -144,30 +152,60 @@ DeNovos<-subset(metadatadf.0, GoH_or_LoH=="DeNovo")
 # 
 # truedenovos3_8<-rbind(trueDenovos_sample3, trueDenovos_sample4, trueDenovos_sample5, trueDenovos_sample6, trueDenovos_sample7, trueDenovos_sample8)
 
-LoH<-subset(metadatadf.0, GoH_or_LoH =="LoH")#
-trueLoHp<-subset(LoH,refdepth =="0" | altdepth=="0")
-trueLoHp1<-subset(trueLoHp, sample=="mutparent1" | sample=="mutparent2")
-trueLoHp2<-trueLoHp1[trueLoHp1$chrom.pos %in% names(which(table(trueLoHp1$chrom.pos) > 1)), ]
-sperm<-subset(metadatadf.0, sample =="mutsperm")
-trueLoHsperm<-sperm[match(trueLoHp2$chrom.pos, sperm$chrom.pos),]
-trueLoHsperm<-unique(trueLoHsperm)
+LoH<-subset(metadatadf.0, GoH_or_LoH =="LoH")#subsets to just the LoH
+trueLoHp1<-subset(LoH, MutationClass == "SomaticMutation" & sample==MutantParent1)#| sample==MutantParent2)) #subsets to just somatic mutations and just the two mutant parents
+trueLoHp1.1<-subset(LoH, MutationClass == "SomaticMutation" & sample==MutantParent2)
+trueLoHp2<-subset(trueLoHp1, refdepth =="0" | altdepth=="0") #subsets to just those that have zero minor allele frequency
+trueLoHp2.1<-subset(trueLoHp1.1, refdepth =="0" | altdepth=="0")
+trueLoHmutantparents<- rbind(trueLoHp2, trueLoHp2.1)
+removeuniques<-subset(trueLoHmutantparents,duplicated(chrom.pos)==TRUE | duplicated(chrom.pos, fromLast=TRUE)==TRUE)
+#repeat for sperm:
+sperm<-subset(metadatadf.0, sample ==MutantSperm1 | sample == MutantSperm2)
+correspondingsperm<-sperm[match(trueLoHp2$chrom.pos,sperm$chrom.pos),]
 
+#uglm:
+trueLoHsperm1<- subset(LoH, MutationClass == "UniqueGermlineMutation" & (sample==MutantSperm1 | sample==MutantSperm2))
+trueLoHsperm2<- subset(trueLoHsperm1, refdepth =="0" | altdepth=="0")
+#trueLoHp1<-subset(trueLoHp, sample=="mutparent1" | sample=="mutparent2")
+#trueLoHp2<-trueLoHp1[trueLoHp1$chrom.pos %in% names(which(table(trueLoHp1$chrom.pos) > 1)), ]
+#sperm1<-subset(metadatadf.0, sample ==MutantSperm1)
+#sperm2<-subset(metadatadf.0, sample ==MutantSperm2)
+#trueLoHsperm<-sperm[match(trueLoHp2$chrom.pos, sperm$chrom.pos),]
+#trueLoHsperm1<-subset(sperm1, GoH_or_LoH =="LoH")
+#trueLoHsperm2<-subset(sperm2, GoH_or_LoH =="LoH")
 #trueLoHp2<-subset(trueLoHp, sample=="mutparent2")
-metadatadf<-rbind( DeNovos, trueLoHp2,trueLoHsperm)#, trueLoHp2)
 
+globalglm<-subset(metadatadf.0, MutationClass=="GlobalGermlineMutation")
+
+metadatadf<-rbind( trueDeNovos_somatic, trueDeNovos_uniqueglm, trueLoHp2, trueLoHsperm2,globalglm)#, trueLoHp2)
+
+somaticmetadatadf<-rbind(trueDeNovos_somatic, trueLoHp2, )
+#metadatadf<-rbind( DeNovos, trueLoHp1)#2,trueLoHsperm)#, trueLoHp2)
 #write.table(metadatadf, file="CAcolony60_CAP22-23-24muts_20191125.txt",sep="\t",quote=FALSE, row.name=FALSE)
 
 uniquemetadatadf<- metadatadf[match(unique(metadatadf$chrom.pos), 					metadatadf$chrom.pos),]
+
 unique_inherited<-subset(uniquemetadatadf, TrueorFalse=="True")
 unique_notinherited<-subset(uniquemetadatadf,TrueorFalse=="False")
+unique_somatic<-subset(uniquemetadatadf, MutationClass=="SomaticMutation")
+unique_uniqueglm<-subset(uniquemetadatadf, MutationClass=="UniqueGermlineMutation")
+unique_globalglm<-subset(uniquemetadatadf, MutationClass=="GlobalGermlineMutation")
 
 dndscvdf<- data.frame("sampleID"= uniquemetadatadf$sample,"chr"= uniquemetadatadf$chrom,"pos"= uniquemetadatadf$pos, "ref" = uniquemetadatadf$ref, "alt"= uniquemetadatadf$alt) # do not use ref and alt!
+
 dndscvdf_inherited<- data.frame("sampleID"= unique_inherited$sample,"chr"= unique_inherited$chrom,"pos"= unique_inherited$pos, "ref" = unique_inherited$ref, "alt"= unique_inherited$alt) # do not use ref and alt!
 dndscvdf_notinherited<- data.frame("sampleID"= unique_notinherited$sample,"chr"= unique_notinherited$chrom,"pos"= unique_notinherited$pos, "ref" = unique_notinherited$ref, "alt"= unique_notinherited$alt) # do not use ref and alt!
+dndscvdf_somatic<- data.frame("sampleID"= unique_somatic$sample,"chr"= unique_somatic$chrom,"pos"= unique_somatic$pos, "ref" = unique_somatic$ref, "alt"= unique_somatic$alt) # do not use ref and alt!
+dndscvdf_uniqueglm<- data.frame("sampleID"= unique_uniqueglm$sample,"chr"= unique_uniqueglm$chrom,"pos"= unique_uniqueglm$pos, "ref" = unique_uniqueglm$ref, "alt"= unique_uniqueglm$alt) # do not use ref and alt!
+dndscvdf_globalglm<- data.frame("sampleID"= unique_globalglm$sample,"chr"= unique_globalglm$chrom,"pos"= unique_globalglm$pos, "ref" = unique_globalglm$ref, "alt"= unique_globalglm$alt) # do not use ref and alt!
 
-write.table(dndscvdf, file="~/Documents/GitHub/CoralGermline/dndscv/CAcolony65CAP11_dndscv.txt",sep="\t",quote=FALSE, row.name=FALSE)
-write.table(dndscvdf_inherited, file="~/Documents/GitHub/CoralGermline/dndscv/CAcolony65CAP11_inherited_dndscv.txt",sep="\t",quote=FALSE, row.name=FALSE)
-write.table(dndscvdf_notinherited, file="~/Documents/GitHub/CoralGermline/dndscv/CAcolony65CAP11_notinherited_dndscv.txt",sep="\t",quote=FALSE, row.name=FALSE)
+#write.table(dndscvdf, file="~/Documents/GitHub/CoralGermline/dndscv/CAcolony65CAP11_dndscv.txt",sep="\t",quote=FALSE, row.name=FALSE)
+write.table(dndscvdf_inherited, file="~/Documents/GitHub/CoralGermline/dndscv/CAcolony56and60and65_inherited_dndscv.txt",sep="\t",quote=FALSE, row.name=FALSE)
+write.table(dndscvdf_notinherited, file="~/Documents/GitHub/CoralGermline/dndscv/CAcolony56and60and65_notinherited_dndscv.txt",sep="\t",quote=FALSE, row.name=FALSE)
+write.table(dndscvdf_somatic, file="~/Documents/GitHub/CoralGermline/dndscv/CAcolony56and60and65_somatic_dndscv.txt",sep="\t",quote=FALSE, row.name=FALSE)
+write.table(dndscvdf_uniqueglm, file="~/Documents/GitHub/CoralGermline/dndscv/CAcolony56and60and65_uniqueglm_dndscv.txt",sep="\t",quote=FALSE, row.name=FALSE)
+write.table(dndscvdf_globalglm, file="~/Documents/GitHub/CoralGermline/dndscv/CAcolony56and60and65_globalglm_dndscv.txt",sep="\t",quote=FALSE, row.name=FALSE)
+
 
 #dndscvdf_mutparent1<- subset(dndscvdf,sampleID=="mutparent1")
 #write.table(uniquemetadatadf, file="CAcolony60CAP22uniquemuts.txt",sep="\t",quote=FALSE, row.name=FALSE)
@@ -196,10 +234,10 @@ write.table(dndscvdf_notinherited, file="~/Documents/GitHub/CoralGermline/dndscv
 ##alt allele correlation when inheritance is TRUE:
 
 
-mutantparentdf_true<-subset(metadatadf, sample=="mutparent1" & TrueorFalse=="True") #for CAP22-1 and CAP22-2
+mutantparentdf_true<-subset(metadatadf, sample==MutantParent1 & TrueorFalse=="True") #for CAP22-1 and CAP22-2
 #mutantparentdf_true<- mutantparentdf_true[match(uniquemetadatadf$chrom.pos, mutantparentdf_true$chrom.pos),]
 
-mutantparents2_true<-subset(metadatadf,sample=="mutparent2" & TrueorFalse=="True")
+mutantparents2_true<-subset(metadatadf,sample==MutantParent2 & TrueorFalse=="True")
 #mutantparents2_true<- mutantparents2_true[match(uniquemetadatadf$chrom.pos, mutantparents2_true$chrom.pos),]
 
 props1_true<-mutantparentdf_true$mutant_allele_depth/mutantparentdf_true$totaldepth.x
@@ -211,14 +249,19 @@ parentsaverage_true<-(props1_true+props2_true)/2
 parentsaverage_true<-na.omit(parentsaverage_true)
 
 
-spermdf_true<-subset(metadatadf, sample=="mutsperm" & TrueorFalse=="True")
+spermdf_true1<-subset(metadatadf, sample==MutantSperm1 & TrueorFalse=="True")
+spermdf_true2<-subset(metadatadf, sample==MutantSperm2 & TrueorFalse=="True")
+
 #spermdf_true<- spermdf_true[match(uniquemetadatadf$chrom.pos, spermdf_true$chrom.pos),]
 
-spermprops_true<- spermdf_true$mutant_allele_depth/spermdf_true$totaldepth.x
-spermprops_true<-na.omit(spermprops_true)
+spermprops_true1<- spermdf_true1$mutant_allele_depth/spermdf_true1$totaldepth.x
+spermprops_true2<- spermdf_true2$mutant_allele_depth/spermdf_true2$totaldepth.x
 
-parentspermcomparison_true<-lm(spermprops_true~parentsaverage_true)
-plot(parentsaverage_true, spermprops_true, col=ifelse(mutantparentdf_true$GoH_or_LoH=="DeNovo","red","black"))
+spermaverage_true<-(spermprops_true1+spermprops_true2)/2
+#spermprops_true<-na.omit(spermprops_true)
+
+parentspermcomparison_true<-lm(spermaverage_true~parentsaverage_true)
+plot(parentsaverage_true, spermaverage_true, col=ifelse(mutantparentdf_true$GoH_or_LoH=="DeNovo","red","black"))
 abline(parentspermcomparison_true, lwd=2)
 abline(0,1,lwd=4,col="red")
 cor.test(parentsaverage_true, spermprops_true)
