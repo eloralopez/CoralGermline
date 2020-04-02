@@ -10,19 +10,42 @@ dnds_func<-function(filepath) {
   colony<-strsplit(base, "\\_")[[1]][1]
 
   dndsout = dndscv(dataset, refdb="AmilRefCDS20200226.rda", cv=NULL)
-  
+  #return(dndsout)
   global<-dndsout$globaldnds
   sel_loc<-dndsout$sel_loc
   annot_muts<-dndsout$annotmuts
   codon_sub<- annot_muts$codonsub
   codon_sub<-factor(codon_sub)
-  return(codon_sub)
+  #return(codon_sub)
   dataglobal<-data.frame(global)
   mle_score<-global$mle
   wall<-subset(global,name=="wall")
   wall<-data.frame(wall)
   return(wall)
 }  
+
+dndsout_somatic_inherited<-dnds_func("~/Documents/GitHub/CoralGermline/dndscv/CAcolony56and60and65_inherited_dndscv.txt")
+dndsout_somatic_notinherited<-dnds_func("~/Documents/GitHub/CoralGermline/dndscv/CAcolony56and60and65_notinherited_dndscv.txt")
+dndsout_somatic<-dnds_func("~/Documents/GitHub/CoralGermline/dndscv/CAcolony56and60and65_somatic_dndscv.txt")
+dndsout_uniqueglm<-dnds_func("~/Documents/GitHub/CoralGermline/dndscv/CAcolony56and60and65_uniqueglm_dndscv.txt")
+dndsout_globalglm<-dnds_func("~/Documents/GitHub/CoralGermline/dndscv/CAcolony56and60and65_globalglm_dndscv.txt")
+
+wall<-rbind(dndsout_somatic, dndsout_somatic_inherited, dndsout_somatic_notinherited, dndsout_uniqueglm)
+colony<-c("All Somatic", "Inherited Somatic", "Not Inherited Somatic", "Unique Germline")#, "CA60","CA60", "CA65", "CA65")
+mle<-wall$mle
+cilow<-wall$cilow
+cihigh<-wall$cihigh
+barplot(mle)
+boxplot(mle~colony, xlab="Colony Name", ylab="global dN/dS", las=1, col=c("light blue","light gray","light green"))
+ggplot(wall, 
+       aes(x = colony, 
+           y = mle, 
+           group = 1)) +
+  geom_point(size = 3) +
+  
+  geom_errorbar(aes(ymin = cilow, 
+                    ymax = cihigh), 
+                width = .1)
 # use rbind to put all the unique mutations from one colony into a single file,then run dnds_func
 CAP12<-read.delim("CAcolony56CAP12_dndscv.txt")
 CAP6<-read.delim("CAcolony56CAP8_dndscv.txt")
