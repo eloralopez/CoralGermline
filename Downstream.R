@@ -21,12 +21,24 @@ samplenames<-header[4:15]
 CAcolony56mdf<-melt(CAcolony56, id.vars="chrom.pos", measure.vars=c(samplenames), value.name="genotype",variable.name="sample")
 write.table(CAcolony56mdf, file="meltedCAcolony56_ii_20200324.txt",sep="\t",quote=FALSE, row.name=FALSE)
 
+CAcolony56<-read.delim("CAcolony56_noCAS12-2_ii_20200413.txt", check.names = FALSE)
+header<-colnames(CAcolony56)
+samplenames<-header[4:14]
+#CAcolony56noNA<-subset(CAcolony56, TypeofMutation!= "NA")
+CAcolony56mdf<-melt(CAcolony56noNA, id.vars="chrom.pos", measure.vars=c(samplenames), value.name="genotype",variable.name="sample")
+write.table(CAcolony56mdf, file="meltedCAcolony56_ii_20200413.txt",sep="\t",quote=FALSE, row.name=FALSE)
+
 CAcolony65<-read.delim("CAcolony65_ii_20200331.txt", check.names = FALSE)
 header<-colnames(CAcolony65)
 samplenames<-header[4:15]
 CAcolony65mdf<-melt(CAcolony65, id.vars="chrom.pos", measure.vars=c(samplenames), value.name="genotype",variable.name="sample")
 write.table(CAcolony65mdf, file="meltedCAcolony65_ii_20200331.txt",sep="\t",quote=FALSE, row.name=FALSE)
 
+CAcolony65<-read.delim("CAcolony65_noCAS10-2_ii_20200414_2.txt", check.names = FALSE)
+header<-colnames(CAcolony65)
+samplenames<-header[4:14]
+CAcolony65mdf<-melt(CAcolony65, id.vars="chrom.pos", measure.vars=c(samplenames), value.name="genotype",variable.name="sample")
+write.table(CAcolony65mdf, file="meltedCAcolony65_noCAS10-2_ii_20200414_2.txt",sep="\t",quote=FALSE, row.name=FALSE)
 
 
 somaticCA56<-subset(CAcolony56, TypeofMutation == "SomaticMutation")

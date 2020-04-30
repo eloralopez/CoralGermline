@@ -22,13 +22,23 @@ replicate3= replicate1 + 2
 
 replicate4 = replicate2 + 2
 
-replicate5 = replicate3 + 2
+replicate5 = "NULL"
 
-replicate6 = replicate4 + 2
+replicate6 = "NULL"
 
 replicate7 = "NULL"
 
 replicate8 = "NULL"
+
+if numberofparents ==6:
+
+    replicate5 = replicate3 + 2
+
+    replicate6 = replicate4 + 2
+
+    replicate7 = "NULL"
+
+    replicate8 = "NULL"
 
 if numberofsperm ==5:
     spermrep1 = replicate1 + numberofparents
@@ -49,14 +59,17 @@ else:
     spermrep3 = replicate3 + numberofparents
 
     spermrep4 = replicate4 + numberofparents
+    if numberofparents > 4:
 
-    spermrep5 = replicate5 + numberofparents
+        spermrep5 = replicate5 + numberofparents
 
-    spermrep6 = replicate6 + numberofparents
+        spermrep6 = replicate6 + numberofparents
 # print(spermrep1, spermrep2, spermrep3)
 
 if numberofparents == 8:
+    replicate5 = replicate3 + 2
 
+    replicate6 = replicate4 + 2
 
     replicate7 = replicate5 + 2
 
@@ -187,7 +200,9 @@ genos1=fileinfo(input1, replicate1, replicate2) #CAP22 #calls the function for a
 #print(genos1)
 genos2=fileinfo(input1, replicate3, replicate4) #CAP23
 
-genos3=fileinfo(input1, replicate5, replicate6) #CAP24
+if numberofparents>4:
+
+    genos3=fileinfo(input1, replicate5, replicate6) #CAP24
 
 if numberofparents == 8:
 
@@ -206,8 +221,10 @@ else:
 
     spermgenos2=fileinfo(input1, spermrep3, spermrep4) #CAS23
 
-    spermgenos3=fileinfo(input1, spermrep5, spermrep6) #CAS24
+    if numberofparents>4:
 
+        spermgenos3=fileinfo(input1, spermrep4, spermrep5) #CAS24
+        
 if numberofparents == 8:
 
     spermgenos4=fileinfo(input1, spermrep7, spermrep8) #CAS26
@@ -264,7 +281,8 @@ else:
 
     spermdict = makedictionary(spermgenos, spermrep1)
     spermdict2 = makedictionary(spermgenos2, spermrep3)
-    spermdict3 = makedictionary(spermgenos3, spermrep5)
+    if numberofparents > 4:
+        spermdict3 = makedictionary(spermgenos3, spermrep5)
 if numberofparents == 8:
     spermdict4 = makedictionary(spermgenos4, spermrep7)
 
@@ -432,6 +450,30 @@ def findmutations(genos_2nd, dictOfWords_given, replicatesample, replicate_A, re
                             writeout_string = '\t'.join(writeout)
 
                             print(writeout_string)
+                    elif numberofparents ==4:
+                         if geno1 != geno2 :#and geno2 != genotypes2[replicate_A]:# and geno2 != genotypes2[replicate_C] and geno2 != genotypes2[replicate_D]: #this indicates that the mutation found in replicatesample and replicate4 (now referred to as geno2) is UNIQUE among the parent samples; that genotype is never seen at that site in any other parent sample
+                             genolist = genotypes2[7:]
+                             Type_of_Mutation = "SomaticMutation"
+                             #print(*samplenames[replicatesample+3])
+                             MutantParent1 = samplenames[replicatesample+3]
+                             MutantParent2 = samplenames[replicatesample+4]
+                             MutantSperm1 = samplenames[spermrep_x+3]
+                             MutantSperm2 = samplenames[spermrep_y+3]
+
+                             #print(MutantParent1, MutantParent2, MutantSperm1, MutantSperm2)
+                             if genotypes2[replicatesample] == genotypes2[spermrep_x]: #if the corresponding sperm pools are the same genotype as the mutant parent, inheritance is true. If not, inheritance is false.
+                                 #print("yaaa")
+                                 Match = True
+                             else:
+                                 #perhaps add extra conditions to deal with the low minor allele frequency sperm genotypes?
+                                 Match = False
+                             genotypes2string = genotypes2[doublenumber:(doublenumber*2)]
+                             writeout = [conc2, ref, alt, *genotypes2string, str(Match), str(Type_of_Mutation), *MutantParent1, *MutantParent2, *MutantSperm1, *MutantSperm2]
+                             #here is your writeout of all of the somatic mutations unique to a particular branch
+                             writeout_string = '\t'.join(writeout)
+
+                             #print("somatic mutation")
+                             print(writeout_string)       
                 if conc2 in spermedict_2nd:
                     if numberofsperm ==5:
 
@@ -604,9 +646,12 @@ if numberofsperm == 5:
     sample3 = findmutations(genos3, dictOfWords, replicate5, replicate3, replicate4, replicate7, replicate8, spermrep4, spermrep5, spermdict3)
 
 else:
+
     sample1 = findmutations(genos1, dictOfWords2, replicate1, replicate5, replicate6, replicate7, replicate8, spermrep1, spermrep2, spermdict)
-    sample2 = findmutations(genos2, dictOfWords, replicate3, replicate5, replicate6, replicate7, replicate8, spermrep3, spermrep4, spermdict2)
-    sample3 = findmutations(genos3, dictOfWords, replicate5, replicate3, replicate4, replicate7, replicate8, spermrep5, spermrep6, spermdict3)
+    if numberofparents>4:
+        sample2 = findmutations(genos2, dictOfWords, replicate3, replicate5, replicate6, replicate7, replicate8, spermrep3, spermrep4, spermdict2)
+    
+        sample3 = findmutations(genos3, dictOfWords, replicate5, replicate3, replicate4, replicate7, replicate8, spermrep5, spermrep6, spermdict3)
     if numberofparents == 8:
 
         sample4 = findmutations(genos4, dictOfWords, replicate7, replicate3, replicate4, replicate6, replicate7, spermrep7, spermrep8, spermdict4)
