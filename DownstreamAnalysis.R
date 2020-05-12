@@ -1,4 +1,4 @@
-###AH75###
+
 setwd("~/Documents/GitHub/CoralGermline/")
 library("reshape2")
 library(ggplot2)
@@ -8,6 +8,8 @@ library(sinaplot)
 library(ggforce)
 library(gridExtra)
 library(dplyr)
+library(patchwork)
+library(ggpubr)
 sessionInfo()
 
 noreplicatesmutationcount<-c(35290, 86641, 31446, 80126, 94972, 92588, 95348, 78499, 47429, 97193, 90480)
@@ -56,7 +58,7 @@ write.table(mdf, file="meltedCAcolony65_ii_output20200107CAP9.txt",sep="\t",quot
 par(mfrow=c(1,1))
 
 ##to look at all data combined together:
-files<-list.files(path="~/Documents/GitHub/CoralGermline/WithSpermReplicates", pattern="*ann.txt", full.names=T, recursive=FALSE) #path to all the files you want to include in the analysis
+files<-list.files(path="~/Documents/GitHub/CoralGermline/WithSpermReplicates", pattern="*.txt.ann.txt", full.names=T, recursive=FALSE) #path to all the files you want to include in the analysis
 metadata= NULL
 for (i in 1:length(files)) { 
   file =files[i]
@@ -64,6 +66,7 @@ for (i in 1:length(files)) {
   data<-data.frame(data) # transform the data from each file into a dataframe
   base<-basename(file)
   colony<-strsplit(base, "\\_")[[1]][1]
+  print(colony)
   len<-nrow(data) 
   colonyrep<-rep(colony, len)
   withcolony<-data.frame(data, colonyrep) #combines the colonyname column with each dataframe
@@ -80,17 +83,16 @@ positionsplit<-str_split_fixed(position, "[.]", 2) #split the chromosome number 
 chr<-positionsplit[,1] #defines the chromosome as the first string in "positionsplit"
 pos<-positionsplit[,2] #defines the position as the second string in "positionsplit"
 #totaldepth<-as.numeric(split[,2])
-refdepth<-as.numeric(split[,2])
-altdepth<-as.numeric(split[,3])
+refdepth<-as.numeric(split[,2]) #number of reference reads
+altdepth<-as.numeric(split[,3]) #number of alternate reads
 what<-metadata$WhattoWhat
-allelesplit<-str_split_fixed(what, "to", 2)
+allelesplit<-str_split_fixed(what, "to", 2) #splits the normal and mutant alleles into different strings
 normalallele<-allelesplit[,1]
 mutantallele<-allelesplit[,2]
-totaldepth<-refdepth+altdepth
+totaldepth<-refdepth+altdepth #sum of all reference and alternate reads
 GQscore<-as.numeric(split[,4])
-mutationtype<-metadata$MutationType
-mutationstrength<-metadata$MutationStrength
-
+mutationtype<-metadata$MutationType #eg intergenic_region 3_prime_UTR_variant 5_prime_UTR_premature_start_codon_gain_variant 5_prime_UTR_variant
+mutationstrength<-metadata$MutationStrength #eg HIGH LOW MODERATE MODIFIER
 mutant_alleledepth = rep("A", nrow(metadata))
 for (i in 1:nrow(metadata)){
   if (mutantallele[i] == metadata$alt[i]) {
@@ -105,17 +107,17 @@ for (i in 1:nrow(metadata)){
 #print(refdepth[1:10])
 #print(altdepth[1:10])
 
-metadatadf<-data.frame("chrom.pos" = metadata$chrom.pos, "chrom"=chr, "pos"=pos,	"sample"= metadata$sample, "ref" = metadata$ref, "alt" = 	metadata$alt, "normal_allele"= normalallele, "mutant_allele" = mutantallele, "mutant_allele_depth" = as.numeric(mutant_alleledepth), "genotype"= genotypes, "totaldepth"=totaldepth, 	"refdepth"=refdepth, "altdepth"=altdepth, "GQscore"= GQscore,	"GoH_or_LoH"=metadata$DeNovo_LoH, "Ti/Tv"=metadata$TiTv, 	"WhattoWhat" = metadata$WhattoWhat,"TrueorFalse" =metadata$TrueorFalse, "MutationClass"=metadata$TypeofMutation, "MutantParent1"=metadata$MutantParent1,"MutantParent2"=metadata$MutantParent2, "MutantSperm1"=metadata$MutantSperm1, "MutantSperm2"=metadata$MutantSperm2,"MutationType"=mutationtype, "MutationStrength"=mutationstrength, stringsAsFactors=FALSE)#  ColonyName"=metadata$colonyrep)
-i <- sapply(metadatadf, is.factor)
-metadatadf[i] <- lapply(metadatadf[i], as.character)
+metadatadf<-data.frame("chrom.pos" = metadata$chrom.pos, "chrom"=chr, "pos"=pos,	"sample"= metadata$sample, "ref" = metadata$ref, "alt" = 	metadata$alt, "normal_allele"= normalallele, "mutant_allele" = mutantallele, "mutant_allele_depth" = as.numeric(mutant_alleledepth), "genotype"= genotypes, "totaldepth"=totaldepth, 	"refdepth"=refdepth, "altdepth"=altdepth, "GQscore"= GQscore,	"GoH_or_LoH"=metadata$DeNovo_LoH, "Ti/Tv"=metadata$TiTv, 	"WhattoWhat" = metadata$WhattoWhat,"TrueorFalse" =metadata$TrueorFalse, "MutationClass"=metadata$TypeofMutation, "MutantParent1"=metadata$MutantParent1,"MutantParent2"=metadata$MutantParent2, "MutantSperm1"=metadata$MutantSperm1, "MutantSperm2"=metadata$MutantSperm2,"MutationType"=mutationtype, "MutationStrength"=mutationstrength, "ColonyName"=metadata$colonyrep, stringsAsFactors=FALSE)#  ColonyName"=metadata$colonyrep)
+i <- sapply(metadatadf, is.factor) #gives TRUE or FALSE for whether each column is a factor
+metadatadf[i] <- lapply(metadatadf[i], as.character) #sets columns to be characters
 metadatadf[which(metadatadf$sample==metadatadf$MutantParent1),]
-DepthMeansdf<-aggregate(totaldepth~chrom.pos, metadatadf, 			FUN=mean)
+DepthMeansdf<-aggregate(totaldepth~chrom.pos, metadatadf, 			FUN=mean) #calculate mean depth per locus
 
-DepthMinsdf<-aggregate(totaldepth~chrom.pos, metadatadf, 			FUN=min)
+DepthMinsdf<-aggregate(totaldepth~chrom.pos, metadatadf, 			FUN=min) #colculate min depth per locus
 
-GQaverage<-aggregate(GQscore~chrom.pos, metadatadf, FUN=mean)
+GQaverage<-aggregate(GQscore~chrom.pos, metadatadf, FUN=mean) #calculate average GQ perlocus
 
-GQmin<-aggregate(GQscore~chrom.pos, metadatadf, FUN=min)
+GQmin<-aggregate(GQscore~chrom.pos, metadatadf, FUN=min) #calculate min GQ per locus
 
 
 
@@ -125,47 +127,85 @@ metadatadf.0<-merge(metadatadf.0, DepthMinsdf[,c("chrom.pos","totaldepth")], by=
 metadatadf.0<-merge(metadatadf.0, GQmin[,c("chrom.pos","GQscore")], by="chrom.pos")
 
 DeNovos<-subset(metadatadf.0, GoH_or_LoH=="DeNovo")
+#somatic denovos:
 withoutmutparents<-subset(DeNovos,  MutationClass == "SomaticMutation" & (sample != MutantParent1 & sample != MutantParent2)) #subset the samples that are not the mutantparents
 withoutsperm<-subset(withoutmutparents, startsWith(withoutmutparents$sample, 'CAS')==FALSE) #subsets the non-sperm samples
-trueDeNovos_somatic<-subset(withoutsperm, refdepth != 0 & altdepth !=0)
+withoutsperm_freq<-as.data.frame(table(withoutsperm$chrom.pos)) #gives how many nonmutant parent samples are present per locus
+trueDeNovos_somatic<-subset(withoutsperm, refdepth == 0 | altdepth ==0) #subsets just the nonmutant parent samples that have either refdepth=0 or altdepth=0. this eliminates the nonmutants for which the putatively mutant allele is present in "nonmutants" at low frequency
+trueDeNovos_somatic_freq<-as.data.frame(table(trueDeNovos_somatic$chrom.pos)) #gives  how many nonmutant parent samples are present per locus once they have been subsetted
+withoutsperm_freq_matched<- withoutsperm_freq[match(trueDeNovos_somatic_freq$Var1, withoutsperm_freq$Var1),] #eliminates the loci that are not present at all in trueDeNovos_somatic_freq
+total <- merge(trueDeNovos_somatic_freq, withoutsperm_freq_matched,by="Var1") #now the number of samples from trueDeNovos_somatic_freq is Freq.x and withoutsperm_freq_matched is Freq.y
+allcorrect<-subset(total, Freq.x == Freq.y) #subsets just the loci where Freq.x and Freq.y are equal
 
-withoutmutsperm_uniqueglm<- subset(DeNovos, MutationClass == "UniqueGermlineMutation" & (sample != MutantSperm1 & sample != MutantSperm2))
-withoutparents<- subset(withoutmutsperm_uniqueglm, startsWith(withoutmutsperm_uniqueglm$sample, 'CAP')==FALSE)
-trueDeNovos_uniqueglm<-subset(withoutparents, refdepth != 0 & altdepth !=0)
-# sample3<-subset(DeNovos, sample== "sample3")
-# trueDenovos_sample3<-subset(sample3, refdepth =="0" | altdepth=="0")
-# 
-# sample4<-subset(DeNovos, sample== "sample4")
-# trueDenovos_sample4<-subset(sample4, refdepth =="0" | altdepth=="0")
-# 
-# sample5<-subset(DeNovos, sample== "sample5")
-# trueDenovos_sample5<-subset(sample5, refdepth =="0" | altdepth=="0")
-# 
-# sample6<-subset(DeNovos, sample== "sample6")
-# trueDenovos_sample6<-subset(sample6, refdepth =="0" | altdepth=="0")
-# 
-# sample7<-subset(DeNovos, sample== "sample7")
-# trueDenovos_sample7<-subset(sample7, refdepth =="0" | altdepth=="0")
-# 
-# sample8<-subset(DeNovos, sample== "sample8")
-# trueDenovos_sample8<-subset(sample8, refdepth =="0" | altdepth=="0")
-# 
-# truedenovos3_8<-rbind(trueDenovos_sample3, trueDenovos_sample4, trueDenovos_sample5, trueDenovos_sample6, trueDenovos_sample7, trueDenovos_sample8)
+#nondups<-subset(trueDeNovos_somatic ,duplicated(chrom.pos)==FALSE | duplicated(chrom.pos, fromLast=TRUE)==FALSE)
 
+mutantparent1<-subset(DeNovos, sample==MutantParent1)#| sample==MutantParent2) #pulls out just the mutantparent1s
+correspondingmutantparent1<-mutantparent1[match(allcorrect$Var1,mutantparent1$chrom.pos),] #subsets just the mutantparent1 loci that appear in allcorrect
+
+mutantparent2<-subset(DeNovos, sample==MutantParent2)#| sample==MutantParent2)
+correspondingmutantparent2<-mutantparent2[match(allcorrect$Var1,mutantparent2$chrom.pos),]
+
+mutantsperm1<-subset(DeNovos, sample==MutantSperm1)# | sample==MutantSperm2)
+correspondingmutantsperm1<-mutantsperm1[match(allcorrect$Var1,mutantsperm1$chrom.pos),]
+
+mutantsperm2<-subset(DeNovos, sample==MutantSperm2)
+correspondingmutantsperm2<-mutantsperm2[match(allcorrect$Var1,mutantsperm2$chrom.pos),]
+
+trueDenovos_somatic_mpandms<-rbind(correspondingmutantparent1, correspondingmutantparent2, correspondingmutantsperm1, correspondingmutantsperm2) #this is the dataset that has the mutantparent and mutantsperm samples at just the loci that appear in allcorrect
+as.data.frame(table(trueDenovos_somatic_mpandms$chrom.pos))
+
+#uglm denovos:
+withoutmutsperm_uniqueglm<- subset(DeNovos, MutationClass == "UniqueGermlineMutation" & (sample != MutantSperm1 & sample != MutantSperm2)) #subsets the non-MutantSperms
+withoutparents<- subset(withoutmutsperm_uniqueglm, startsWith(withoutmutsperm_uniqueglm$sample, 'CAP')==FALSE) #subsets the non-parent samples
+withoutparents_freq<-as.data.frame(table(withoutparents$chrom.pos))
+trueDeNovos_uglm<-subset(withoutparents, refdepth == 0 | altdepth ==0) #subsets just the nonmutant sperm samples that have either refdepth=0 or altdepth=0. this eliminates the nonmutants for which the putatively mutant allele is present in "nonmutants" at low frequency
+trueDeNovos_uglm_freq<-as.data.frame(table(trueDeNovos_uglm$chrom.pos)) #gives how many nonmutant sperm samples are present per locus once they have been subsetted
+withoutparents_freq_matched<- withoutparents_freq[match(trueDeNovos_uglm_freq$Var1, withoutparents_freq$Var1),] #eliminates the loci that are not present at all in trueDeNovos_uglm_freq
+total_uglm <- merge(trueDeNovos_uglm_freq, withoutparents_freq_matched,by="Var1") #now the number of samples from trueDeNovos_uglm_freq is Freq.x and withoutparents_freq_matched is Freq.y
+allcorrect_uglm<-subset(total_uglm, Freq.x == Freq.y) #subsets just the loci where Freq.x and Freq.y are equal
+
+corresponding_uglmmutantparent1<-mutantparent1[match(allcorrect_uglm$Var1,mutantparent1$chrom.pos),] ##subsets just the mutantparent1 loci that appear in allcorrect_uglm
+
+corresponding_uglmmutantparent2<-mutantparent2[match(allcorrect_uglm$Var1,mutantparent2$chrom.pos),]
+
+corresponding_uglmmutantsperm1<-mutantsperm1[match(allcorrect_uglm$Var1,mutantsperm1$chrom.pos),]
+
+corresponding_uglmmutantsperm2<-mutantsperm2[match(allcorrect_uglm$Var1,mutantsperm2$chrom.pos),]
+trueDenovos_uglm_mpandms<-rbind(corresponding_uglmmutantparent1, corresponding_uglmmutantparent2, corresponding_uglmmutantsperm1, corresponding_uglmmutantsperm2) #this is the dataset that has the mutantparent and mutantsperm samples at just the loci that appear in allcorrect_uglm
+
+#somatic LoH:
 LoH<-subset(metadatadf.0, GoH_or_LoH =="LoH")#subsets to just the LoH
-trueLoHp1<-subset(LoH, MutationClass == "SomaticMutation" & sample==MutantParent1)#| sample==MutantParent2)) #subsets to just somatic mutations and just the two mutant parents
-trueLoHp1.1<-subset(LoH, MutationClass == "SomaticMutation" & sample==MutantParent2)
-trueLoHp2<-subset(trueLoHp1, refdepth =="0" | altdepth=="0") #subsets to just those that have zero minor allele frequency
-trueLoHp2.1<-subset(trueLoHp1.1, refdepth =="0" | altdepth=="0")
-trueLoHmutantparents<- rbind(trueLoHp2, trueLoHp2.1)
-removeuniques<-subset(trueLoHmutantparents,duplicated(chrom.pos)==TRUE | duplicated(chrom.pos, fromLast=TRUE)==TRUE)
-#repeat for sperm:
-sperm<-subset(metadatadf.0, sample ==MutantSperm1 | sample == MutantSperm2)
-correspondingsperm<-sperm[match(trueLoHp2$chrom.pos,sperm$chrom.pos),]
+trueLoHp1<-subset(LoH, MutationClass == "SomaticMutation" & sample==MutantParent1)#| sample==MutantParent2)) #subsets to just somatic mutations and just MutantParent1
+trueLoHp1.1<-subset(LoH, MutationClass == "SomaticMutation" & sample==MutantParent2)#subsets to just somatic mutations and just MutantParent2
+trueLoHp2<-subset(trueLoHp1, refdepth =="0" | altdepth=="0") #subsets to just the MutantParent1s that have zero minor allele frequency
+trueLoHp2.1<-subset(trueLoHp1.1, refdepth =="0" | altdepth=="0") #subsets to just the MutantParent2s that have zero minor allele frequency
+trueLoHmutantparents<- rbind(trueLoHp2, trueLoHp2.1) #combines trueLoHp2 and trueLoHp2.1
+removeuniques_mp<-subset(trueLoHmutantparents,duplicated(chrom.pos)==TRUE | duplicated(chrom.pos, fromLast=TRUE)==TRUE) #subsets just the loci that appear in both MutantParent1 and MutantParent2 from trueLoHp2 and trueLoHp2.1
 
-#uglm:
-trueLoHsperm1<- subset(LoH, MutationClass == "UniqueGermlineMutation" & (sample==MutantSperm1 | sample==MutantSperm2))
-trueLoHsperm2<- subset(trueLoHsperm1, refdepth =="0" | altdepth=="0")
+
+sperm1<-subset(LoH, MutationClass == "SomaticMutation" & sample ==MutantSperm1) #subsets just the LoH somatic mutations that are MutantSperm1
+correspondingsperm1<-sperm1[match(removeuniques_mp$chrom.pos,sperm1$chrom.pos),] #subsets just the sperm1 loci that match loci in removeuniques_mp
+sperm2<-subset(LoH, MutationClass == "SomaticMutation" & sample ==MutantSperm2) #subsets just the LoH somatic mutations that are MutantSperm2
+correspondingsperm2<-sperm2[match(removeuniques_mp$chrom.pos,sperm2$chrom.pos),]#subsets just the sperm2 loci that match loci in removeuniques_mp
+trueLoH_somatic_mpandms<-rbind(removeuniques_mp, unique(correspondingsperm1), unique(correspondingsperm2)) #correspondingsperm1 and 2 have duplicates of each line, use unique to remove duplicates, then rbind with removeuniques_mp for the dataset that has the mutantparent and mutantsperm samples at just the loci that are true somatic LoH
+#as.data.frame(table(trueLoH_somatic_mpandms$chrom.pos))
+#nrow(subset(trueDenovos_somatic_mpandms, TrueorFalse=="True"& sample==MutantSperm1))
+
+#uglm true LoH:
+trueLoHsperm1<- subset(LoH, MutationClass == "UniqueGermlineMutation" & sample==MutantSperm1) #subset just the LoH uglms that are MutantSperm1
+trueLoHsperm1.1<- subset(LoH, MutationClass == "UniqueGermlineMutation" & sample==MutantSperm2) #subset just the LoH uglms that are MutantSperm2
+
+trueLoHsperm2<- subset(trueLoHsperm1, refdepth =="0" | altdepth=="0") #subsets to just the trueLoHsperm1s that have zero minor allele frequency
+trueLoHsperm2.1<- subset(trueLoHsperm1.1, refdepth =="0" | altdepth=="0") #subsets to just the trueLoHsperm1.1s that have zero minor allele frequency
+trueLoHmutantsperm<- rbind(trueLoHsperm2, trueLoHsperm2.1) #combines trueLoHsperm2 and trueLoHsperm2.1
+removeuniques_ms<-subset(trueLoHmutantsperm,duplicated(chrom.pos)==TRUE | duplicated(chrom.pos, fromLast=TRUE)==TRUE) #subsets just the loci that appear in both MutantSperm1 and MutantSperm2 from trueLoHsperm2 and trueLoHsperm2.1
+
+mp1<-subset(LoH, MutationClass == "UniqueGermlineMutation" & sample==MutantParent1) #subsets just the LoH uglms that are MutantParent1
+correspondingmp1<- mp1[match(removeuniques_ms$chrom.pos, mp1$chrom.pos),] #subsets just the mp1 loci that match loci in removeuniques_ms
+mp2<-subset(LoH, MutationClass == "UniqueGermlineMutation" & sample==MutantParent2) #subsets just the LoH uglms that are MutantParent2
+correspondingmp2<- mp2[match(removeuniques_ms$chrom.pos, mp2$chrom.pos),] #subsets just the mp2 loci that match loci in removeuniques_ms
+trueLoH_uglm_mpandms<-rbind(removeuniques_ms, unique(correspondingmp1), unique(correspondingmp2)) #correspondingmp1 and 2 have duplicates of each line, use unique to remove duplicates, then rbind with removeuniques_ms for the dataset that has the mutantparent and mutantsperm samples at just the loci that are true uglm LoH
+
 #trueLoHp1<-subset(trueLoHp, sample=="mutparent1" | sample=="mutparent2")
 #trueLoHp2<-trueLoHp1[trueLoHp1$chrom.pos %in% names(which(table(trueLoHp1$chrom.pos) > 1)), ]
 #sperm1<-subset(metadatadf.0, sample ==MutantSperm1)
@@ -176,16 +216,141 @@ trueLoHsperm2<- subset(trueLoHsperm1, refdepth =="0" | altdepth=="0")
 #trueLoHp2<-subset(trueLoHp, sample=="mutparent2")
 
 globalglm<-subset(metadatadf.0, MutationClass=="GlobalGermlineMutation")
+#gglm true denovos:
+justparents<-subset(globalglm, startsWith(globalglm$sample, 'CAP')==TRUE) #subsets to just the parent samples
+justsperm<-subset(globalglm, startsWith(globalglm$sample, 'CAS')==TRUE)
+justparents_freq<-as.data.frame(table(justparents$chrom.pos)) #gives how many parent samples are present per locus
+trueDeNovos_gglm<-subset(justparents, refdepth == 0 | altdepth ==0) #subsets just the parent samples that have either refdepth=0 or altdepth=0. this eliminates the nonmutants for which the putatively mutant allele is present in "nonmutants" at low frequency
+trueDeNovos_gglm_freq<-as.data.frame(table(trueDeNovos_gglm$chrom.pos)) #gives  how many nonmutant parent samples are present per locus once they have been subsetted
+justparents_freq_matched<- justparents_freq[match(trueDeNovos_gglm_freq$Var1, justparents_freq$Var1),] #eliminates the loci that are not present at all in trueDeNovos_somatic_freq
+total_gglm <- merge(trueDeNovos_gglm_freq, justparents_freq_matched,by="Var1") #now the number of samples from trueDeNovos_gglm_freq is Freq.x and justparents_freq_matched is Freq.y
+allcorrect_gglm<-subset(total_gglm, Freq.x == Freq.y) #subsets just the loci where Freq.x and Freq.y are equal
+ms1<-subset(globalglm, sample=="MutantSperm1")# #pulls out just the mutantsperm1s
+correspondingms1<-justsperm[match(allcorrect_gglm$Var1,justsperm$chrom.pos),] #subsets just a single sample at the locus that appears in allcorrect_gglm
 
-metadatadf<-rbind( trueDeNovos_somatic, trueDeNovos_uniqueglm, trueLoHp2, trueLoHsperm2,globalglm)#, trueLoHp2)
+#gglm true LoH:
+justsperm<-subset(globalglm, startsWith(globalglm$sample, 'CAS')==TRUE)
+trueLOHgglm = rep("A", nrow(justsperm))
+for (i in 1:nrow(justsperm)){
+  #print(i)
+  if (justsperm$refdepth[i] == 0 | justsperm$altdepth[i] ==0) {
+    trueLOHgglm[i] = justsperm$chrom.pos[i]
+    #print(justsperm$refdepth[i])
+  } else {
+    trueLOHgglm[i] = "nottrueLOH"
+  }
+}
+tlgdf<-data.frame("chrom.pos"=trueLOHgglm)
 
-somaticmetadatadf<-rbind(trueDeNovos_somatic, trueLoHp2, )
+tlgdf_freq<-as.data.frame(table(tlgdf))
+trueLOHgglm_freq<-data.frame("Var1"=tlgdf_freq$tlgdf, "Freq"=tlgdf_freq$Freq)
+justsperm_freq<-as.data.frame(table(justsperm$chrom.pos))
+justsperm_freq_matched<- justsperm_freq[match(trueLOHgglm_freq$Var1, justsperm_freq$Var1),]
+total_LOH_gglm <- merge(trueLOHgglm_freq, justsperm_freq_matched,by="Var1") #now the number of samples from trueDeNovos_gglm_freq is Freq.x and justparents_freq_matched is Freq.y
+allcorrect_LOH_gglm<-subset(total_LOH_gglm, Freq.x == Freq.y) #subsets just the loci where Freq.x and Freq.y are equal
+
+correspondingms1_LOH<-justsperm[match(allcorrect_LOH_gglm$Var1,justsperm$chrom.pos),] #subsets just a single sample at the locus that appears in allcorrect_gglm
+
+#CA65somatic:
+CA65somatic<-subset(metadatadf.0, ColonyName=="CAcolony65" & MutationClass=="SomaticMutation")
+CA65somaticmpandms<-subset(CA65somatic, sample==MutantParent1 | sample==MutantParent2 | sample==MutantSperm1 | sample==MutantSperm2)
+
+#CA65uglm:
+CA65uglm<-subset(metadatadf.0, ColonyName=="CAcolony65" & MutationClass=="UniqueGermlineMutation")
+CA65uglmmpandms<-subset(CA65uglm, sample==MutantParent1 | sample==MutantParent2 | sample==MutantSperm1 | sample==MutantSperm2)
+
+#metadatadf<-rbind( trueDeNovos_somatic, trueDeNovos_uniqueglm, trueLoHp2, trueLoHsperm2,globalglm)#, trueLoHp2)
+
+somaticmetadatadf<-rbind(trueDenovos_somatic_mpandms, trueLoH_somatic_mpandms, CA65somaticmpandms) #combines all of the filtered somatic datasets into one
+inheriteddenovosomaticmetadatadf<-subset(somaticmetadatadf, TrueorFalse=="True" & GoH_or_LoH=="DeNovo") #this will be definition exlude all CA65 samples
+somaticCA56<-subset(somaticmetadatadf, startsWith(somaticmetadatadf$sample,'CAP12')==TRUE | 
+  startsWith(somaticmetadatadf$sample,'CAS12')==TRUE |
+  startsWith(somaticmetadatadf$sample,'CAP6')==TRUE | 
+  startsWith(somaticmetadatadf$sample,'CAS6')==TRUE |
+  startsWith(somaticmetadatadf$sample,'CAP8')==TRUE |
+  startsWith(somaticmetadatadf$sample,'CAS8')==TRUE)
+somaticCA56_denovo<-subset(somaticCA56, GoH_or_LoH=="DeNovo")
+somaticCA60<-subset(somaticmetadatadf, startsWith(somaticmetadatadf$sample,'CAP22')==TRUE | 
+                      startsWith(somaticmetadatadf$sample,'CAS22')==TRUE |
+                      startsWith(somaticmetadatadf$sample,'CAP23')==TRUE | 
+                      startsWith(somaticmetadatadf$sample,'CAS23')==TRUE |
+                      startsWith(somaticmetadatadf$sample,'CAP24')==TRUE |
+                      startsWith(somaticmetadatadf$sample,'CAS24')==TRUE |
+                      startsWith(somaticmetadatadf$sample,'CAP26')==TRUE |
+                      startsWith(somaticmetadatadf$sample,'CAS26')==TRUE )
+somaticCA65<-subset(somaticmetadatadf, startsWith(somaticmetadatadf$sample,'CAP10')==TRUE | 
+                      startsWith(somaticmetadatadf$sample,'CAS10')==TRUE |
+                      startsWith(somaticmetadatadf$sample,'CAP11')==TRUE | 
+                      startsWith(somaticmetadatadf$sample,'CAS11')==TRUE |
+                      startsWith(somaticmetadatadf$sample,'CAP9')==TRUE |
+                      startsWith(somaticmetadatadf$sample,'CAS9')==TRUE)                      
+uglmmetadatadf<-rbind(trueDenovos_uglm_mpandms, trueLoH_uglm_mpandms, CA65uglmmpandms)
+uglmCA56<-subset(uglmmetadatadf, startsWith(uglmmetadatadf$sample,'CAP12')==TRUE | 
+                   startsWith(uglmmetadatadf$sample,'CAS12')==TRUE |
+                   startsWith(uglmmetadatadf$sample,'CAP6')==TRUE | 
+                   startsWith(uglmmetadatadf$sample,'CAS6')==TRUE |
+                   startsWith(uglmmetadatadf$sample,'CAP8')==TRUE |
+                   startsWith(uglmmetadatadf$sample,'CAS8')==TRUE)
+uglmCA56_denovo<-subset(uglmCA56, GoH_or_LoH=="DeNovo")
+uglmCA60<-subset(uglmmetadatadf, startsWith(uglmmetadatadf$sample,'CAP22')==TRUE | 
+                   startsWith(uglmmetadatadf$sample,'CAS22')==TRUE |
+                   startsWith(uglmmetadatadf$sample,'CAP23')==TRUE | 
+                   startsWith(uglmmetadatadf$sample,'CAS23')==TRUE |
+                   startsWith(uglmmetadatadf$sample,'CAP24')==TRUE |
+                   startsWith(uglmmetadatadf$sample,'CAS24')==TRUE |
+                   startsWith(uglmmetadatadf$sample,'CAP26')==TRUE |
+                   startsWith(uglmmetadatadf$sample,'CAS26')==TRUE )
+uglmCA65<-subset(uglmmetadatadf, startsWith(uglmmetadatadf$sample,'CAP10')==TRUE | 
+                   startsWith(uglmmetadatadf$sample,'CAS10')==TRUE |
+                   startsWith(uglmmetadatadf$sample,'CAP11')==TRUE | 
+                   startsWith(uglmmetadatadf$sample,'CAS11')==TRUE |
+                   startsWith(uglmmetadatadf$sample,'CAP9')==TRUE |
+                   startsWith(uglmmetadatadf$sample,'CAS9')==TRUE) 	
+gglmmetadatadf<- rbind(correspondingms1, correspondingms1_LOH)
+gglmCA56<-subset(gglmmetadatadf, startsWith(gglmmetadatadf$sample,'CAP12')==TRUE | 
+                   startsWith(gglmmetadatadf$sample,'CAS12')==TRUE |
+                   startsWith(gglmmetadatadf$sample,'CAP6')==TRUE | 
+                   startsWith(gglmmetadatadf$sample,'CAS6')==TRUE |
+                   startsWith(gglmmetadatadf$sample,'CAP8')==TRUE |
+                   startsWith(gglmmetadatadf$sample,'CAS8')==TRUE)
+gglmCA56_denovo<-subset(gglmCA56, GoH_or_LoH=="DeNovo")
+gglmCA60<-subset(gglmmetadatadf, startsWith(gglmmetadatadf$sample,'CAP22')==TRUE | 
+                   startsWith(gglmmetadatadf$sample,'CAS22')==TRUE |
+                   startsWith(gglmmetadatadf$sample,'CAP23')==TRUE | 
+                   startsWith(gglmmetadatadf$sample,'CAS23')==TRUE |
+                   startsWith(gglmmetadatadf$sample,'CAP24')==TRUE |
+                   startsWith(gglmmetadatadf$sample,'CAS24')==TRUE |
+                   startsWith(gglmmetadatadf$sample,'CAP26')==TRUE |
+                   startsWith(gglmmetadatadf$sample,'CAS26')==TRUE )
+gglmCA65<-subset(gglmmetadatadf, startsWith(gglmmetadatadf$sample,'CAP10')==TRUE | 
+                   startsWith(gglmmetadatadf$sample,'CAS10')==TRUE |
+                   startsWith(gglmmetadatadf$sample,'CAP11')==TRUE | 
+                   startsWith(gglmmetadatadf$sample,'CAS11')==TRUE |
+                   startsWith(gglmmetadatadf$sample,'CAP9')==TRUE |
+                   startsWith(gglmmetadatadf$sample,'CAS9')==TRUE) 	
+colony<-c(rep("CAcolony56" , 3) , rep("CAcolony60" , 3) , rep("CAcolony65" , 3))
+class<-factor(rep(c("Somatic" , "Unique Germline" , "Global Germline") , 3),levels = c("Somatic","Unique Germline","Global Germline"))
+value<-c(nrow(somaticCA56), nrow(uglmCA56), nrow(gglmCA56), nrow(somaticCA60), nrow(uglmCA60), nrow(gglmCA65), nrow(somaticCA65), nrow(uglmCA65), nrow(gglmCA65))
+mutationdata<-data.frame(colony, class, value)
+#mutationdata$class <- factor(mutationdata$class, levels = mutationdata$class, ordered=TRUE)#, levels = mutationdata$class)
+#mutationdata$order = c(1:length(mutationdata$colony))
+comparisonplot<-ggplot(mutationdata, aes(x=colony, y=value, fill=class)) + 
+  geom_bar(position="dodge", stat="identity") +
+  theme_bw() +
+  scale_fill_brewer(palette = "Paired") +
+  ylab("Number of mutations") + xlab("")
+  #+ 
+  #scale_x_discrete(limits=mutationdata$class)
+  
+metadatadf<- rbind(somaticmetadatadf, uglmmetadatadf, gglmmetadatadf)
 #metadatadf<-rbind( DeNovos, trueLoHp1)#2,trueLoHsperm)#, trueLoHp2)
 #write.table(metadatadf, file="CAcolony60_CAP22-23-24muts_20191125.txt",sep="\t",quote=FALSE, row.name=FALSE)
 
 uniquemetadatadf<- metadatadf[match(unique(metadatadf$chrom.pos), 					metadatadf$chrom.pos),]
-
-unique_inherited<-subset(uniquemetadatadf, TrueorFalse=="True")
+inheriteddenovo<-subset(metadatadf, SpermAverage>0.0 & ParentAverage>0.1 & ParentAverage<1)
+inheritedloh<-subset(metadatadf, SpermAverage==1 & ParentAverage==1)
+inherited<-rbind(inheriteddenovo, inheritedloh)
+unique_inherited<-inherited[match(unique(inherited$chrom.pos), 					inherited$chrom.pos),]
 unique_notinherited<-subset(uniquemetadatadf,TrueorFalse=="False")
 unique_somatic<-subset(uniquemetadatadf, MutationClass=="SomaticMutation")
 unique_uniqueglm<-subset(uniquemetadatadf, MutationClass=="UniqueGermlineMutation")
@@ -231,26 +396,200 @@ write.table(dndscvdf_globalglm, file="~/Documents/GitHub/CoralGermline/dndscv/CA
 
 #  } else mutant_alleledepth = altdepth
 #}
+scatterplot_func<-function(somaticmetadatadf) {
+  #########comparison for all somatic mutations:##########
+  mutantparentdf<-subset(somaticmetadatadf, sample==MutantParent1)# & TrueorFalse=="True") #for CAP22-1 and CAP22-2
+  #mutantparentdf_true<- mutantparentdf_true[match(uniquemetadatadf$chrom.pos, mutantparentdf_true$chrom.pos),]
+  
+  mutantparents2<-subset(somaticmetadatadf,sample==MutantParent2)# & TrueorFalse=="True")
+  #mutantparents2_true<- mutantparents2_true[match(uniquemetadatadf$chrom.pos, mutantparents2_true$chrom.pos),]
+  
+  props1<-mutantparentdf$mutant_allele_depth/mutantparentdf$totaldepth.x
+  props2<-mutantparents2$mutant_allele_depth/mutantparents2$totaldepth.x
+  
+  parentsaverage<-(props1+props2)/2
+
+  spermdf1<-unique(subset(somaticmetadatadf, sample==MutantSperm1)) #removes duplicates that arise from the sperm singleton # & TrueorFalse=="True")
+  spermdf2<-unique(subset(somaticmetadatadf, sample==MutantSperm2))# & TrueorFalse=="True")
+  
+  #spermdf_true<- spermdf_true[match(uniquemetadatadf$chrom.pos, spermdf_true$chrom.pos),]
+  
+  spermprops1<- spermdf1$mutant_allele_depth/spermdf1$totaldepth.x
+  spermprops2<- spermdf2$mutant_allele_depth/spermdf2$totaldepth.x
+  
+  spermaverage<-(spermprops1+spermprops2)/2
+  df<-data.frame(ParentAverage=parentsaverage, SpermAverage=spermaverage, TrueorFalse = as.factor(mutantparentdf$TrueorFalse), GoHorLoH = as.factor(mutantparentdf$GoH_or_LoH), MutationType = as.factor(mutantparentdf$MutationType))
+  #merged<-merge(mutantparentdf, df)
+  df_true<-subset(df, SpermAverage>0.0 & ParentAverage>0.1 & ParentAverage<1)
+  otherframe<-data.frame(chrom.pos=mutantparentdf$chrom.pos, chrom=mutantparentdf$chrom, pos=mutantparentdf$pos, sample=mutantparentdf$sample, ParentAverage=parentsaverage, SpermAverage=spermaverage, TrueorFalse = as.factor(mutantparentdf$TrueorFalse), GoHorLoH = as.factor(mutantparentdf$GoH_or_LoH), MutationType = as.factor(mutantparentdf$MutationType),WhattoWhat=mutantparentdf$WhattoWhat)
+  merged$TrueorFalse<-as.factor(merged$TrueorFalse)
+  
+  parentspermcomparison<-lm(df_true$SpermAverage~df_true$ParentAverage)
+  
+  # lm_eqn <- function(df){
+  #   x<-df$ParentAverage
+  #   y<-df$SpermAverage
+  #   m <- lm(y ~ x, df);
+  #   eq <- substitute(italic(y) == a + b %.% italic(x)*","~~italic(r)^2~"="~r2, 
+  #                    list(a = format(unname(coef(m)[1]), digits = 2),
+  #                         b = format(unname(coef(m)[2]), digits = 2),
+  #                         r2 = format(summary(m)$r.squared, digits = 3)))
+  #                         as.character(as.expression(eq));
+  # }
+  
+  p<-ggplot(df_true, aes(x=ParentAverage, y=SpermAverage, color=MutationType)) + geom_point(size=2.5) +
+    geom_smooth(method=lm, aes(group=1)) +
+    theme_bw() +
+    stat_cor(label.x=0.2,label.y=0.3, aes(group=1)) +
+    ylim(0, 0.35) + xlim(0, 0.45) +
+    scale_color_brewer(palette = "Paired") +
+    ylab("Mutant Allele Frequency in the Mutant Sperm Pool") + xlab("Mutant Allele Frequency in the Mutant Parent")+
+    theme(axis.text=element_text(size=10),
+          axis.title=element_text(size=10))
+ 
+    #geom_text(x = 25, y = 300, label = lm_eqn(df_true), parse = TRUE)
+  #return(p)
+  #return(parentspermcomparison)
+  abline(parentspermcomparison, lwd=2)
+  abline(0,1,lwd=4,col="red")
+  cor<-cor.test(df_true$SpermAverage, df_true$ParentAverage)
+  #return(summary(parentspermcomparison)$r.squared)
+  newlist<-list(p, cor)
+  parentspermcomparison
+  #return(newlist)
+  return(p)
+  #dndscvdf<- data.frame("sampleID"= mutantparentdf$sample,"chr"= mutantparentdf$chrom,"pos"= mutantparentdf$pos, "ref" = mutantparentdf$ref, "alt"= uniquemetadatadf$alt) # do not use ref and alt!
+  
+}
+allcolonies<-scatterplot_func(somaticmetadatadf) #shows significant positive correlation btwn parent avg and sperm avg
+allcolonies
+inheriteddenovoallcolonies<-subset(allcolonies, SpermAverage>0 &ParentAverage>=0.1 &ParentAverage<1)
+inheritedlohallcolonies<-subset(allcolonies, SpermAverage==1 & ParentAverage==1)
+inheritedallcolonies<-rbind(inheriteddenovoallcolonies, inheritedlohallcolonies)
+#uniqueinheritedallcolonies<-inheritedallcolonies[match(unique(inheritedallcolonies$chrom.pos), 					inheritedallcolonies$chrom.pos),]
+inheritedcountallcolonies<-nrow(inheriteddenovoallcolonies)+nrow(inheritedlohallcolonies)
+notinheriteddenovoallcolonies<-subset(allcolonies, SpermAverage==0)
+notinheritedlohallcolonies<-subset(allcolonies, ParentAverage==1 & SpermAverage<1)
+notinheritedallcolonies<-rbind(notinheriteddenovoallcolonies, notinheritedlohallcolonies)
+a_<-scatterplot_func(somaticCA56)
+inheritedcount_func<-function(a_){
+  
+
+  inheriteddenovoa_<-subset(a_, SpermAverage>0 &ParentAverage>=0.1 &ParentAverage<1)
+  inheritedloha_<-subset(a_, SpermAverage==1 & ParentAverage==1)
+  notinheriteddenovoa_<-subset(a_, SpermAverage==0)
+  notinheritedloha_<-subset(a_, ParentAverage==1 & SpermAverage<1)
+  inheritedcounta_<-nrow(inheriteddenovoa_)+nrow(inheritedloha_)
+  inheritedpropa_<- inheritedcounta_/nrow(a_)
+  return(inheritedpropa_)
+}  
+CAP6<-subset(a_, sample=="CAP6-1_S47")
+CAP8<-subset(a_, sample=="CAP8-1_S40")
+CAP12<-subset(a_,sample=="CAP12-1_S46")
+CAP6ic<-inheritedcount_func(CAP6)
+CAP8ic<-inheritedcount_func(CAP8)
+CAP12ic<-inheritedcount_func(CAP12)
+
+b_<-scatterplot_func(somaticCA60)
+inheriteddenovob_<-subset(b_, SpermAverage>0 &ParentAverage>=0.1 &ParentAverage<1)
+inheritedlohb_<-subset(b_, SpermAverage==1 & ParentAverage==1)
+notinheriteddenovob_<-subset(b_, SpermAverage==0)
+notinheritedlohb_<-subset(b_, ParentAverage==1 & SpermAverage<1)						  	
+inheritedcountb_<-nrow(inheriteddenovob_)+nrow(inheritedlohb_)
+CAP22<-subset(b_, sample=="CAP22-1_S43")
+CAP23<-subset(b_, sample=="CAP23-1_S45")
+CAP24<-subset(b_,sample=="CAP24-1_S42")
+CAP22ic<-inheritedcount_func(CAP22)
+CAP23ic<-inheritedcount_func(CAP23)
+CAP24ic<-inheritedcount_func(CAP24)
+
+c_<-scatterplot_func(somaticCA65)
+inheriteddenovoc_<-subset(c_, SpermAverage>0 &ParentAverage>=0.1 &ParentAverage<1)
+inheritedlohc_<-subset(c_, SpermAverage==1 & ParentAverage==1)
+notinheriteddenovoc_<-subset(c_, SpermAverage==0)
+notinheritedlohc_<-subset(c_, ParentAverage==1 & SpermAverage<1)	
+inheritedcountc_<-nrow(inheriteddenovoc_)+nrow(inheritedlohc_)
+CAP10<-subset(c_, sample=="CAP10-1_S44")
+CAP11<-subset(c_, sample=="CAP11-1_S41")
+CAP9<-subset(c_,sample=="CAP9-1_S48")
+CAP10ic<-inheritedcount_func(CAP10)
+CAP11ic<-inheritedcount_func(CAP11)
+CAP9ic<-inheritedcount_func(CAP9)
+#boxplot for inherited proportion:
+colony<-c(rep("CA56" , 3) , rep("CA60" , 3) , rep("CA65" , 3))
+proportion<- 100*c(CAP6ic,CAP8ic, CAP12ic, CAP22ic, CAP23ic, CAP24ic, CAP10ic, CAP11ic, CAP9ic)  
+df_inheritedprops<-data.frame(colony,proportion)
+box <- ggplot(df_inheritedprops, aes(x = colony, y = proportion))
+box<- box + geom_boxplot()
+box2 <- box + labs(x="", y="Percent of Somatic Mutations inherited by Sperm") + geom_boxplot(fill="steelblue1",
+  position = position_dodge(0.9)
+) +
+  
+  theme_bw()+
+  stat_compare_means(label.x=1.5,label.y=025,size=10)+
+  theme(axis.text=element_text(size=25),
+        axis.title=element_text(size=25))
+
+fit = lm(proportion ~ colony, df_inheritedprops)
+fit
+anova(fit)
+oneway<-aov(proportion~colony)
+summary(oneway)
+plot(oneway)
+pairwise.wilcox.test(df_inheritedprops$proportion, df_inheritedprops$colony,
+                     p.adjust.method = "BH")
+kruskal.test(proportion ~ colony, data = df_inheritedprops)
+
+totala_<-inheritedcounta_+ nrow(uglmCA56)+ nrow(gglmCA56)
+totalb_<- inheritedcountb_+ nrow(uglmCA60)+ nrow(gglmCA60)
+totalc_<- inheritedcountc_+ nrow(uglmCA65)+ nrow(gglmCA65)
+inheritedprop_func<-function(inheritedcounta_, a_){
+  inheritedpropa_<- inheritedcounta_/nrow(a_)
+  return(inheritedpropa_)
+}
+aprop<-inheritedprop_func(inheritedcounta_,a_)
+bprop<-inheritedprop_func(inheritedcountb_,b_)
+cprop<-inheritedprop_func(inheritedcountc_,c_)
+  
+#show what proportion of mutants in the sperm pool came from each type of mutation:
+colony<-c(rep("CA56" , 3) , rep("CA60" , 3) , rep("CA65" , 3))
+class<-factor(rep(c("Inherited Somatic", "Unique Germline", "Global Germline") , 3),levels = c("Inherited Somatic","Unique Germline","Global Germline"))
+value<-c(inheritedcounta_*100/totala_, nrow(uglmCA56)*100/totala_, nrow(gglmCA56)*100/totala_, inheritedcountb_*100/totalb_, nrow(uglmCA60)*100/totalb_, nrow(gglmCA60)*100/totalb_, inheritedcountc_*100/totalc_, nrow(uglmCA65)*100/totalc_, nrow(gglmCA65)*100/totalc_)
+mutationdata<-data.frame(colony, class, value)
+
+proportionsplot<-ggplot(mutationdata, aes(x=colony, y=value, fill=class)) + 
+  geom_bar(position="dodge", stat="identity") +
+  theme_bw() +
+  scale_fill_brewer(palette = "Paired") +
+  ylab("Percent of mutations seen in the sperm") + xlab("")+
+  theme(axis.text=element_text(size=20),
+        axis.title=element_text(size=20))
+(allcolonies | a) / (b | c)
+
+unfilteredsomatic<-subset(metadatadf.0, MutationClass=="SomaticMutation")
+allcolonies_unfiltered<-scatterplot_func(unfilteredsomatic)
+
+allcolonies | allcolonies_unfiltered
 ##alt allele correlation when inheritance is TRUE:
 
 
-mutantparentdf_true<-subset(metadatadf, sample==MutantParent1 & TrueorFalse=="True") #for CAP22-1 and CAP22-2
+mutantparentdf_true<-subset(somaticmetadatadf, sample==MutantParent1 & TrueorFalse=="True") #for CAP22-1 and CAP22-2
 #mutantparentdf_true<- mutantparentdf_true[match(uniquemetadatadf$chrom.pos, mutantparentdf_true$chrom.pos),]
 
-mutantparents2_true<-subset(metadatadf,sample==MutantParent2 & TrueorFalse=="True")
+mutantparents2_true<-subset(somaticmetadatadf,sample==MutantParent2 & TrueorFalse=="True")
 #mutantparents2_true<- mutantparents2_true[match(uniquemetadatadf$chrom.pos, mutantparents2_true$chrom.pos),]
 
 props1_true<-mutantparentdf_true$mutant_allele_depth/mutantparentdf_true$totaldepth.x
 props2_true<-mutantparents2_true$mutant_allele_depth/mutantparents2_true$totaldepth.x
 
-
+newdf<- data.frame("chrom.pos"=mutantparentdf_true$chrom.pos, "GOHorLOH" = mutantparentdf_true$GoH_or_LoH, "Parent1prop" = props1_true, "Parent2prop" = props2_true)
 
 parentsaverage_true<-(props1_true+props2_true)/2
 parentsaverage_true<-na.omit(parentsaverage_true)
 
 
-spermdf_true1<-subset(metadatadf, sample==MutantSperm1 & TrueorFalse=="True")
-spermdf_true2<-subset(metadatadf, sample==MutantSperm2 & TrueorFalse=="True")
+spermdf_true1<-subset(somaticmetadatadf, sample==MutantSperm1 & TrueorFalse=="True")
+spermdf_true2<-subset(somaticmetadatadf, sample==MutantSperm2 & TrueorFalse=="True")
 
 #spermdf_true<- spermdf_true[match(uniquemetadatadf$chrom.pos, spermdf_true$chrom.pos),]
 
@@ -264,7 +603,7 @@ parentspermcomparison_true<-lm(spermaverage_true~parentsaverage_true)
 plot(parentsaverage_true, spermaverage_true, col=ifelse(mutantparentdf_true$GoH_or_LoH=="DeNovo","red","black"))
 abline(parentspermcomparison_true, lwd=2)
 abline(0,1,lwd=4,col="red")
-cor.test(parentsaverage_true, spermprops_true)
+cor.test(parentsaverage_true, spermaverage_true)
 summary(parentspermcomparison_true)$r.squared
 ##alt allele correlation when inheritance isFALSE:
 mutantparentdf_false<-subset(metadatadf, sample=="mutparent1" & TrueorFalse=="False") #for CAP22-1 and CAP22-2
@@ -1015,6 +1354,9 @@ barplot(mat,col=c("red","black"), ylab="Proportion of somatic mutations")
 ##ANOVA AND BOXPLOTS: proportion of inherited som muts ##
 runs<-c((138/(138+804)), (139/(139+546)), (147/(147+1159)), (760/(760+1363)), (699/(699+793)), (484/(484+838)), (375/(375+861)), (328/(328+899)))#, (804/(138+804)), (546/(139+546)), (1159/(147+1159)), (1363/(760+1363)), (793/(699+793)), (838/(484+838)), (861/(375+861)), (899/(328+899)))
 group<-c("CA60", "CA60", "CA60",  "CA65", "CA65", "CA56", "CA56", "CA56")  
+
+inheritedproportion<- inheritedcounta_/(nrow(inheriteddenovoa_)+nrow(inheritedloha_))
+colony<-c("CA56", "CA56", "CA56", "CA60", "CA60", "CA60",  "CA65", "CA65")
 withinRunStats = function(x) c(sum = sum(x), mean = mean(x), var = var(x), n = length(x))
 tapply(runs, group, withinRunStats)
 data = data.frame(y = runs, group = factor(group))
