@@ -4,6 +4,7 @@ library(dndscv)
 ?buildref()
 buildref("AmilCDStable20200225.txt", "~/Downloads/Amil_v2.01/Amil.v2.01.chrs.fasta", "AmilRefCDS20200226.rda", numcode = 1, excludechrs= NULL)
 filepath<-"CAcolony56_allmuts_dndscv.txt"
+filepath<-"~/Documents/GitHub/CoralGermline/dndscv/"
 dnds_func<-function(filepath) {
   dataset<-read.delim(filepath)
   base<-basename(filepath)
@@ -21,7 +22,7 @@ dnds_func<-function(filepath) {
   mle_score<-global$mle
   wall<-subset(global,name=="wall")
   wall<-data.frame(wall)
-  return(wall)
+  return(dndsout)
 }  
 
 dndsout_somatic_inherited<-dnds_func("~/Documents/GitHub/CoralGermline/dndscv/CAcolony56and60and65_inherited_dndscv.txt")
@@ -30,14 +31,52 @@ dndsout_somatic<-dnds_func("~/Documents/GitHub/CoralGermline/dndscv/CAcolony56an
 dndsout_uniqueglm<-dnds_func("~/Documents/GitHub/CoralGermline/dndscv/CAcolony56and60and65_uniqueglm_dndscv.txt")
 dndsout_globalglm<-dnds_func("~/Documents/GitHub/CoralGermline/dndscv/CAcolony56and60and65_globalglm_dndscv.txt")
 
+#USE THESE (5/17/2020)
+dndsout_somatic<-dnds_func("~/Documents/GitHub/CoralGermline/dndscv/uniquesomaticmetadatadf_dndscv.txt")
+dndsout_somatic_denovo<-dnds_func("~/Documents/GitHub/CoralGermline/dndscv/uniquesomaticmetadatadf_denovo_dndscv.txt")
+dndsout_somatic_loh<-dnds_func("~/Documents/GitHub/CoralGermline/dndscv/uniquesomaticmetadatadf_loh_dndscv.txt")
+dndsout_somatic_inherited<-dnds_func("~/Documents/GitHub/CoralGermline/dndscv/inheritedallcolonies_dndscv.txt")
+dndsout_somatic_notinherited<-dnds_func("~/Documents/GitHub/CoralGermline/dndscv/notinheritedallcolonies_dndscv.txt")
+
+dndsout_somatic_inherited_loh<-dnds_func("~/Documents/GitHub/CoralGermline/dndscv/inheritedlohallcolonies_dndscv.txt")
+dndsout_somatic_notinherited_loh<-dnds_func("~/Documents/GitHub/CoralGermline/dndscv/notinheritedlohallcolonies_dndscv.txt")
+
+dndsout_somatic_inherited_denovo<-dnds_func("~/Documents/GitHub/CoralGermline/dndscv/inheriteddenovoallcolonies_dndscv.txt")
+dndsout_somatic_notinherited_denovo<-dnds_func("~/Documents/GitHub/CoralGermline/dndscv/notinheriteddenovoallcolonies_dndscv.txt")
+
+dndsout_uglm<-dnds_func("~/Documents/GitHub/CoralGermline/dndscv/unique_uglmmetadatadf_dndscv.txt")
+dndsout_gglm<-dnds_func("~/Documents/GitHub/CoralGermline/dndscv/unique_gglmmetadatadf_dndscv.txt")
+
+#FOR 6/15/2020
+dndsout_somatic<-dnds_func("~/Documents/GitHub/CoralGermline/dndscv/allcolonies_onlychrs20200615_dndscv.txt")
+dndsout_somatic_56<-dnds_func("~/Documents/GitHub/CoralGermline/dndscv/CAcolony56somatic_onlychrs20200616_dndscv.txt")
+dndsout_somatic_60<-dnds_func("~/Documents/GitHub/CoralGermline/dndscv/CAcolony60somatic_onlychrs20200616_dndscv.txt")
+dndsout_somatic_65<-dnds_func("~/Documents/GitHub/CoralGermline/dndscv/CAcolony65somatic_onlychrs20200616_dndscv.txt")
+
+dndsout_somatic_denovo<-dnds_func("~/Documents/GitHub/CoralGermline/dndscv/uniquesomaticmetadatadf_denovo_onlychrs20200615_dndscv.txt")
+dndsout_somatic_loh<-dnds_func("~/Documents/GitHub/CoralGermline/dndscv/uniquesomaticmetadatadf_loh_onlychrs20200615_dndscv.txt")
+dndsout_somatic_inherited<-dnds_func("~/Documents/GitHub/CoralGermline/dndscv/inheritedallcolonies_onlychrs20200615_dndscv.txt")
+dndsout_somatic_notinherited<-dnds_func("~/Documents/GitHub/CoralGermline/dndscv/notinheritedallcolonies_onlychrs20200615_dndscv.txt")
+
+dndsout_somatic_inherited_loh<-dnds_func("~/Documents/GitHub/CoralGermline/dndscv/inheritedlohallcolonies_onlychrs20200615_dndscv.txt")
+dndsout_somatic_notinherited_loh<-dnds_func("~/Documents/GitHub/CoralGermline/dndscv/notinheritedlohallcolonies_onlychrs20200615_dndscv.txt")
+
+dndsout_somatic_inherited_denovo<-dnds_func("~/Documents/GitHub/CoralGermline/dndscv/inheriteddenovoallcolonies_onlychrs20200615_dndscv.txt")
+dndsout_somatic_notinherited_denovo<-dnds_func("~/Documents/GitHub/CoralGermline/dndscv/notinheriteddenovoallcolonies_onlychrs20200615_dndscv.txt")
+
+dndsout_uglm<-dnds_func("~/Documents/GitHub/CoralGermline/dndscv/unique_uglmmetadatadf_onlychrs20200615_dndscv.txt")
+dndsout_gglm<-dnds_func("~/Documents/GitHub/CoralGermline/dndscv/unique_gglmmetadatadf_onlychrs20200615_dndscv.txt")
+
 wall<-rbind(dndsout_somatic_inherited, dndsout_somatic_notinherited, dndsout_uniqueglm)
-colony<-c("Inherited Somatic", "Not Inherited Somatic", "Unique Germline")#, "CA60","CA60", "CA65", "CA65")
+wall<-rbind(dndsout_somatic, dndsout_somatic_notinherited, dndsout_somatic_notinherited_loh, dndsout_somatic_notinherited_denovo)
+colony<-c("Somatic", "Not Inherited Somatic", "Not inherited LoH","Not inherited denovo")#, "CA60","CA60", "CA65", "CA65")
+colony<-c("all","denovo","loh", "inherited","notinherited", "uglm", "inherited_loh","not inherited_loh","not inherited_denovo")
 mle<-wall$mle
 cilow<-wall$cilow
 cihigh<-wall$cihigh
 barplot(mle)
 boxplot(mle~colony, xlab="Colony Name", ylab="global dN/dS", las=1, col=c("light blue","light gray","light green"))
-ggplot(wall, 
+dndscvplot<-ggplot(wall, 
        aes(x = colony, 
            y = mle, 
            group = 1)) +
@@ -46,12 +85,16 @@ ggplot(wall,
   geom_errorbar(aes(ymin = cilow, 
                     ymax = cihigh), 
                 width = .1) +
-  theme_bw() +coord_cartesian(ylim=c(0,2))+
+  theme_bw() +coord_cartesian(ylim=c(0,5))+
   theme(axis.text=element_text(size=25),
-        axis.title=element_text(size=25))+
+        axis.title=element_text(size=25),
+        axis.text.x = element_text(angle = 90))+
   labs(y="Dn/Ds", x="")
 #+
   ylim(0, 2) 
+  
+sel_cv = dndsout_somatic$sel_cv
+print(head(sel_cv), digits = 3)  
 # use rbind to put all the unique mutations from one colony into a single file,then run dnds_func
 CAP12<-read.delim("CAcolony56CAP12_dndscv.txt")
 CAP6<-read.delim("CAcolony56CAP8_dndscv.txt")
