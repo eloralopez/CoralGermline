@@ -8,12 +8,56 @@ library(ggforce)
 library(gridExtra)
 library(dplyr)
 
+CAcolony60<-read.delim("CAcolony60_ii_22and23_20200512.txt",check.names = FALSE)
+header<-colnames(CAcolony60)
+samplenames<-header[4:11]
+vas<-c(samplenames)
+CAcolony60mdf<-melt(CAcolony60, id.vars="chrom.pos", measure.vars=c(samplenames), value.name="genotype",variable.name="sample")
+write.table(CAcolony60mdf, file="meltedCAcolony60_ii_22and23_20200512.txt",sep="\t",quote=FALSE, row.name=FALSE)
+
+CAcolony60<-read.delim("CAcolony60_ii_22and24_20200512.txt",check.names = FALSE)
+header<-colnames(CAcolony60)
+samplenames<-header[4:11]
+vas<-c(samplenames)
+CAcolony60mdf<-melt(CAcolony60, id.vars="chrom.pos", measure.vars=c(samplenames), value.name="genotype",variable.name="sample")
+write.table(CAcolony60mdf, file="meltedCAcolony60_ii_22and24_20200512.txt",sep="\t",quote=FALSE, row.name=FALSE)
+
+CAcolony60<-read.delim("CAcolony60_ii_22and26_20200512.txt",check.names = FALSE)
+header<-colnames(CAcolony60)
+samplenames<-header[4:11]
+vas<-c(samplenames)
+CAcolony60mdf<-melt(CAcolony60, id.vars="chrom.pos", measure.vars=c(samplenames), value.name="genotype",variable.name="sample")
+write.table(CAcolony60mdf, file="meltedCAcolony60_ii_22and26_20200512.txt",sep="\t",quote=FALSE, row.name=FALSE)
+
+CAcolony60<-read.delim("CAcolony60_ii_23and24_20200512.txt",check.names = FALSE)
+header<-colnames(CAcolony60)
+samplenames<-header[4:11]
+vas<-c(samplenames)
+CAcolony60mdf<-melt(CAcolony60, id.vars="chrom.pos", measure.vars=c(samplenames), value.name="genotype",variable.name="sample")
+write.table(CAcolony60mdf, file="meltedCAcolony60_ii_23and24_20200512.txt",sep="\t",quote=FALSE, row.name=FALSE)
+
+CAcolony60<-read.delim("CAcolony60_ii_24and26_20200512.txt",check.names = FALSE)
+header<-colnames(CAcolony60)
+samplenames<-header[4:11]
+vas<-c(samplenames)
+CAcolony60mdf<-melt(CAcolony60, id.vars="chrom.pos", measure.vars=c(samplenames), value.name="genotype",variable.name="sample")
+write.table(CAcolony60mdf, file="meltedCAcolony60_ii_24and26_20200512.txt",sep="\t",quote=FALSE, row.name=FALSE)
+
+CAcolony60<-read.delim("CAcolony60_ii_23and26_20200512.txt",check.names = FALSE)
+header<-colnames(CAcolony60)
+samplenames<-header[4:11]
+vas<-c(samplenames)
+CAcolony60mdf<-melt(CAcolony60, id.vars="chrom.pos", measure.vars=c(samplenames), value.name="genotype",variable.name="sample")
+write.table(CAcolony60mdf, file="meltedCAcolony60_ii_23and26_20200512.txt",sep="\t",quote=FALSE, row.name=FALSE)
+
+
 CAcolony60<-read.delim("CAcolony60_ii_20200324.txt",check.names = FALSE)
 header<-colnames(CAcolony60)
 samplenames<-header[4:19]
 vas<-c(samplenames)
 CAcolony60mdf<-melt(CAcolony60, id.vars="chrom.pos", measure.vars=c(samplenames), value.name="genotype",variable.name="sample")
 write.table(CAcolony60mdf, file="meltedCAcolony60_ii_20200324.txt",sep="\t",quote=FALSE, row.name=FALSE)
+
 
 CAcolony56<-read.delim("CAcolony56_ii_20200324.txt", check.names = FALSE)
 header<-colnames(CAcolony56)
@@ -28,11 +72,19 @@ samplenames<-header[4:14]
 CAcolony56mdf<-melt(CAcolony56noNA, id.vars="chrom.pos", measure.vars=c(samplenames), value.name="genotype",variable.name="sample")
 write.table(CAcolony56mdf, file="meltedCAcolony56_ii_20200413.txt",sep="\t",quote=FALSE, row.name=FALSE)
 
-CAcolony65<-read.delim("CAcolony65_ii_20200331.txt", check.names = FALSE)
+CAcolony56<-read.delim("CAcolony56_ii_6and8_20200512.txt", check.names = FALSE)
+header<-colnames(CAcolony56)
+samplenames<-header[4:11]
+#CAcolony56noNA<-subset(CAcolony56, TypeofMutation!= "NA")
+CAcolony56mdf<-melt(CAcolony56, id.vars="chrom.pos", measure.vars=c(samplenames), value.name="genotype",variable.name="sample")
+write.table(CAcolony56mdf, file="meltedCAcolony56_ii_6and8_20200512.txt",sep="\t",quote=FALSE, row.name=FALSE)
+
+
+CAcolony65<-read.delim("CAcolony65_ii_20200430.txt", check.names = FALSE)
 header<-colnames(CAcolony65)
-samplenames<-header[4:15]
+samplenames<-header[4:11]
 CAcolony65mdf<-melt(CAcolony65, id.vars="chrom.pos", measure.vars=c(samplenames), value.name="genotype",variable.name="sample")
-write.table(CAcolony65mdf, file="meltedCAcolony65_ii_20200331.txt",sep="\t",quote=FALSE, row.name=FALSE)
+write.table(CAcolony65mdf, file="meltedCAcolony65_ii_20200430.txt",sep="\t",quote=FALSE, row.name=FALSE)
 
 CAcolony65<-read.delim("CAcolony65_noCAS10-2_ii_20200414_2.txt", check.names = FALSE)
 header<-colnames(CAcolony65)
