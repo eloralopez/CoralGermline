@@ -39,6 +39,18 @@ if numberofparents ==6:
     replicate7 = "NULL"
 
     replicate8 = "NULL"
+if numberofparents == 8:
+    replicate5 = replicate3 + 2
+
+    replicate6 = replicate4 + 2
+
+    replicate7 = replicate5 + 2
+
+    replicate8 = replicate6 + 2
+
+    spermrep7 = replicate7 + numberofparents
+
+    spermrep8 = replicate8 + numberofparents    
 
 if numberofsperm ==5:
     spermrep1 = replicate1 + numberofparents
@@ -66,18 +78,7 @@ else:
         spermrep6 = replicate6 + numberofparents
 # print(spermrep1, spermrep2, spermrep3)
 
-if numberofparents == 8:
-    replicate5 = replicate3 + 2
 
-    replicate6 = replicate4 + 2
-
-    replicate7 = replicate5 + 2
-
-    replicate8 = replicate6 + 2
-
-    spermrep7 = replicate7 + numberofparents
-
-    spermrep8 = replicate8 + numberofparents
 
 #print(replicate1, replicate2, replicate3, replicate4, replicate5, replicate6, replicate7, replicate8)
 #print(spermrep1, spermrep2, spermrep3, spermrep4, spermrep5, spermrep6, spermrep7, spermrep8)
