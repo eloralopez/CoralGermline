@@ -58,7 +58,11 @@ write.table(mdf, file="meltedCAcolony65_ii_output20200107CAP9.txt",sep="\t",quot
 par(mfrow=c(1,1))
 
 ##to look at all data combined together:
-files<-list.files(path="~/Documents/GitHub/CoralGermline/WithSpermReplicates", pattern="*.ann.txt", full.names=T, recursive=FALSE) #path to all the files you want to include in the analysis
+#files<-list.files(path="~/Documents/GitHub/CoralGermline/WithSpermReplicates", pattern="*.ann.txt", full.names=T, recursive=FALSE) #path to all the files you want to include in the analysis
+files<-list.files(path="~/Documents/GitHub/CoralGermline/cleanpipeline", pattern="*56_dm_20200805.txt.ann.txt", full.names=T, recursive=FALSE)
+files<-list.files(path="~/Documents/GitHub/CoralGermline/cleanpipeline", pattern="*60_dm_20200730.txt.ann.txt", full.names=T, recursive=FALSE)
+files<-list.files(path="~/Documents/GitHub/CoralGermline/cleanpipeline", pattern="*65_dm_20200805.txt.ann.txt", full.names=T, recursive=FALSE)
+
 metadata= NULL
 for (i in 1:length(files)) { 
   file =files[i]
@@ -188,6 +192,8 @@ correspondingsperm1<-sperm1[match(removeuniques_mp$chrom.pos,sperm1$chrom.pos),]
 sperm2<-subset(LoH, MutationClass == "SomaticMutation" & sample ==MutantSperm2) #subsets just the LoH somatic mutations that are MutantSperm2
 correspondingsperm2<-sperm2[match(removeuniques_mp$chrom.pos,sperm2$chrom.pos),]#subsets just the sperm2 loci that match loci in removeuniques_mp
 trueLoH_somatic_mpandms<-rbind(removeuniques_mp, unique(correspondingsperm1), unique(correspondingsperm2)) #correspondingsperm1 and 2 have duplicates of each line, use unique to remove duplicates, then rbind with removeuniques_mp for the dataset that has the mutantparent and mutantsperm samples at just the loci that are true somatic LoH
+trueLoH_somatic_mpandms<-subset(trueLoH_somatic_mpandms, chrom.pos != "chr9.10238326")
+trueLoH_somatic_mpandms<-subset(trueLoH_somatic_mpandms, chrom.pos != "chr13.20768582")
 #as.data.frame(table(trueLoH_somatic_mpandms$chrom.pos))
 #nrow(subset(trueDenovos_somatic_mpandms, TrueorFalse=="True"& sample==MutantSperm1))
 
@@ -340,6 +346,7 @@ uniquesomaticCA56<-somaticCA56[match(unique(somaticCA56$chrom.pos), 					somatic
 uniquesomaticCA56_denovo<-subset(uniquesomaticCA56, GoH_or_LoH=="DeNovo")
 uniquesomaticCA56_loh<-subset(uniquesomaticCA56, GoH_or_LoH=="LoH")
 somaticCA56_denovo<-subset(somaticCA56, GoH_or_LoH=="DeNovo")
+
 somaticCA60<-subset(somaticmetadatadf, startsWith(somaticmetadatadf$sample,'CAP22')==TRUE | 
                       startsWith(somaticmetadatadf$sample,'CAS22')==TRUE |
                       startsWith(somaticmetadatadf$sample,'CAP23')==TRUE | 
@@ -352,6 +359,7 @@ uniquesomaticCA60<-somaticCA60[match(unique(somaticCA60$chrom.pos), 					somatic
 uniquesomaticCA60_denovo<-subset(uniquesomaticCA60, GoH_or_LoH=="DeNovo")
 uniquesomaticCA60_loh<-subset(uniquesomaticCA60, GoH_or_LoH=="LoH")
 somaticCA60_denovo<-subset(somaticCA60, GoH_or_LoH=="DeNovo")
+
 somaticCA65<-subset(somaticmetadatadf, startsWith(somaticmetadatadf$sample,'CAP10')==TRUE | 
                       startsWith(somaticmetadatadf$sample,'CAS10')==TRUE |
                       startsWith(somaticmetadatadf$sample,'CAP11')==TRUE | 
@@ -425,7 +433,7 @@ gglmCA65<-subset(gglmmetadatadf, startsWith(gglmmetadatadf$sample,'CAP10')==TRUE
 
 colony<-c(rep("CA56" , 4) , rep("CA60" , 4) , rep("CA65" , 4))
 class<-factor(rep(c("Non-inherited Mosaic", "Inherited Mosaic", "Unique Germline" , "Global Germline") , 3),levels = c("Non-inherited Mosaic", "Inherited Mosaic","Unique Germline","Global Germline"))
-value<-c(nrow(a_notinherited), nrow(a_inherited), nrow(uniqueuglmCA56), nrow(gglmCA56), nrow(b_notinherited), nrow(b_inherited), nrow(uniqueuglmCA60), nrow(gglmCA65), nrow(c_notinherited), nrow(c_inherited), nrow(uniqueuglmCA65), nrow(gglmCA65))
+valuefreqs<-c(c(nrow(a_notinherited)/CA56denom, nrow(a_inherited)/CA56denom, nrow(uniqueuglmCA56)/CA56denom, nrow(gglmCA56)/CA56denom, nrow(b_notinherited)/CA60denom, nrow(b_inherited)/CA60denom, nrow(uniqueuglmCA60)/CA60denom, nrow(gglmCA60)/CA60denom, nrow(c_notinherited)/CA65denom, nrow(c_inherited)/CA65denom, nrow(uniqueuglmCA65)/CA65denom, nrow(gglmCA65)/CA65denom))
 
 colonyprop<-c(rep("CAcolony56" , 3) , rep("CAcolony60" , 3) , rep("CAcolony65" , 3))
 classprop<-factor(rep(c("Inherited Mosaic", "Unique Germline" , "Global Germline") , 3),levels = c("Inherited Mosaic","Unique Germline","Global Germline"))
@@ -434,7 +442,7 @@ prop100<-100*proportions
 mutationdataprop<-data.frame(colonyprop, classprop, prop100)
 
 #value<-c(nrow(a_notinherited), nrow(a_inherited), nrow(b_notinherited), nrow(b_inherited),nrow(c_notinherited), nrow(c_inherited))
-mutationdata<-data.frame(colony, class, value)
+mutationdata<-data.frame(colony, class, value, valuefreqs)
 comparisonplot<-ggplot(mutationdata, aes(x=colony, y=value, fill=class)) + 
   geom_bar(position="dodge", stat="identity") +
   theme_bw() +
@@ -516,6 +524,7 @@ dndscvdf_globalglm<- data.frame("sampleID"= unique_globalglm$sample,"chr"= uniqu
 #}
 scatterplot_func<-function(somaticmetadatadf) {
   #########comparison for all somatic mutations:##########
+  somaticmetadatadf<-na.omit(somaticmetadatadf)
   mutantparentdf<-subset(somaticmetadatadf, sample==MutantParent1)# & TrueorFalse=="True") #for CAP22-1 and CAP22-2
   attach(mutantparentdf)
   mutantparentdf <- mutantparentdf[order(chrom.pos),]
@@ -726,7 +735,7 @@ inheritedcountb_<-nrow(inheriteddenovob_)+nrow(inheritedlohb_)
 CAP22<-subset(b_, sample=="CAP22-1_S43")
 CAP23<-subset(b_, sample=="CAP23-1_S45")
 CAP24<-subset(b_,sample=="CAP24-1_S42")
-CAP26<-subset(b_,sample=="CAP26")
+CAP26<-subset(b_,sample=="CAP26-1_S39")
 CAP22ic<-nrow(subset(CAP22, Inheritance=="inherited"))/nrow(CAP22)
 CAP23ic<-nrow(subset(CAP23, Inheritance=="inherited"))/nrow(CAP23)
 CAP24ic<-nrow(subset(CAP24, Inheritance=="inherited"))/nrow(CAP24)
@@ -824,8 +833,8 @@ comparisonplotinhifallinh<-ggplot(mutationdataifallwereinherited, aes(x=colony, 
         axis.title=element_text(size=15))+
   theme(legend.text=element_text(size=15))
 #boxplot for inherited proportion:
-colony<-c(rep("CA56" , 3) , rep("CA60" , 3) , rep("CA65" , 2))
-proportion<- 100*c(CAP6ic,CAP8ic, CAP12ic, CAP22ic, CAP23ic, CAP24ic, CAP11ic, CAP9ic)  
+colony<-c(rep("CA56" , 2) , rep("CA60" , 3) , rep("CA65" , 2))
+proportion<- 100*c(CAP6ic,CAP8ic, CAP22ic, CAP23ic, CAP24ic, CAP11ic, CAP9ic)  
 df_inheritedprops<-data.frame(colony,proportion)
 box <- ggplot(df_inheritedprops, aes(x = colony, y = proportion))
 box<- box + geom_boxplot()
@@ -876,48 +885,264 @@ proportionsplot<-ggplot(mutationdata, aes(x=colony, y=value, fill=class)) +
 
 unfilteredsomatic<-subset(metadatadf.0, MutationClass=="SomaticMutation")
 allcolonies_unfiltered<-scatterplot_func(unfilteredsomatic)
-
+#allcol_inheritedgohplot<-scatterplot_func(allcol)
+allcol_denovo<-subset(allcol, ParentAverage<1)
+#otherframe<-data.frame(chrom.pos=mutantparentdf$chrom.pos, sampleID=mutantparentdf$sample, ref=mutantparentdf$ref, alt=mutantparentdf$alt,  chrom=mutantparentdf$chrom, pos=mutantparentdf$pos, sample=mutantparentdf$sample, ParentAverage=parentsaverage, SpermAverage=spermaverage, s1=spermdf1$mutant_allele_depth, s2=spermdf2$mutant_allele_depth, TrueorFalse = as.factor(mutantparentdf$TrueorFalse), GoHorLoH = as.factor(mutantparentdf$GoH_or_LoH), MutationType = as.factor(mutantparentdf$MutationType),WhattoWhat=mutantparentdf$WhattoWhat)
+allcoldfk<-subset(allcol_denovo, SpermAverage>0)
+pk_allcol<-ggplot(allcoldfk, aes(x=ParentAverage, y=SpermAverage, color=Inheritance)) + geom_point(size=2.5) +
+  geom_smooth(method=lm, aes(group=1)) +
+  theme_bw() +
+  stat_cor(label.x=0.2,label.y=0.45, aes(group=1), size=8) +
+  ylim(0, .75) + xlim(0, .6) +
+  scale_color_manual(values = c("red","black")) +
+  ylab("Average Variant Allele Frequency in the Mutant Sperm Pool") + xlab("Average Variant Allele Frequency in the Mutant Parent")+
+  theme(axis.text=element_text(size=20),
+        axis.title=element_text(size=20))+
+  geom_abline(intercept=0,slope=1)+
+  theme(legend.text=element_text(size=20))
 allcolonies | allcolonies_unfiltered
 
-CA56i<-c(nrow(subset(CAP6, Inheritance=="inherited")), nrow(subset(CAP8, Inheritance=="inherited")), nrow(subset(CAP12, Inheritance=="inherited")))
-CA56ip<-CA56i/(CA56i+CA56uglm+CA56gglm)
+CA56i<-c(nrow(subset(CAP6, Inheritance=="inherited")), nrow(subset(CAP8, Inheritance=="inherited")))
+#CA56ip<-CA56i/(CA56i+CA56uglm+CA56gglm)
 CA60i<-c(nrow(subset(CAP22, Inheritance=="inherited")),nrow(subset(CAP23, Inheritance=="inherited")),nrow(subset(CAP24, Inheritance=="inherited")))
-CA60ip<-CA60i/(CA60i+CA60uglm+CA60gglm)
+#CA60ip<-CA60i/(CA60i+CA60uglm+CA60gglm)
 CA65i<-c(nrow(subset(CAP11, Inheritance=="inherited")),nrow(subset(CAP9, Inheritance=="inherited")))
-CA65ip<-CA65i/(CA65i+CA65uglm+CA65gglm)
-CA56n<-c(nrow(subset(CAP6, Inheritance=="notinherited")), nrow(subset(CAP8, Inheritance=="notinherited")), nrow(subset(CAP12, Inheritance=="notinherited")))
-CA56np<-CA56n/(CA56n+CA56uglm+CA56gglm)
+#CA65ip<-CA65i/(CA65i+CA65uglm+CA65gglm)
+CA56n<-c(nrow(subset(CAP6, Inheritance=="notinherited")), nrow(subset(CAP8, Inheritance=="notinherited")))
+#CA56np<-CA56n/(CA56n+CA56uglm+CA56gglm)
 CA60n<-c(nrow(subset(CAP22, Inheritance=="notinherited")),nrow(subset(CAP23, Inheritance=="notinherited")),nrow(subset(CAP24, Inheritance=="notinherited")))
-CA60np<-CA60n/(CA60n+CA60uglm+CA60gglm)
+#CA60np<-CA60n/(CA60n+CA60uglm+CA60gglm)
 CA65n<-c(nrow(subset(CAP11, Inheritance=="notinherited")),nrow(subset(CAP9, Inheritance=="notinherited")))
-CA65np<-CA65n/(CA65n+CA65uglm+CA65gglm)
-CA56uglm<-c(nrow(subset(uglmmetadatadf, startsWith(uglmmetadatadf$sample,'CAP12')==TRUE )) ,
-nrow(subset(uglmmetadatadf, startsWith(uglmmetadatadf$sample,'CAP6')==TRUE ) ),
-     nrow(subset(uglmmetadatadf, startsWith(uglmmetadatadf$sample,'CAP8')==TRUE )))
-CA56uglmp<-CA56uglm/(CA56i+CA56uglm+CA56gglm)
-CA60uglm<-c( nrow(subset(uglmmetadatadf, startsWith(uglmmetadatadf$sample,'CAP22')==TRUE ) ),
-nrow(subset(uglmmetadatadf, startsWith(uglmmetadatadf$sample,'CAP23')==TRUE ) ),
-nrow(subset(uglmmetadatadf, startsWith(uglmmetadatadf$sample,'CAP24')==TRUE )))#,
-nrow(subset(uglmmetadatadf, startsWith(uglmmetadatadf$sample,'CAP26')==TRUE )))
-CA60uglmp<-CA60uglm/(CA60i+CA60uglm+CA60gglm)
+#CA65np<-CA65n/(CA65n+CA65uglm+CA65gglm)
+CA56uglm<-c(nrow(subset(uniqueuglmCA56, startsWith(uniqueuglmCA56$sample,'CAP6')==TRUE ) ),
+            nrow(subset(uniqueuglmCA56, startsWith(uniqueuglmCA56$sample,'CAP8')==TRUE )))
+CAS6uglm<-nrow(subset(uniqueuglmCA56, startsWith(uniqueuglmCA56$sample,'CAP6')==TRUE ) )
+
+CAS8uglm<-nrow(subset(uniqueuglmCA56, startsWith(uniqueuglmCA56$sample,'CAP8')==TRUE ))
+#CA56uglmp<-CA56uglm/(CA56i+CA56uglm+CA56gglm)
+CA60uglm<-c( nrow(subset(uniqueuglmCA60, startsWith(uniqueuglmCA60$sample,'CAP22')==TRUE ) ),
+             nrow(subset(uniqueuglmCA60, startsWith(uniqueuglmCA60$sample,'CAP23')==TRUE ) ),
+             nrow(subset(uniqueuglmCA60, startsWith(uniqueuglmCA60$sample,'CAP24')==TRUE )))#,
+nrow(subset(uniqueuglmCA60, startsWith(uniqueuglmCA60$sample,'CAP26')==TRUE ))
+CAS22uglm<-nrow(subset(uniqueuglmCA60, startsWith(uniqueuglmCA60$sample,'CAP22')==TRUE ) )
+CAS23uglm<-nrow(subset(uniqueuglmCA60, startsWith(uniqueuglmCA60$sample,'CAP23')==TRUE ) )
+CAS24uglm<-nrow(subset(uniqueuglmCA60, startsWith(uniqueuglmCA60$sample,'CAP24')==TRUE ))
+#CA60uglmp<-CA60uglm/(CA60i+CA60uglm+CA60gglm)
 CA65uglm<- c(
-nrow(subset(uglmmetadatadf, startsWith(uglmmetadatadf$sample,'CAP11')==TRUE ) ),
-nrow(subset(uglmmetadatadf, startsWith(uglmmetadatadf$sample,'CAP9')==TRUE )))
-CA65uglmp<-CA65uglm/(CA65i+CA65uglm+CA65gglm)
-CA56gglm<-c(nrow(subset(gglmmetadatadf, startsWith(gglmmetadatadf$sample,'CAS12')==TRUE )) ,
-            nrow(subset(gglmmetadatadf, startsWith(gglmmetadatadf$sample,'CAS6')==TRUE ) ),
-            nrow(subset(gglmmetadatadf, startsWith(gglmmetadatadf$sample,'CAS8')==TRUE )))
-CA56gglmp<-CA56gglm/(CA56i+CA56uglm+CA56gglm)
-CA60gglm<-c( nrow(subset(gglmmetadatadf, startsWith(gglmmetadatadf$sample,'CAS22')==TRUE ) ),
-             nrow(subset(gglmmetadatadf, startsWith(gglmmetadatadf$sample,'CAS23')==TRUE ) ),
-             nrow(subset(gglmmetadatadf, startsWith(gglmmetadatadf$sample,'CAS24')==TRUE )))#,
-             #nrow(subset(gglmmetadatadf, startsWith(gglmmetadatadf$sample,'CAS26')==TRUE )))
-CA60gglmp<-CA60gglm/(CA60i+CA60uglm+CA60gglm)
+  nrow(subset(uniqueuglmCA65, startsWith(uniqueuglmCA65$sample,'CAP11')==TRUE ) ),
+  nrow(subset(uniqueuglmCA65, startsWith(uniqueuglmCA65$sample,'CAP9')==TRUE )))
+CAS9uglm<-nrow(subset(uniqueuglmCA65, startsWith(uniqueuglmCA65$sample,'CAP9')==TRUE ) )
+CAS11uglm<-nrow(subset(uniqueuglmCA65, startsWith(uniqueuglmCA65$sample,'CAP11')==TRUE ) )
+#CA65uglmp<-CA65uglm/(CA65i+CA65uglm+CA65gglm)
+CA56gglm<-c(
+            nrow(subset(gglmCA56, startsWith(gglmCA56$sample,'CAS6')==TRUE ) ),
+            nrow(subset(gglmCA56, startsWith(gglmCA56$sample,'CAS8')==TRUE )))
+#CA56gglmp<-CA56gglm/(CA56i+CA56uglm+CA56gglm)
+CA60gglm<-c( nrow(subset(gglmCA60, startsWith(gglmCA60$sample,'CAS22')==TRUE ) ),
+             nrow(subset(gglmCA60, startsWith(gglmCA60$sample,'CAS23')==TRUE ) ),
+             nrow(subset(gglmCA60, startsWith(gglmCA60$sample,'CAS24')==TRUE )))#,
+#nrow(subset(gglmCA60, startsWith(gglmCA60$sample,'CAS26')==TRUE )))
+#CA60gglmp<-CA60gglm/(CA60i+CA60uglm+CA60gglm)
 CA65gglm<- c(
-             nrow(subset(gglmmetadatadf, startsWith(gglmmetadatadf$sample,'CAS11')==TRUE ) ),
-             nrow(subset(gglmmetadatadf, startsWith(gglmmetadatadf$sample,'CAS9')==TRUE )))
-CA65gglmp<-CA65gglm/(CA65i+CA65uglm+CA65gglm)
-sumswithnon<-c(sum(CA56n) ,sum(CA56i), sum(CA56uglm), sum(CA56gglm), sum(CA60n), sum(CA60i), sum(CA60uglm), sum(CA60gglm), sum(CA65n), sum(CA65i), sum(CA65uglm), sum(CA65gglm))
+  nrow(subset(gglmCA65, startsWith(gglmCA65$sample,'CAS11')==TRUE ) ),
+  nrow(subset(gglmCA65, startsWith(gglmCA65$sample,'CAS9')==TRUE )))
+#CA65gglmp<-CA65gglm/(CA65i+CA65uglm+CA65gglm)
+
+#denominators:
+CA56denom<-57117226-(892*14)
+CA60denom<-20625882-(892*14)
+CA65denom<-4309314-(892*14)
+#surface areas:
+CA56sa<-36.25
+CA60sa<-253.02
+CA65sa<-704.15
+
+#freq per sample:
+CAP6inh<-nrow(subset(CAP6, Inheritance=="inherited"))
+CAP6inhLOH<-nrow(subset(CAP6, Inheritance=="inherited" & GoHorLoH=="LoH"))
+CAP6inhGOH<-CAP6inh-CAP6inhLOH
+CAP6notinh<-nrow(CAP6)-CAP6inh
+CAP6notinhLOH<-nrow(subset(CAP6, Inheritance=="notinherited" & GoHorLoH=="LoH"))
+CAP6notinhGOH<-CAP6notinh-CAP6notinhLOH
+CAP8inh<-nrow(subset(CAP8, Inheritance=="inherited"))
+CAP8inhLOH<-nrow(subset(CAP8, Inheritance=="inherited" & GoHorLoH=="LoH"))
+CAP8inhGOH<-CAP8inh-CAP8inhLOH
+CAP8notinh<-nrow(CAP8)-CAP8inh
+CAP8notinhLOH<-nrow(subset(CAP8, Inheritance=="notinherited" & GoHorLoH=="LoH"))
+CAP8notinhGOH<-CAP8notinh-CAP8notinhLOH
+CAP22inh<-nrow(subset(CAP22, Inheritance=="inherited"))
+CAP22inhLOH<-nrow(subset(CAP22, Inheritance=="inherited" & GoHorLoH=="LoH"))
+CAP22inhGOH<-CAP22inh-CAP22inhLOH
+CAP22notinh<-nrow(CAP22)-CAP22inh
+CAP22notinhLOH<-nrow(subset(CAP22, Inheritance=="notinherited" & GoHorLoH=="LoH"))
+CAP22notinhGOH<-CAP22notinh-CAP22notinhLOH
+
+CAP23inh<-nrow(subset(CAP23, Inheritance=="inherited"))
+CAP23inhLOH<-nrow(subset(CAP23, Inheritance=="inherited" & GoHorLoH=="LoH"))
+CAP23inhGOH<-CAP23inh-CAP23inhLOH
+CAP23notinh<-nrow(CAP23)-CAP23inh
+CAP23notinhLOH<-nrow(subset(CAP23, Inheritance=="notinherited" & GoHorLoH=="LoH"))
+CAP23notinhGOH<-CAP23notinh-CAP23notinhLOH
+
+CAP24inh<-nrow(subset(CAP24, Inheritance=="inherited"))
+CAP24inhLOH<-nrow(subset(CAP24, Inheritance=="inherited" & GoHorLoH=="LoH"))
+CAP24inhGOH<-CAP24inh-CAP24inhLOH
+CAP24notinh<-nrow(CAP24)-CAP24inh
+CAP24notinhLOH<-nrow(subset(CAP24, Inheritance=="notinherited" & GoHorLoH=="LoH"))
+CAP24notinhGOH<-CAP24notinh-CAP24notinhLOH
+
+CAP9inh<-nrow(subset(CAP9, Inheritance=="inherited"))
+CAP9inhLOH<-nrow(subset(CAP9, Inheritance=="inherited" & GoHorLoH=="LoH"))
+CAP9inhGOH<-CAP9inh-CAP9inhLOH
+CAP9notinh<-nrow(CAP9)-CAP9inh
+CAP9notinhLOH<-nrow(subset(CAP9, Inheritance=="notinherited" & GoHorLoH=="LoH"))
+CAP9notinhGOH<-CAP9notinh-CAP9notinhLOH
+
+CAP11inh<-nrow(subset(CAP11, Inheritance=="inherited"))
+CAP11inhLOH<-nrow(subset(CAP11, Inheritance=="inherited" & GoHorLoH=="LoH"))
+CAP11inhGOH<-CAP11inh-CAP11inhLOH
+CAP11notinh<-nrow(CAP11)-CAP11inh
+CAP11notinhLOH<-nrow(subset(CAP11, Inheritance=="notinherited" & GoHorLoH=="LoH"))
+CAP11notinhGOH<-CAP11notinh-CAP11notinhLOH
+
+allGOH<-sum(CAP6inhGOH, CAP6notinhGOH,CAP8inhGOH, CAP8notinhGOH,CAP22inhGOH, CAP22notinhGOH,CAP23inhGOH, CAP23notinhGOH,CAP24inhGOH, CAP24notinhGOH,CAP9inhGOH, CAP9notinhGOH,CAP11inhGOH, CAP11notinhGOH)
+allLOH<-sum(CAP6inhLOH, CAP6notinhLOH,CAP8inhLOH, CAP8notinhLOH,CAP22inhLOH, CAP22notinhLOH,CAP23inhLOH, CAP23notinhLOH,CAP24inhLOH, CAP24notinhLOH,CAP9inhLOH, CAP9notinhLOH,CAP11inhLOH, CAP11notinhLOH)  
+inhGOH<-sum(CAP6inhGOH, CAP8inhGOH, CAP22inhGOH, CAP23inhGOH,CAP24inhGOH, CAP9inhGOH,CAP11inhGOH)
+inhLOH<-sum(CAP6inhLOH, CAP8inhLOH, CAP22inhLOH, CAP23inhLOH,CAP24inhLOH, CAP9inhLOH,CAP11inhLOH)
+notinhGOH<-sum(CAP6notinhGOH, CAP8notinhGOH, CAP22notinhGOH, CAP23notinhGOH,CAP24notinhGOH, CAP9notinhGOH,CAP11notinhGOH)
+notinhLOH<-sum(CAP6notinhLOH, CAP8notinhLOH, CAP22notinhLOH, CAP23notinhLOH,CAP24notinhLOH, CAP9notinhLOH,CAP11notinhLOH)
+uglmGOH<-sum(nrow(subset(uniqueuglmCA56, GoH_or_LoH=="DeNovo")), nrow(subset(uniqueuglmCA60, GoH_or_LoH=="DeNovo")), nrow(subset(uniqueuglmCA65, GoH_or_LoH=="DeNovo")))
+uglmLOH<-sum(nrow(subset(uniqueuglmCA56, GoH_or_LoH=="LoH")), nrow(subset(uniqueuglmCA60, GoH_or_LoH=="LoH")), nrow(subset(uniqueuglmCA65, GoH_or_LoH=="LoH")))
+gglmGOH<-sum(nrow(subset(gglmCA56, GoH_or_LoH=="DeNovo")), nrow(subset(gglmCA60, GoH_or_LoH=="DeNovo")), nrow(subset(gglmCA65, GoH_or_LoH=="DeNovo")))
+gglmLOH<-sum(nrow(subset(gglmCA56, GoH_or_LoH=="LoH")), nrow(subset(gglmCA60, GoH_or_LoH=="LoH")), nrow(subset(gglmCA65, GoH_or_LoH=="LoH")))
+
+subset<-c(rep("all",2),rep("inherited",2),rep("not inherited",2))
+typez<-rep(c("LoH","GoH"),3)
+numbers<-c(allLOH, allGOH, inhLOH,inhGOH,notinhLOH,notinhGOH)
+percents<-c(allLOH/(allLOH+allGOH), allGOH/(allLOH+allGOH), inhLOH/(inhLOH+inhGOH),inhGOH/(inhLOH+inhGOH),notinhLOH/(notinhLOH+notinhGOH),notinhGOH/(notinhLOH+notinhGOH))
+#sepercents<-c(se(percents)
+set<-data.frame(subset,typez,numbers)
+z<- ggplot(set, aes(x=subset, y=numbers,fill=typez)) +
+  geom_bar(position="dodge", stat="identity") +
+  theme_bw() +
+  scale_fill_brewer(palette = "Paired") +
+  ylab("Number of mutations") + xlab("")+
+  theme(axis.text=element_text(size=25),
+        axis.title=element_text(size=25))   +
+  theme(legend.text=element_text(size=25))
+
+GOHallsom<- c((CAP6inhGOH+ CAP6notinhGOH)/nrow(CAP6), (CAP8inhGOH+ CAP8notinhGOH)/nrow(CAP8), (CAP22inhGOH+ CAP22notinhGOH)/nrow(CAP22), (CAP23inhGOH+ CAP23notinhGOH)/nrow(CAP23), (CAP24inhGOH+ CAP24notinhGOH)/nrow(CAP24), (CAP9inhGOH+ CAP9notinhGOH)/nrow(CAP9), (CAP11inhGOH+ CAP11notinhGOH)/nrow(CAP11))
+meanGOHallsom<- mean(GOHallsom)
+seGOHallsom<-se( GOHallsom)
+LOHallsom<-c((CAP6inhLOH+ CAP6notinhLOH)/nrow(CAP6), (CAP8inhLOH+ CAP8notinhLOH)/nrow(CAP8), (CAP22inhLOH+ CAP22notinhLOH)/nrow(CAP22), (CAP23inhLOH+ CAP23notinhLOH)/nrow(CAP23), (CAP24inhLOH+ CAP24notinhLOH)/nrow(CAP24), (CAP9inhLOH+ CAP9notinhLOH)/nrow(CAP9), (CAP11inhLOH+ CAP11notinhLOH)/nrow(CAP11))
+meanLOHallsom<-mean(LOHallsom)
+seLOHallsom<-se( LOHallsom)
+GOHinh<-c				  (CAP6inhGOH/CAP6inh, (CAP8inhGOH)/CAP8inh, (CAP22inhGOH)/CAP22inh, (CAP23inhGOH)/CAP23inh, 
+                 (CAP24inhGOH)/CAP24inh, (CAP9inhGOH)/CAP9inh, (CAP11inhGOH)/CAP11inh)
+meanGOHinh<-mean(GOHinh)
+seGOHinh<-se(GOHinh)
+LOHinh<- c(CAP6inhLOH/CAP6inh, (CAP8inhLOH)/CAP8inh, (CAP22inhLOH)/CAP22inh, (CAP23inhLOH)/CAP23inh, 
+                  (CAP24inhLOH)/CAP24inh, (CAP9inhLOH)/CAP9inh, (CAP11inhLOH)/CAP11inh)
+meanLOHinh<-mean()
+GOHnotinh<-c				  (CAP6notinhGOH/CAP6notinh, (CAP8notinhGOH)/CAP8notinh, (CAP22notinhGOH)/CAP22notinh, (CAP23notinhGOH)/CAP23notinh, 
+                   (CAP24notinhGOH)/CAP24notinh, (CAP9notinhGOH)/CAP9notinh, (CAP11notinhGOH)/CAP11notinh)
+LOHnotinh<-c				  (CAP6notinhLOH/CAP6notinh, (CAP8notinhLOH)/CAP8notinh, (CAP22notinhLOH)/CAP22notinh, (CAP23notinhLOH)/CAP23notinh, 
+                   (CAP24notinhLOH)/CAP24notinh, (CAP9notinhLOH)/CAP9notinh, (CAP11notinhLOH)/CAP11notinh)
+GOHuglm<-c(subset(uniqueuglmCA56, startsWith(uniqueuglmCA56$sample,'CAP8')==TRUE & GoH_or_LoH=="DeNovo"), subset(uniqueuglmCA56, startsWith(uniqueuglmCA56$sample,'CAP8')==TRUE & GoH_or_LoH=="DeNovo"))
+LOHuglm
+
+means<-c(meanGOHallsom, meanLOHallsom, meanGOHinh, meanLOHinh, mean(GOHnotinh), mean(LOHnotinh))
+allse<-c(seGOHallsom, seLOHallsom, seGOHinh, se(LOHinh),se(GOHnotinh), se(LOHnotinh))
+typez2<-rep(c("GoH","LoH"),3)
+
+df<-data.frame(subset, typez2, means, allse )
+z2<- ggplot(df, aes(x=subset, y=means,fill=typez2)) +
+  geom_bar(position="dodge", stat="identity") +
+  theme_bw() +
+  scale_fill_brewer(palette = "Paired") +
+  ylab("Proportion of mutations") + xlab("")+
+  theme(axis.text=element_text(size=25),
+        axis.title=element_text(size=25))   +
+  theme(legend.text=element_text(size=25))+
+  geom_errorbar(position="dodge",aes(ymin=means-(2*allse), ymax=means+(2*allse)))
+
+totalsomatic<-c(nrow(CAP6)/CA56denom, nrow(CAP8)/CA56denom, nrow(CAP22)/CA60denom, nrow(CAP23)/CA60denom, nrow(CAP24)/CA60denom,
+                nrow(CAP9)/CA65denom, nrow(CAP11)/CA65denom)
+totalsomaticCA56<-c(nrow(CAP6)/CA56denom, nrow(CAP8)/CA56denom)
+totalsomaticCA60<-c(nrow(CAP22)/CA60denom, nrow(CAP23)/CA60denom, nrow(CAP24)/CA60denom)
+totalsomaticCA65<-c(nrow(CAP9)/CA65denom, nrow(CAP11)/CA65denom)
+meantotalsomatic<-mean(totalsomatic)
+inheritedsom<-c(CAP6inh/CA56denom, CAP8inh/CA56denom, CAP22inh/CA60denom, CAP23inh/CA60denom, CAP24inh/CA60denom, CAP9inh/CA65denom, CAP11inh/CA65denom)
+inheritedsomCA56<-c(CAP6inh/CA56denom, CAP8inh/CA56denom)
+inheritedsomCA60<-c( CAP22inh/CA60denom, CAP23inh/CA60denom, CAP24inh/CA60denom)
+inheritedsomCA65<-c(CAP9inh/CA65denom, CAP11inh/CA65denom)
+
+meaninheritedsom<-mean(inheritedsom)
+notinheritedsom<-totalsomatic-inheritedsom
+notinheritedsomCA56<-c(CAP6notinh/CA56denom, CAP8notinh/CA56denom)
+notinheritedsomCA60<-c( CAP22notinh/CA60denom, CAP23notinh/CA60denom, CAP24notinh/CA60denom)
+notinheritedsomCA65<-c(CAP9notinh/CA65denom, CAP11notinh/CA65denom)
+
+meannotinheritedsom<-mean(notinheritedsom)
+uglm<-c(CAS6uglm/CA56denom, CAS8uglm/CA56denom, CAS22uglm/CA60denom, CAS23uglm/CA60denom, CAS24uglm/CA60denom, CAS9uglm/CA65denom, CAS11uglm/CA65denom)
+uglmeritedsomCA56<-c(CAS6uglm/CA56denom, CAS8uglm/CA56denom)
+uglmeritedsomCA60<-c( CAS22uglm/CA60denom, CAS23uglm/CA60denom, CAS24uglm/CA60denom)
+uglmeritedsomCA65<-c(CAS9uglm/CA65denom, CAS11uglm/CA65denom)
+
+persamplebycolonyfreqs<-
+meanuglm<-mean(uglm)
+
+#gglm<-c(sum(CA56gglm)/CA56denom, sum(CA60gglm)/CA60denom, sum(CA65gglm)/CA65denom)
+persamplefreqs<-c(totalsomatic, inheritedsom,notinheritedsom,uglm)
+persampleareas<-rep(c(rep(CA56sa,2),rep(CA60sa,3),rep(CA65sa,2)),4)
+persamplemuttypes<-factor(c(rep("All somatic",7),rep("Inherited somatic",7),rep("Not inherited somatic",7),rep("Unique germline",7)),
+                          levels=c("All somatic","Inherited somatic","Not inherited somatic", "Unique germline"))
+persamplefreqdata<-data.frame(persampleareas,persamplefreqs, persamplemuttypes)
+
+se<-function(x) sd(x)/sqrt(length(x))
+setotalsomatic<-se(totalsomatic)
+seinheritedsom<-se(inheritedsom)
+senotinheritedsom<-se(notinheritedsom)
+seuglm<-se(uglm)
+ses<-c(setotalsomatic,seinheritedsom,senotinheritedsom,seuglm)
+meanpersamplefreqs<-c(meantotalsomatic,meaninheritedsom, meannotinheritedsom,meanuglm)
+muttypes_formeans<-factor(c("All somatic","Inherited somatic","Not inherited somatic","Unique germline"),
+                          levels=c("All somatic","Inherited somatic","Not inherited somatic", "Unique germline"))
+meansfreqdata<-data.frame(muttypes_formeans,meanpersamplefreqs,ses)
+
+
+meanpersampleplot<-ggplot(meansfreqdata, 
+                   aes(x = muttypes_formeans, 
+                       y = meanpersamplefreqs, 
+                       group = 1)) +
+  geom_point(size = 3) +
+  
+  geom_errorbar(aes(ymin=meanpersamplefreqs-(2*ses), ymax=meanpersamplefreqs+(2*ses)),width=0.1) +
+  theme_bw() +
+  theme(axis.text=element_text(size=25),
+        axis.title=element_text(size=25),
+        axis.text.x = element_text(angle = 90))+
+  labs(y="Mutations per callable nucleotide", x="")
+#+
+
+areas<-rep(c(CA56sa,CA60sa,CA65sa),4)
+nisomaticfreq<-c(sum(CA56n)/CA56denom, sum(CA60n)/CA60denom, sum(CA65n)/CA65denom)
+isomaticfreq<-c(sum(CA56i)/CA56denom, sum(CA60i)/CA60denom, sum(CA65i)/CA65denom)
+uglmfreq<-c(sum(CA56uglm)/CA56denom, sum(CA60uglm)/CA60denom, sum(CA65uglm)/CA65denom)
+gglmfreq<-c(sum(CA56gglm)/CA56denom, sum(CA60gglm)/CA60denom, sum(CA65gglm)/CA65denom)
+freqs<-c(nisomaticfreq,isomaticfreq,uglmfreq,gglmfreq)
+muttypes<-factor(c(rep("Not inherited somatic",3),rep("Inherited somatic",3),rep("Unique germline",3),rep("Global germline",3)),
+                 levels=c("Not inherited somatic","Inherited somatic", "Unique germline", "Global germline"))
+#freqdata<-data.frame(areas,nisomaticfreq, isomaticfreq, uglmfreq, gglmfreq)
+freqdata<-data.frame(areas, freqs, muttypes)
+areaVSfreqplot<-ggplot(freqdata, aes(x=areas,y=freqs, color=factor(muttypes)))+
+  geom_point(size = 3)+
+  theme_bw()+
+  #scale_y_continuous(trans='log2')+
+  theme(legend.text=element_text(size=25))+
+  ylab("Mutations per callable nucleotide") + xlab("Colony surface area (square inches)")
+
+sumswithnon<-c(sum(CA56n)/CA56denom ,sum(CA56i)/CA56denom, sum(CA56uglm)/CA56denom, sum(CA56gglm)/CA56denom, sum(CA60n)/CA60denom, sum(CA60i)/CA60denom, sum(CA60uglm)/CA60denom, sum(CA60gglm)/CA60denom, sum(CA65n)/CA65denom, sum(CA65i)/CA65denom, sum(CA65uglm)/CA65denom, sum(CA65gglm)/CA65denom)
 colonysums<-c(rep("CA56" , 4) , rep("CA60" , 4) , rep("CA65" , 4))
 classsums<-factor(rep(c("Not Inherited Mosaic", "Inherited Mosaic", "Unique Germline" , "Global Germline") , 3),levels = c("Not Inherited Mosaic","Inherited Mosaic","Unique Germline","Global Germline"))
 mutationsums<-data.frame(colonysums, classsums, sumswithnon)
