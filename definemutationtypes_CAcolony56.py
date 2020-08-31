@@ -9,12 +9,20 @@ datatable = sys.argv[1] #example: headCAcolony56_ii_20200317.txt
 
 melted = sys.argv[2] #Example: /Users/eloralopez/Documents/SomaticMutations/OfuAug/meltedAH09datatable20181029.txt
 numberofparents = int(sys.argv[3]) 
+numberofsperm = int(sys.argv[4]) 
+
 # output = sys.argv[4] #example: /Users/eloralopez/Documents/SomaticMutations/OfuAug/meltedAH09datatable20181029_withtransitionandpopinfo.txt
 
 def most_common(lst):
     return max(set(lst), key=lst.count)
 def least_common(lst):
     return min(set(lst), key=lst.count)
+
+
+header = ["chrom.pos", "sample", "ref", "alt", "genotype", "DeNovo_LoH", "TiTv", "WhattoWhat", "TrueorFalse", "TypeofMutation", "MutantParent1", "MutantParent2","MutantSperm1","MutantSperm2"]
+header = '\t'.join(header)
+print(header)    
+
     
 def definemutations(polymorphic, typeofmutation, specifiedgenotypes):
     with open(polymorphic, "r") as mutations_table:
@@ -29,14 +37,32 @@ def definemutations(polymorphic, typeofmutation, specifiedgenotypes):
                     continue
 
                 else:
-                    split = line.rstrip().split('\t')
-                    concatenated = split[0]
-                    TrueorFalse = split[((numberofparents*2)+3)]
-                    TypeofMutation = split[((numberofparents*2)+4)]
-                    MutantSampleID = split[((numberofparents*2)+5)]
-                    ref = split[1]
+                    if numberofsperm ==5:
+                        split = line.rstrip().split('\t')
+                        concatenated = split[0]
+                        TrueorFalse = split[(((numberofparents*2)-1)+3)]
+                        TypeofMutation = split[(((numberofparents*2)-1)+4)]
+                        MutantParent1 = split[(((numberofparents*2)-1)+5)]
+                        MutantParent2 = split[(((numberofparents*2)-1)+6)]
+                        MutantSperm1 = split[(((numberofparents*2)-1)+7)]
+                        MutantSperm2 = split[(((numberofparents*2)-1)+8)]
+                    
+                        ref = split[1]
     
-                    alt = split[2]
+                        alt = split[2]
+                    else:    
+                        split = line.rstrip().split('\t')
+                        concatenated = split[0]
+                        TrueorFalse = split[((numberofparents+numberofsperm)+3)]
+                        TypeofMutation = split[((numberofparents+numberofsperm)+4)]
+                        MutantParent1 = split[((numberofparents+numberofsperm)+5)]
+                        MutantParent2 = split[((numberofparents+numberofsperm)+6)]
+                        MutantSperm1 = split[((numberofparents+numberofsperm)+7)]
+                        MutantSperm2 = split[((numberofparents+numberofsperm)+8)]
+                    
+                        ref = split[1]
+    
+                        alt = split[2]
                     if TypeofMutation ==typeofmutation:
                         
                         genotypes= split[3:specifiedgenotypes]
@@ -248,23 +274,23 @@ def definemutations(polymorphic, typeofmutation, specifiedgenotypes):
                             DeNovo_or_LoH = "DeNovo"
                             WhattoWhat = "AtoT"
                             
-                        if TrueorFalse == "False":
-                            
-                            if DeNovo_or_LoH == "DeNovo":
-                                spermrep1 = split[numberofparents+3:numberofparents+4]
-                                spermrep2 = split[numberofparents+4:numberofparents+5]
-                                #print(spermrep1, spermrep2)
-                                for genotype in spermrep1:
-                                    gsplit = genotype.split(',')
-                                    refdepth = int(gsplit[1])
-                                    altdepth = int(gsplit[2])
-                                for genotype in spermrep2:
-                                    gsplit2 = genotype.split(',')
-                                    refdepth2 = int(gsplit2[1])
-                                    altdepth2 = int(gsplit2[2])
-                                        
-                                if refdepth !=0 and altdepth!=0 and refdepth2 !=0 and altdepth2 != 0:
-                                    TrueorFalse ="True"
+                        # if TrueorFalse == "False":
+                        #
+                        #     if DeNovo_or_LoH == "DeNovo":
+                        #         spermrep1 = split[numberofparents+3:numberofparents+4]
+                        #         spermrep2 = split[numberofparents+4:numberofparents+5]
+                        #         #print(spermrep1, spermrep2)
+                        #         for genotype in spermrep1:
+                        #             gsplit = genotype.split(',')
+                        #             refdepth = int(gsplit[1])
+                        #             altdepth = int(gsplit[2])
+                        #         for genotype in spermrep2:
+                        #             gsplit2 = genotype.split(',')
+                        #             refdepth2 = int(gsplit2[1])
+                        #             altdepth2 = int(gsplit2[2])
+                        #
+                        #         if refdepth !=0 and altdepth!=0 and refdepth2 !=0 and altdepth2 != 0:
+                        #             TrueorFalse ="True"
                                     #print("actually true")
                                     #print(refdepth, altdepth, refdepth2, altdepth2)
 
@@ -292,13 +318,15 @@ def definemutations(polymorphic, typeofmutation, specifiedgenotypes):
                     #
                                     if meltconcatenated ==concatenated:
 
-                                        outlist = [meltconcatenated, meltsample, ref, alt, meltgenotypes, DeNovo_or_LoH, TiTv, WhattoWhat, TrueorFalse, TypeofMutation, MutantSampleID]
+                                        outlist = [meltconcatenated, meltsample, ref, alt, meltgenotypes, DeNovo_or_LoH, TiTv, WhattoWhat, TrueorFalse, TypeofMutation, MutantParent1, MutantParent2, MutantSperm1, MutantSperm2]
                                         outstring = '\t'.join(outlist)
                                         print(outstring)
 
 somatic = definemutations(datatable, "SomaticMutation", (numberofparents+3))
-
-uglm1 = definemutations(datatable, "UniqueGermlineMutation", ((numberofparents*2)+3))
+if numberofsperm ==5:
+    uglm1 = definemutations(datatable, "UniqueGermlineMutation", (((numberofparents_numberofsperm)-1)+3))
+else:    
+    uglm1 = definemutations(datatable, "UniqueGermlineMutation", ((numberofparents+numberofsperm)+3))
 #
 
 # uglm2 = definemutations(datatable,(numberofparents,genotype_2ndsperm))
