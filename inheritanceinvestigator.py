@@ -30,15 +30,9 @@ replicate7 = "NULL"
 
 replicate8 = "NULL"
 
-if numberofparents ==6:
 
-    replicate5 = replicate3 + 2
-
-    replicate6 = replicate4 + 2
-
-    replicate7 = "NULL"
-
-    replicate8 = "NULL"
+        
+        
 if numberofparents == 8:
     replicate5 = replicate3 + 2
 
@@ -71,12 +65,33 @@ else:
     spermrep3 = replicate3 + numberofparents
 
     spermrep4 = replicate4 + numberofparents
-    if numberofparents > 4:
+    #if numberofparents > 4:
 
-        spermrep5 = replicate5 + numberofparents
+        #spermrep5 = replicate5 + numberofparents
 
-        spermrep6 = replicate6 + numberofparents
-# print(spermrep1, spermrep2, spermrep3)
+        #spermrep6 = replicate6 + numberofparents
+if numberofparents ==6:
+
+    replicate5 = replicate3 + 2
+
+    replicate6 = replicate4 + 2
+
+    replicate7 = "NULL"
+
+    replicate8 = "NULL"
+    if numberofsperm ==4:
+        spermrep1 = replicate1 + numberofparents
+
+        spermrep2 = replicate2 + numberofparents
+
+        spermrep3 = replicate1 + numberofparents
+
+        spermrep4 = replicate2 + numberofparents
+
+        spermrep5 = replicate3 + numberofparents
+        
+        spermrep6 = replicate4 + numberofparents        
+#print(spermrep1, spermrep2, spermrep3, spermrep4, spermrep5, spermrep6)
 
 
 
@@ -180,7 +195,7 @@ def fileinfo(inputfile, rep1, rep2):
 
                     geno_list.append(genostring)
                     genostring = '\t'.join(geno_list)
-                #print(concatenated,geno_list[rep1])#geno_list[rep2])
+                #print(concatenated,geno_list)
 
                 if geno_list[rep1] == geno_list[rep2]: #outputs just the sites where the two replicate libraries are the same genotype
                     # print(geno_list[rep1],geno_list[rep2])
@@ -209,22 +224,23 @@ if numberofparents == 8:
 
     genos4=fileinfo(input1, replicate7, replicate8) #CAP26
  #calls the function for CAP24
-#print(genos2)
+#print(genos3)
 if numberofsperm ==5:
     spermgenos=fileinfo(input1, spermrep1, spermrep1) #CAS22
-    # print(spermgenos)
+
     spermgenos2=fileinfo(input1, spermrep2, spermrep3) #CAS23
 
     spermgenos3=fileinfo(input1, spermrep4, spermrep5) #CAS24
     # print(spermgenos3)
 else:
     spermgenos=fileinfo(input1, spermrep1, spermrep2) #CAS22
-
+    #print(spermrep4,spermrep5)
+    
     spermgenos2=fileinfo(input1, spermrep3, spermrep4) #CAS23
 
     if numberofparents>4:
 
-        spermgenos3=fileinfo(input1, spermrep4, spermrep5) #CAS24
+        spermgenos3=fileinfo(input1, spermrep5, spermrep6) #CAS24
         
 if numberofparents == 8:
 
@@ -422,7 +438,8 @@ def findmutations(genos_2nd, dictOfWords_given, replicatesample, replicate_A, re
                                 else:
                                     #perhaps add extra conditions to deal with the low minor allele frequency sperm genotypes?
                                     Match = False
-                                genotypes2string = genotypes2[doublenumber:(doublenumber*2)]
+                                genotypes2string = genotypes2[(numberofparents+numberofsperm):((numberofparents+numberofsperm)*2)]
+                                
                                 writeout = [conc2, ref, alt, *genotypes2string, str(Match), str(Type_of_Mutation), *MutantParent1, *MutantParent2, *MutantSperm1, *MutantSperm2]
                                 #here is your writeout of all of the somatic mutations unique to a particular branch
                                 writeout_string = '\t'.join(writeout)
@@ -451,30 +468,30 @@ def findmutations(genos_2nd, dictOfWords_given, replicatesample, replicate_A, re
                             writeout_string = '\t'.join(writeout)
 
                             print(writeout_string)
-                    elif numberofparents ==4:
-                         if geno1 != geno2 :#and geno2 != genotypes2[replicate_A]:# and geno2 != genotypes2[replicate_C] and geno2 != genotypes2[replicate_D]: #this indicates that the mutation found in replicatesample and replicate4 (now referred to as geno2) is UNIQUE among the parent samples; that genotype is never seen at that site in any other parent sample
-                             genolist = genotypes2[7:]
-                             Type_of_Mutation = "SomaticMutation"
-                             #print(*samplenames[replicatesample+3])
-                             MutantParent1 = samplenames[replicatesample+3]
-                             MutantParent2 = samplenames[replicatesample+4]
-                             MutantSperm1 = samplenames[spermrep_x+3]
-                             MutantSperm2 = samplenames[spermrep_y+3]
-
-                             #print(MutantParent1, MutantParent2, MutantSperm1, MutantSperm2)
-                             if genotypes2[replicatesample] == genotypes2[spermrep_x]: #if the corresponding sperm pools are the same genotype as the mutant parent, inheritance is true. If not, inheritance is false.
-                                 #print("yaaa")
-                                 Match = True
-                             else:
-                                 #perhaps add extra conditions to deal with the low minor allele frequency sperm genotypes?
-                                 Match = False
-                             genotypes2string = genotypes2[doublenumber:(doublenumber*2)]
-                             writeout = [conc2, ref, alt, *genotypes2string, str(Match), str(Type_of_Mutation), *MutantParent1, *MutantParent2, *MutantSperm1, *MutantSperm2]
-                             #here is your writeout of all of the somatic mutations unique to a particular branch
-                             writeout_string = '\t'.join(writeout)
-
-                             #print("somatic mutation")
-                             print(writeout_string)       
+                    # elif numberofparents ==4:
+#                          if geno1 != geno2 :#and geno2 != genotypes2[replicate_A]:# and geno2 != genotypes2[replicate_C] and geno2 != genotypes2[replicate_D]: #this indicates that the mutation found in replicatesample and replicate4 (now referred to as geno2) is UNIQUE among the parent samples; that genotype is never seen at that site in any other parent sample
+#                              genolist = genotypes2[7:]
+#                              Type_of_Mutation = "SomaticMutation"
+#                              #print(*samplenames[replicatesample+3])
+#                              MutantParent1 = samplenames[replicatesample+3]
+#                              MutantParent2 = samplenames[replicatesample+4]
+#                              MutantSperm1 = samplenames[spermrep_x+3]
+#                              MutantSperm2 = samplenames[spermrep_y+3]
+#
+#                              #print(MutantParent1, MutantParent2, MutantSperm1, MutantSperm2)
+#                              if genotypes2[replicatesample] == genotypes2[spermrep_x]: #if the corresponding sperm pools are the same genotype as the mutant parent, inheritance is true. If not, inheritance is false.
+#                                  #print("yaaa")
+#                                  Match = True
+#                              else:
+#                                  #perhaps add extra conditions to deal with the low minor allele frequency sperm genotypes?
+#                                  Match = False
+#                              genotypes2string = genotypes2[(numberofparents+numberofsperm):((numberofparents+numberofsperm)*2)]
+#                              writeout = [conc2, ref, alt, *genotypes2string, str(Match), str(Type_of_Mutation), *MutantParent1, *MutantParent2, *MutantSperm1, *MutantSperm2]
+#                              #here is your writeout of all of the somatic mutations unique to a particular branch
+#                              writeout_string = '\t'.join(writeout)
+#
+#                              #print("somatic mutation")
+#                              print(writeout_string)    
                 if conc2 in spermedict_2nd:
                     if numberofsperm ==5:
 
@@ -545,7 +562,7 @@ def findmutations(genos_2nd, dictOfWords_given, replicatesample, replicate_A, re
                              #print(samplenames[spermrep_x+3])
                              #print(spermgeno, genotypes_minusspermgeno[2], conc2)
                              genolist = genotypes2[7:]
-                             genotypes2string = genotypes2[doublenumber:(doublenumber*2)]
+                             genotypes2string = genotypes2[(numberofparents+numberofsperm):((numberofparents+numberofsperm)*2)]
                              writeout_uniqueglm = [conc2, ref, alt, *genotypes2string, str(Match), str(Type_of_Mutation), *MutantParent1, *MutantParent2, *MutantSperm1, *MutantSperm2]
                              #writeout_uniqueglm = [conc2, ref, alt, genotypes2[16],genotypes2[17], genotypes2[18], genotypes2[19], genotypes2[20], genotypes2[21], genotypes2[22], genotypes2[23], genotypes2[24], genotypes2[25], genotypes2[26], genotypes2[27], genotypes2[28], genotypes2[29], genotypes2[30], genotypes2[31], str(Match), str(Type_of_Mutation), *Mutant_Sample_ID]
         #                     #here is your writeout of all of the somatic mutations unique to a particular branch
@@ -565,7 +582,99 @@ def findmutations(genos_2nd, dictOfWords_given, replicatesample, replicate_A, re
 # # #                     print(conc2)
 #                # print(genotypes_minusspermgeno)
 #                 # if spermgeno !=
+def findsomaticonly(genos_2nd, dictOfWords_given, replicatesample, replicate_A, replicate_B, replicate_C, replicate_D, spermrep_x, spermrep_y, spermedict_2nd):
+    samplenames = []
+    for line2 in genos_2nd: #now goes line by line in the list of matches from the second set of replicates. this set is the MUTANT set.
+            #print(line2)
+            if line2.startswith('chrom.pos'):
+                #print(line2)
+                line2 = line2.strip()
+
+                items2 = line2.split('\t')
+                if numberofsperm ==5:
+                    total = ((numberofparents * 2)-1) + 3
+                else:
+                    total = (numberofparents +numberofsperm) + 3 #this gives the number of columns from the first line to output. It is the sum of the number of parent samples, the number of sperm samples , and the three columns that denote chrom.pos, ref, and alt
+                samples = items2[0:total]
+                    #print(header)
+                for ele in samples:
+                    sub = ele.split(',')
+                    samplenames.append(sub)
 #
+                header = items2[0:total]
+                header = '\t'.join(header)
+                finalheader = [header, "TypeofMutation", "TrueorFalse"]
+                finalheader = '\t'.join(finalheader)
+
+                #print(finalheader) # this is the headerline for the file
+            else:
+                line2 = line2.strip()
+
+                items2 = line2.split('\t')
+                #print(items2)
+                conc2 = items2[0]
+                ref = items2[1]
+                #print(ref)
+                alt = items2[2]
+
+                genotypes2= items2[3:]
+                #print(genotypes2)
+                geno2= genotypes2[replicatesample]
+
+                #deal with somatic mutations for the second set of parent replicates:
+                if conc2 in dictOfWords_given:
+                    geno1 = dictOfWords_given[conc2] #outputs just the geno1 values that match conc2 (that is, just the sites that are present in the lists from genos1 and genos_2nd)
+                    #print(numberofparents)
+                    # if numberofparents == 6 and numberofsperm ==5:
+#                         #print(geno1, geno2, genotypes2[replicate_A],genotypes2[replicate_B])
+#                         if geno1 != geno2 and geno2 != genotypes2[replicate_A] and geno2 != genotypes2[replicate_B]:# and geno2 != genotypes2[replicate_C] and geno2 != genotypes2[replicate_D]: #this indicates that the mutation found in replicatesample and replicate4 (now referred to as geno2) is UNIQUE among the parent samples; that genotype is never seen at that site in any other parent sample
+#                             genolist = genotypes2[7:]
+#                             Type_of_Mutation = "SomaticMutation"
+#                             #print(*samplenames[replicatesample+3])
+#                             MutantParent1 = samplenames[replicatesample+3]
+#                             MutantParent2 = samplenames[replicatesample+4]
+#                             MutantSperm1 = samplenames[spermrep_x+3]
+#                             MutantSperm2 = samplenames[spermrep_y+3]
+#
+#                             #print(MutantParent1, MutantParent2, MutantSperm1, MutantSperm2)
+#                             if genotypes2[replicatesample] == genotypes2[spermrep_x] == genotypes2[spermrep_y]: #if the corresponding sperm pools are the same genotype as the mutant parent, inheritance is true. If not, inheritance is false.
+#                                 #print("yaaa")
+#                                 Match = True
+#                             else:
+#                                 #perhaps add extra conditions to deal with the low minor allele frequency sperm genotypes?
+#                                 Match = False
+#                             genotypes2string = genotypes2[(numberofparents+numberofsperm-1):(((numberofparents+numberofsperm)*2)-1)]
+#                             print(genotypes2)
+#                             writeout = [conc2, ref, alt, *genotypes2string, str(Match), str(Type_of_Mutation), *MutantParent1, *MutantParent2, *MutantSperm1, *MutantSperm2]
+#                             #here is your writeout of all of the somatic mutations unique to a particular branch
+#                             writeout_string = '\t'.join(writeout)
+#
+#                             #print("somatic mutation")
+#                             print(writeout_string)
+                    if numberofparents == 6 and numberofsperm != 5:
+                            if geno1 != geno2 and geno2 != genotypes2[replicate_A] and geno2 != genotypes2[replicate_B]:# and geno2 != genotypes2[replicate_C] and geno2 != genotypes2[replicate_D]: #this indicates that the mutation found in replicatesample and replicate4 (now referred to as geno2) is UNIQUE among the parent samples; that genotype is never seen at that site in any other parent sample
+                                genolist = genotypes2[7:]
+                                Type_of_Mutation = "SomaticMutation"
+                                #print(*samplenames[replicatesample+3])
+                                MutantParent1 = samplenames[replicatesample+3]
+                                MutantParent2 = samplenames[replicatesample+4]
+                                MutantSperm1 = "NA"
+                                MutantSperm2 = "NA"
+
+                                #print(MutantParent1, MutantParent2, MutantSperm1, MutantSperm2)
+                                if genotypes2[replicatesample] == genotypes2[spermrep_x] == genotypes2[spermrep_y]: #if the corresponding sperm pools are the same genotype as the mutant parent, inheritance is true. If not, inheritance is false.
+                                    #print("yaaa")
+                                    Match = True
+                                else:
+                                    #perhaps add extra conditions to deal with the low minor allele frequency sperm genotypes?
+                                    Match = False
+                                genotypes2string = genotypes2[(numberofparents+numberofsperm):((numberofparents+numberofsperm)*2)]
+                                writeout = [conc2, ref, alt, *genotypes2string, str(Match), str(Type_of_Mutation), *MutantParent1, *MutantParent2, str(MutantSperm1), str(MutantSperm2)]
+                                #here is your writeout of all of the somatic mutations unique to a particular branch
+                                writeout_string = '\t'.join(writeout)
+
+                                #print("somatic mutation")
+                                print(writeout_string)
 #
 #
 #headerline and global glms (keeping this out of the findmutations function because you only need to do it once:)
@@ -579,7 +688,7 @@ for line2 in genos2: #now goes line by line in the list of matches from the seco
             if numberofsperm ==5:
                 total = ((numberofparents * 2)-1) + 3
             else:
-                total = (numberofparents * 2) + 3 #this gives the number of columns from the first line to output. It is the sum of the number of parent samples, the number of sperm samples (Which is equal to the number of parent samples), and the three columns that denote chrom.pos, ref, and alt
+                total = (numberofparents + numberofsperm) + 3 #this gives the number of columns from the first line to output. It is the sum of the number of parent samples, the number of sperm samples (Which is equal to the number of parent samples), and the three columns that denote chrom.pos, ref, and alt
             header = items2[0:total]
             header = '\t'.join(header)
             finalheader = [header, "TrueorFalse","TypeofMutation", "MutantParent1", "MutantParent2","MutantSperm1","MutantSperm2"]
@@ -611,7 +720,7 @@ for line2 in genos2: #now goes line by line in the list of matches from the seco
                 if numberofsperm ==5:
                     justspermgenotypes = genotypes2[numberofparents:(doublenumber-1)]
                 else:
-                    justspermgenotypes = genotypes2[numberofparents:doublenumber]
+                    justspermgenotypes = genotypes2[numberofparents:(numberofparents+numberofsperm)]
 
                 if all(x==justspermgenotypes[0] for x in justspermgenotypes) and not any(ele in spermgeno for ele in justparentgenotypes): # if the sperm genotype matches all other sperm genotypes but none of the parent genotypes:
                     Type_of_Mutation = "GlobalGermlineMutation"
@@ -625,7 +734,7 @@ for line2 in genos2: #now goes line by line in the list of matches from the seco
                     if numberofsperm ==5:
                         genotypes2string = genotypes2[(doublenumber-1):((doublenumber*2)-1)]
                     else:
-                        genotypes2string = genotypes2[doublenumber:(doublenumber*2)]
+                        genotypes2string = genotypes2[(numberofparents+numberofsperm):((numberofparents+numberofsperm)*2)]
                     writeout_globalglm = [conc2, ref, alt, *genotypes2string, str(Match), str(Type_of_Mutation), str(MutantParent1), str(MutantParent2),str(MutantSperm1),str(MutantSperm2)]
                     #writeout_globalglm = [conc2, ref, alt, genotypes2[16],genotypes2[17], genotypes2[18], genotypes2[19], genotypes2[20], genotypes2[21], genotypes2[22], genotypes2[23], genotypes2[24], genotypes2[25], genotypes2[26], genotypes2[27], genotypes2[28], genotypes2[29], genotypes2[30], genotypes2[31], str(Match), str(Type_of_Mutation), str(Mutant_Sample_ID)]
                     #here is your writeout of all of the somatic mutations unique to a particular branch
@@ -645,7 +754,11 @@ if numberofsperm == 5:
     sample1 = findmutations(genos1, dictOfWords2, replicate1, replicate5, replicate6, replicate7, replicate8, spermrep1, spermrep1, spermdict)
     sample2 = findmutations(genos2, dictOfWords, replicate3, replicate5, replicate6, replicate7, replicate8, spermrep2, spermrep3, spermdict2)
     sample3 = findmutations(genos3, dictOfWords, replicate5, replicate3, replicate4, replicate7, replicate8, spermrep4, spermrep5, spermdict3)
-
+if numberofsperm ==4 and numberofparents == 6:    
+    sample1 = findsomaticonly(genos1, dictOfWords2, replicate1, replicate5, replicate6, replicate7, replicate8, spermrep1, spermrep1, spermdict)
+    sample2 = findmutations(genos2, dictOfWords, replicate3, replicate5, replicate6, replicate7, replicate8, spermrep3, spermrep4, spermdict2)
+    
+    sample3 = findmutations(genos3, dictOfWords, replicate5, replicate3, replicate4, replicate7, replicate8, spermrep5, spermrep6, spermdict3)
 else:
 
     sample1 = findmutations(genos1, dictOfWords2, replicate1, replicate5, replicate6, replicate7, replicate8, spermrep1, spermrep2, spermdict)
