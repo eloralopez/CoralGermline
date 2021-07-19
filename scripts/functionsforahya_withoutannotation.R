@@ -425,7 +425,8 @@ scatterplot_func<-function(somaticmetadatadf) {
     
     theme_bw() +
     ylim(0, 1) + xlim(0, 1) +
-    scale_color_manual(labels= c("Parent and Sperm","Parent Only"), values = c("red","black")) +
+    #scale_color_manual(labels= c("Parent and Sperm","Parent Only"), values = c("red","black")) +
+    scale_color_manual(labels= c("Parent and Sperm","Parent Only"),values = c("#999999","red")) +
     labs(color="SNV Type\n")+
     ylab("Average Variant Allele Frequency in the Mutant Sperm Pool") + xlab("Average Variant Allele Frequency in the Mutant Parent")+
     theme(axis.text=element_text(size=15),
@@ -438,7 +439,8 @@ scatterplot_func<-function(somaticmetadatadf) {
     theme_bw() +
     #stat_cor(label.x=0.2,label.y=0.45, aes(group=1)) +
     ylim(0, .4) + xlim(0, 0.5) +
-    scale_color_manual(values = c("red","black")) +
+    #scale_color_manual(values = c("red","black")) +
+    scale_color_manual(values = c("#999999","lightgoldenrod1")) +
     ylab("Average Variant Allele Frequency in the Mutant Sperm Pool") + xlab("Average Variant Allele Frequency in the Mutant Parent")+
     theme(axis.text=element_text(size=15),
           axis.title=element_text(size=15))+
@@ -447,10 +449,24 @@ scatterplot_func<-function(somaticmetadatadf) {
   pk<-ggplot(dfk, aes(x=ParentAverage, y=SpermAverage, color=Inheritance)) + geom_point(size=2.5) +
     geom_smooth(method=lm, aes(group=1)) +
     theme_bw() +
-    stat_cor(label.x=0.05,label.y=0.35, aes(group=1)) +
-    stat_regline_equation(label.x = .05, label.y = 0.4)+
-    ylim(0, 0.5) + xlim(0, .5) +
-    scale_color_manual(values = c("red","black")) +
+    stat_cor(label.x=0.05,label.y=0.5, aes(group=1, label = paste(..rr.label.., ..p.label.., sep = "~`,`~"))) +
+    stat_regline_equation(label.x = .05, label.y = 0.55)+
+    ylim(0, 1) + xlim(0, 1) +
+    #scale_color_manual(values = c("red","black")) +
+    scale_color_manual(labels= c("Parent and Sperm","Parent Only"),values = c("#999999","red")) +
+    ylab("Average Variant Allele Frequency in the Mutant Sperm Pool") + xlab("Average Variant Allele Frequency in the Mutant Parent")+
+    theme(axis.text=element_text(size=15),
+          axis.title=element_text(size=15))+
+    geom_abline(intercept=0,slope=1)+
+    theme(legend.text=element_blank(),legend.title=element_blank())
+  pk_a<-ggplot(dfk, aes(x=ParentAverage, y=SpermAverage, color=Inheritance)) + geom_point(size=2.5) +
+    geom_smooth(method=lm, aes(group=1)) +
+    theme_bw() +
+    stat_cor(label.x=0.05,label.y=0.35, aes(group=1, label = paste(..rr.label.., ..p.label.., sep = "~`,`~"))) +
+    stat_regline_equation(label.x = .05, label.y = 0.3)+
+    ylim(0, 0.4) + xlim(0, 0.4) +
+    #scale_color_manual(values = c("red","black")) +
+    scale_color_manual(labels= c("Parent and Sperm","Parent Only"),values = c("#999999","red")) +
     ylab("Average Variant Allele Frequency in the Mutant Sperm Pool") + xlab("Average Variant Allele Frequency in the Mutant Parent")+
     theme(axis.text=element_text(size=15),
           axis.title=element_text(size=15))+
@@ -480,7 +496,7 @@ scatterplot_func<-function(somaticmetadatadf) {
   #parentspermcomparison
   #return(newlist)
   #return(pall | pk ) #this is supplementary figure 1
-  
+  #return(pk | pk_a) #for defense ppt
   return(df) #use this for the rest of the analyses
   #return(otherframe)
   #return(pall)
@@ -680,3 +696,4 @@ spectrum<- function(dataframe, dataframecount) {
   #return(z)
   return(counts) #this is for supplementary stats (chisqs)
 }
+

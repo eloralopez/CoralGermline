@@ -1,126 +1,13 @@
 library("seqinr")
 library(patchwork)
-Amil_fasta<-read.fasta("~/Documents/GitHub/CoralGermline/dndscv/Amil.v2.01.chrs.fasta",forceDNAtolower = FALSE)
-files<-list.files(path="~/Documents/GitHub/CoralGermline/annotatedfiles", pattern="*ann.txt", full.names=T, recursive=FALSE) #path to all the files you want to include in the analysis
+#Amil_fasta<-read.fasta("~/Documents/GitHub/CoralGermline/dndscv/Amil.v2.01.chrs.fasta",forceDNAtolower = FALSE)
+#files<-list.files(path="~/Documents/GitHub/CoralGermline/annotatedfiles", pattern="*ann.txt", full.names=T, recursive=FALSE) #path to all the files you want to include in the analysis
 
-CA56_samples<-list.files(path="~/Documents/GitHub/CoralGermline/annotatedfiles", pattern="*relabeled56.txt.ann.txt", full.names=T, recursive=FALSE)
-files<-list.files(path="~/Documents/GitHub/CoralGermline/annotatedfiles", pattern="*relabeled60.txt.ann.txt", full.names=T, recursive=FALSE)
-CA<-list.files(path="~/Documents/GitHub/CoralGermline/annotatedfiles", pattern="*relabeled65.txt.ann.txt", full.names=T, recursive=FALSE)
+#CA56_samples<-list.files(path="~/Documents/GitHub/CoralGermline/annotatedfiles", pattern="*relabeled56.txt.ann.txt", full.names=T, recursive=FALSE)
+#files<-list.files(path="~/Documents/GitHub/CoralGermline/annotatedfiles", pattern="*relabeled60.txt.ann.txt", full.names=T, recursive=FALSE)
+#CA<-list.files(path="~/Documents/GitHub/CoralGermline/annotatedfiles", pattern="*relabeled65.txt.ann.txt", full.names=T, recursive=FALSE)
 
-# bigfunction<- function(files) {
-# #files<-list.files(path="~/Documents/GitHub/CoralGermline/annotatedfiles", pattern="*ann.txt", full.names=T, recursive=FALSE) #path to all the files you want to include in the analysis
-#   metadata= NULL
-#   for (i in 1:length(files)) { 
-#     file =files[i]
-#     data<-read.delim(file) #read in each file in "files"
-#     data<-data.frame(data) # transform the data from each file into a dataframe
-#     base<-basename(file)
-#     colony<-strsplit(base, "\\_")[[1]][2]
-#     len<-nrow(data) 
-#     colonyrep<-rep(colony, len)
-#     withcolony<-data.frame(data, colonyrep) #combines the colonyname column with each dataframe
-#     metadata <- rbind(metadata, withcolony) #adds each dataframe to the overall metatadata, so that the information from all of the files are now in "metadata"
-#   }
-#   
-#   genoanddepth<-(metadata$genotype) #names the column
-#   split<-str_split_fixed(genoanddepth, ",", 4) #split the genotype, depths, and GQ score into their own separate strings
-#   
-#   genotypes<-split[,1] #defines the genotype as the first string in "split"
-#   position<-metadata$chrom.pos #names the column
-#   positionsplit<-str_split_fixed(position, "[.]", 2) #split the chromosome number and the position on the chromosome into their own separate strings
-#   
-#   chr<-positionsplit[,1] #defines the chromosome as the first string in "positionsplit"
-#   pos<-positionsplit[,2] #defines the position as the second string in "positionsplit"
-#   #totaldepth<-as.numeric(split[,2])
-#   refdepth<-as.numeric(split[,2])
-#   altdepth<-as.numeric(split[,3])
-#   what<-metadata$WhattoWhat
-#   allelesplit<-str_split_fixed(what, "to", 2)
-#   normalallele<-allelesplit[,1]
-#   mutantallele<-allelesplit[,2]
-#   totaldepth<-refdepth+altdepth
-#   GQscore<-as.numeric(split[,4])
-#   mutationtype<-metadata$MutationType
-#   mutationstrength<-metadata$MutationStrength
-#   
-#   mutant_alleledepth = rep("A", nrow(metadata))
-#   for (i in 1:nrow(metadata)){
-#     if (mutantallele[i] == metadata$alt[i]) {
-#       mutant_alleledepth[i] = altdepth[i]
-#       #print(mutant_alleledepth[i])
-#     } else {
-#       mutant_alleledepth[i] = refdepth[i]
-#       #print(mutant_alleledepth[i])
-#     }  #print("ALT", mutant_alleledepth, refdepth)
-#   }
-#   #print(mutant_alleledepth[1:10])
-#   #print(refdepth[1:10])
-#   #print(altdepth[1:10])
-#   
-#   metadatadf<-data.frame("chrom.pos" = metadata$chrom.pos, "chrom"=chr, "pos"=pos,	"sample"= metadata$sample, "ref" = metadata$ref, "alt" = 	metadata$alt, "normal_allele"= normalallele, "mutant_allele" = mutantallele, "mutant_allele_depth" = as.numeric(mutant_alleledepth), "genotype"= genotypes, "totaldepth"=totaldepth, 	"refdepth"=refdepth, "altdepth"=altdepth, "GQscore"= GQscore,	"GoH_or_LoH"=metadata$DeNovo_LoH, "Ti/Tv"=metadata$TiTv, 	"WhattoWhat" = metadata$WhattoWhat,"TrueorFalse" =metadata$TrueorFalse, "MutationType"=mutationtype, "MutationStrength"=mutationstrength)#  ColonyName"=metadata$colonyrep)
-#   
-#   DepthMeansdf<-aggregate(totaldepth~chrom.pos, metadatadf, 			FUN=mean)
-#   
-#   DepthMinsdf<-aggregate(totaldepth~chrom.pos, metadatadf, 			FUN=min)
-#   
-#   GQaverage<-aggregate(GQscore~chrom.pos, metadatadf, FUN=mean)
-#   
-#   GQmin<-aggregate(GQscore~chrom.pos, metadatadf, FUN=min)
-#   
-#   
-#   
-#   metadatadf.00<-merge(metadatadf, DepthMeansdf[, c("chrom.pos", 	"totaldepth")], by="chrom.pos")
-#   metadatadf.0<-merge(metadatadf.00, GQaverage[,c("chrom.pos","GQscore")], by="chrom.pos")
-#   metadatadf.0<-merge(metadatadf.0, DepthMinsdf[,c("chrom.pos","totaldepth")], by="chrom.pos")
-#   metadatadf.0<-merge(metadatadf.0, GQmin[,c("chrom.pos","GQscore")], by="chrom.pos")
-#   
-#   DeNovos<-subset(metadatadf.0, GoH_or_LoH=="DeNovo")
-#   # sample3<-subset(DeNovos, sample== "sample3")
-#   # trueDenovos_sample3<-subset(sample3, refdepth =="0" | altdepth=="0")
-#   # 
-#   # sample4<-subset(DeNovos, sample== "sample4")
-#   # trueDenovos_sample4<-subset(sample4, refdepth =="0" | altdepth=="0")
-#   # 
-#   # sample5<-subset(DeNovos, sample== "sample5")
-#   # trueDenovos_sample5<-subset(sample5, refdepth =="0" | altdepth=="0")
-#   # 
-#   # sample6<-subset(DeNovos, sample== "sample6")
-#   # trueDenovos_sample6<-subset(sample6, refdepth =="0" | altdepth=="0")
-#   # 
-#   # sample7<-subset(DeNovos, sample== "sample7")
-#   # trueDenovos_sample7<-subset(sample7, refdepth =="0" | altdepth=="0")
-#   # 
-#   # sample8<-subset(DeNovos, sample== "sample8")
-#   # trueDenovos_sample8<-subset(sample8, refdepth =="0" | altdepth=="0")
-#   # 
-#   # truedenovos3_8<-rbind(trueDenovos_sample3, trueDenovos_sample4, trueDenovos_sample5, trueDenovos_sample6, trueDenovos_sample7, trueDenovos_sample8)
-#   
-#   LoH<-subset(metadatadf.0, GoH_or_LoH =="LoH")#
-#   trueLoHp<-subset(LoH,refdepth =="0" | altdepth=="0")
-#   trueLoHp1<-subset(trueLoHp, sample=="mutparent1" | sample=="mutparent2")
-#   trueLoHp2<-trueLoHp1[trueLoHp1$chrom.pos %in% names(which(table(trueLoHp1$chrom.pos) > 1)), ]
-#   sperm<-subset(metadatadf.0, sample =="mutsperm")
-#   trueLoHsperm<-sperm[match(trueLoHp2$chrom.pos, sperm$chrom.pos),]
-#   trueLoHsperm<-unique(trueLoHsperm)
-#   
-#   #trueLoHp2<-subset(trueLoHp, sample=="mutparent2")
-#   metadatadf<-rbind( DeNovos, trueLoHp2,trueLoHsperm)#, trueLoHp2)
-#   ##write.table(metadatadf, file="CAcolony60_CAP22-23-24muts_20191125.txt",sep="\t",quote=FALSE, row.name=FALSE)
-#   
-#   uniquemetadatadf<- metadatadf[match(unique(metadatadf$chrom.pos), 					metadatadf$chrom.pos),]
-#   
-#   uniquemetadatadfcount<-nrow(uniquemetadatadf)
-#   
-#   missense<-subset(uniquemetadatadf, MutationType=="missense_variant")
-#   missensecount<-nrow(missense)
-#   
-#   syn<-subset(uniquemetadatadf, MutationType=="synonymous_variant")
-#   syncount<-nrow(syn)
-#   #par(mfrow=c(1,3))
-#   
-#   dataframe<-uniquemetadatadf
-#   dataframecount<-uniquemetadatadfcount
-#   
+Ahya_fasta<-read.fasta("~/Documents/GitHub/CoralGermline/mappedtoahya/jasmine-sta1387-mb-hirise-eyx9u_12-15-2020__final_assembly_chrs.fasta", forceDNAtolower = FALSE)
 dataframe<-CA56_
 dataframecount<-nrow(CA56_)
 spectrum<- function(dataframe, dataframecount) {
@@ -197,7 +84,7 @@ spectrum<- function(dataframe, dataframecount) {
       next_position<-integer + 1
       chr_num<-as.character(together$chrom[i])
       
-      chroms<-Amil_fasta[[chr_num]]
+      chroms<-Ahya_fasta[[chr_num]]
       ref_nuc<- chroms[next_position]
       ref_nuc<-toupper(ref_nuc)
       allnucs<-data.frame(ref_nuc)
@@ -216,7 +103,7 @@ spectrum<- function(dataframe, dataframecount) {
       next_position<-integer + 1
       chr_num<-as.character(together$chrom[i])
       
-      chroms<-Amil_fasta[[chr_num]]
+      chroms<-Ahya_fasta[[chr_num]]
       ref_nuc<- chroms[next_position]
       ref_nuc<-toupper(ref_nuc)
       allnucs<-data.frame(ref_nuc)
@@ -392,45 +279,45 @@ all_som_GOH_notinherited<-subset(allcol,GoHorLoH=="DeNovo"& Inheritance=="notinh
 
 allcol_somatic_all<-spectrum(allcol,nrow(allcol)) + ggtitle("All Somatic Mutations")
 allcol_somatic_all_dndscv<-data.frame("sampleID"= allcol$sample,"chr"= allcol$chrom,"pos"= allcol$pos, "ref" = allcol$ref, "alt"= allcol$alt)
-#write.table(allcol_somatic_all_dndscv, file="~/Documents/GitHub/CoralGermline/dndscv/somaticallcolonies_20201210_dndscv.txt",sep="\t",quote=FALSE, row.name=FALSE)
+#write.table(allcol_somatic_all_dndscv, file="~/Documents/GitHub/CoralGermline/dndscv/somaticallcolonies_20210622_dndscv.txt",sep="\t",quote=FALSE, row.name=FALSE)
 
 allcol_somatic_GOH<-spectrum(subset(allcol, GoHorLoH=="DeNovo"),nrow(subset(allcol, GoHorLoH=="DeNovo")))+ggtitle("GoH SNVs found in Parents") 
 allcol_somatic_GOH_dndscv<-data.frame("sampleID"= subset(allcol, GoHorLoH=="DeNovo")$sample,"chr"= subset(allcol, GoHorLoH=="DeNovo")$chrom,"pos"= subset(allcol, GoHorLoH=="DeNovo")$pos, "ref" = subset(allcol, GoHorLoH=="DeNovo")$ref, "alt"= subset(allcol, GoHorLoH=="DeNovo")$alt)
-#write.table(allcol_somatic_GOH_dndscv, file="~/Documents/GitHub/CoralGermline/dndscv/somaticallcoloniesGOH_20201210_dndscv.txt",sep="\t",quote=FALSE, row.name=FALSE)
+#write.table(allcol_somatic_GOH_dndscv, file="~/Documents/GitHub/CoralGermline/dndscv/somaticallcoloniesGOH_20210622_dndscv.txt",sep="\t",quote=FALSE, row.name=FALSE)
 
 allcol_somatic_LOH<-spectrum(subset(allcol, GoHorLoH=="LoH"),nrow(subset(allcol, GoHorLoH=="LoH")))+ggtitle("LoH SNVs found in Parents") 
 allcol_somatic_LOH_dndscv<-data.frame("sampleID"= subset(allcol, GoHorLoH=="LoH")$sample,"chr"= subset(allcol, GoHorLoH=="LoH")$chrom,"pos"= subset(allcol, GoHorLoH=="LoH")$pos, "ref" = subset(allcol, GoHorLoH=="LoH")$ref, "alt"= subset(allcol, GoHorLoH=="LoH")$alt)
-#write.table(allcol_somatic_LOH_dndscv, file="~/Documents/GitHub/CoralGermline/dndscv/somaticallcoloniesLOH_20201210_dndscv.txt",sep="\t",quote=FALSE, row.name=FALSE)  
+#write.table(allcol_somatic_LOH_dndscv, file="~/Documents/GitHub/CoralGermline/dndscv/somaticallcoloniesLOH_20210622_dndscv.txt",sep="\t",quote=FALSE, row.name=FALSE)  
 all_GOH<-subset(allcol, GoHorLoH=="DeNovo")
 all_LOH<-subset(allcol, GoHorLoH=="LoH")  
 CA56_somatic_inherited<-spectrum(subset(CA56_, Inheritance=="inherited"), nrow(subset(CA56_, Inheritance=="inherited")))
 CA56_somatic_inherited_dndscv<-data.frame("sampleID"= subset(CA56_, Inheritance=="inherited")$sample,"chr"= subset(CA56_, Inheritance=="inherited")$chrom,"pos"= subset(CA56_, Inheritance=="inherited")$pos, "ref" = subset(CA56_, Inheritance=="inherited")$ref, "alt"= subset(CA56_, Inheritance=="inherited")$alt)
-#write.table(CA56_somatic_inherited_dndscv, file="~/Documents/GitHub/CoralGermline/dndscv/somaticCA56inherited_20201210_dndscv.txt",sep="\t",quote=FALSE, row.name=FALSE)  
+#write.table(CA56_somatic_inherited_dndscv, file="~/Documents/GitHub/CoralGermline/dndscv/somaticCA56inherited_20210622_dndscv.txt",sep="\t",quote=FALSE, row.name=FALSE)  
 
 CA60_somatic_inherited<-spectrum(subset(CA60_, Inheritance=="inherited"), nrow(subset(CA60_, Inheritance=="inherited")))
-CA60_somatic_inherited_dndscv<-data.frame("sampleID"= subset(CA60, Inheritance=="inherited")$sample,"chr"= subset(CA60, Inheritance=="inherited")$chrom,"pos"= subset(CA60, Inheritance=="inherited")$pos, "ref" = subset(CA60, Inheritance=="inherited")$ref, "alt"= subset(CA60, Inheritance=="inherited")$alt)
-#write.table(CA60_somatic_inherited_dndscv, file="~/Documents/GitHub/CoralGermline/dndscv/somaticCA60inherited_20201203_dndscv.txt",sep="\t",quote=FALSE, row.name=FALSE)  
+CA60_somatic_inherited_dndscv<-data.frame("sampleID"= subset(CA60_, Inheritance=="inherited")$sample,"chr"= subset(CA60_, Inheritance=="inherited")$chrom,"pos"= subset(CA60_, Inheritance=="inherited")$pos, "ref" = subset(CA60_, Inheritance=="inherited")$ref, "alt"= subset(CA60_, Inheritance=="inherited")$alt)
+#write.table(CA60_somatic_inherited_dndscv, file="~/Documents/GitHub/CoralGermline/dndscv/somaticCA60inherited_20210622_dndscv.txt",sep="\t",quote=FALSE, row.name=FALSE)  
 CA65_somatic_inherited<-spectrum(subset(CA65_, Inheritance=="inherited"), nrow(subset(CA65_, Inheritance=="inherited")))
-CA65_somatic_inherited_dndscv<-data.frame("sampleID"= subset(CA65, Inheritance=="inherited")$sample,"chr"= subset(CA65, Inheritance=="inherited")$chrom,"pos"= subset(CA65, Inheritance=="inherited")$pos, "ref" = subset(CA65, Inheritance=="inherited")$ref, "alt"= subset(CA65, Inheritance=="inherited")$alt)
-#write.table(CA65_somatic_inherited_dndscv, file="~/Documents/GitHub/CoralGermline/dndscv/somaticCA65oniesinherited_20201203_dndscv.txt",sep="\t",quote=FALSE, row.name=FALSE)  
+CA65_somatic_inherited_dndscv<-data.frame("sampleID"= subset(CA65_, Inheritance=="inherited")$sample,"chr"= subset(CA65_, Inheritance=="inherited")$chrom,"pos"= subset(CA65_, Inheritance=="inherited")$pos, "ref" = subset(CA65_, Inheritance=="inherited")$ref, "alt"= subset(CA65_, Inheritance=="inherited")$alt)
+#write.table(CA65_somatic_inherited_dndscv, file="~/Documents/GitHub/CoralGermline/dndscv/somaticCA65oniesinherited_20210622_dndscv.txt",sep="\t",quote=FALSE, row.name=FALSE)  
 allcol_somatic_inherited<-spectrum(subset(allcol, Inheritance=="inherited"), nrow(subset(allcol, Inheritance=="inherited"))) +ggtitle("Shared Parent and Sperm SNVs") 
 allcol_somatic_inherited_dndscv<-data.frame("sampleID"= subset(allcol, Inheritance=="inherited")$sample,"chr"= subset(allcol, Inheritance=="inherited")$chrom,"pos"= subset(allcol, Inheritance=="inherited")$pos, "ref" = subset(allcol, Inheritance=="inherited")$ref, "alt"= subset(allcol, Inheritance=="inherited")$alt)
-#write.table(allcol_somatic_inherited_dndscv, file="~/Documents/GitHub/CoralGermline/dndscv/somaticallcoloniesinherited_20201210_dndscv.txt",sep="\t",quote=FALSE, row.name=FALSE)  
+#write.table(allcol_somatic_inherited_dndscv, file="~/Documents/GitHub/CoralGermline/dndscv/somaticallcoloniesinherited_20210622_dndscv.txt",sep="\t",quote=FALSE, row.name=FALSE)  
 allcol_somatic_inherited_GOH_dndscv<-data.frame("sampleID"= subset(allcol, Inheritance=="inherited" & GoHorLoH=="DeNovo")$sample,"chr"= subset(allcol, Inheritance=="inherited" & GoHorLoH=="DeNovo")$chrom,"pos"= subset(allcol, Inheritance=="inherited" & GoHorLoH=="DeNovo")$pos, "ref" = subset(allcol, Inheritance=="inherited" & GoHorLoH=="DeNovo")$ref, "alt"= subset(allcol, Inheritance=="inherited" & GoHorLoH=="DeNovo")$alt)
 allcol_somatic_inherited_LOH_dndscv<-data.frame("sampleID"= subset(allcol, Inheritance=="inherited" & GoHorLoH=="LoH")$sample,"chr"= subset(allcol, Inheritance=="inherited" & GoHorLoH=="LoH")$chrom,"pos"= subset(allcol, Inheritance=="inherited" & GoHorLoH=="LoH")$pos, "ref" = subset(allcol, Inheritance=="inherited" & GoHorLoH=="LoH")$ref, "alt"= subset(allcol, Inheritance=="inherited" & GoHorLoH=="LoH")$alt)
-#write.table(allcol_somatic_inherited_GOH_dndscv, file="~/Documents/GitHub/CoralGermline/dndscv/somaticallcoloniesinherited_GOH_20201210_dndscv.txt",sep="\t",quote=FALSE, row.name=FALSE)  
-#write.table(allcol_somatic_inherited_LOH_dndscv, file="~/Documents/GitHub/CoralGermline/dndscv/somaticallcoloniesinherited_LOH_20201210_dndscv.txt",sep="\t",quote=FALSE, row.name=FALSE)  
+#write.table(allcol_somatic_inherited_GOH_dndscv, file="~/Documents/GitHub/CoralGermline/dndscv/somaticallcoloniesinherited_GOH_20210622_dndscv.txt",sep="\t",quote=FALSE, row.name=FALSE)  
+#write.table(allcol_somatic_inherited_LOH_dndscv, file="~/Documents/GitHub/CoralGermline/dndscv/somaticallcoloniesinherited_LOH_20210622_dndscv.txt",sep="\t",quote=FALSE, row.name=FALSE)  
 
 CA56_somatic_notinherited<-spectrum(subset(CA56_, Inheritance=="notinherited"), nrow(subset(CA56_, Inheritance=="notinherited")))
 CA60_somatic_notinherited<-spectrum(subset(CA60_, Inheritance=="notinherited"), nrow(subset(CA60_, Inheritance=="notinherited")))
 CA65_somatic_notinherited<-spectrum(subset(CA65_, Inheritance=="notinherited"), nrow(subset(CA65_, Inheritance=="notinherited")))
 allcol_somatic_notinherited<-spectrum(subset(allcol, Inheritance=="notinherited"), nrow(subset(allcol, Inheritance=="notinherited")))+ ggtitle("Parent Only SNVs") 
 allcol_somatic_notinherited_dndscv<-data.frame("sampleID"= subset(allcol, Inheritance=="notinherited")$sample,"chr"= subset(allcol, Inheritance=="notinherited")$chrom,"pos"= subset(allcol, Inheritance=="notinherited")$pos, "ref" = subset(allcol, Inheritance=="notinherited")$ref, "alt"= subset(allcol, Inheritance=="notinherited")$alt)
-#write.table(allcol_somatic_notinherited_dndscv, file="~/Documents/GitHub/CoralGermline/dndscv/somaticallcoloniesnotinherited_20201210_dndscv.txt",sep="\t",quote=FALSE, row.name=FALSE)  
+#write.table(allcol_somatic_notinherited_dndscv, file="~/Documents/GitHub/CoralGermline/dndscv/somaticallcoloniesnotinherited_20210622_dndscv.txt",sep="\t",quote=FALSE, row.name=FALSE)  
 allcol_somatic_notinherited_GOH_dndscv<-data.frame("sampleID"= subset(allcol, Inheritance=="notinherited" & GoHorLoH=="DeNovo")$sample,"chr"= subset(allcol, Inheritance=="notinherited" & GoHorLoH=="DeNovo")$chrom,"pos"= subset(allcol, Inheritance=="notinherited" & GoHorLoH=="DeNovo")$pos, "ref" = subset(allcol, Inheritance=="notinherited" & GoHorLoH=="DeNovo")$ref, "alt"= subset(allcol, Inheritance=="notinherited" & GoHorLoH=="DeNovo")$alt)
 allcol_somatic_notinherited_LOH_dndscv<-data.frame("sampleID"= subset(allcol, Inheritance=="notinherited" & GoHorLoH=="LoH")$sample,"chr"= subset(allcol, Inheritance=="notinherited" & GoHorLoH=="LoH")$chrom,"pos"= subset(allcol, Inheritance=="notinherited" & GoHorLoH=="LoH")$pos, "ref" = subset(allcol, Inheritance=="notinherited" & GoHorLoH=="LoH")$ref, "alt"= subset(allcol, Inheritance=="notinherited" & GoHorLoH=="LoH")$alt)
-#write.table(allcol_somatic_notinherited_GOH_dndscv, file="~/Documents/GitHub/CoralGermline/dndscv/somaticallcoloniesnotinherited_GOH_20201210_dndscv.txt",sep="\t",quote=FALSE, row.name=FALSE)  
-#write.table(allcol_somatic_notinherited_LOH_dndscv, file="~/Documents/GitHub/CoralGermline/dndscv/somaticallcoloniesnotinherited_LOH_20201210_dndscv.txt",sep="\t",quote=FALSE, row.name=FALSE)  
+#write.table(allcol_somatic_notinherited_GOH_dndscv, file="~/Documents/GitHub/CoralGermline/dndscv/somaticallcoloniesnotinherited_GOH_20210622_dndscv.txt",sep="\t",quote=FALSE, row.name=FALSE)  
+#write.table(allcol_somatic_notinherited_LOH_dndscv, file="~/Documents/GitHub/CoralGermline/dndscv/somaticallcoloniesnotinherited_LOH_20210622_dndscv.txt",sep="\t",quote=FALSE, row.name=FALSE)  
 
 CA56_uglm_spec<-spectrum(uniqueuglmCA56df,nrow(uniqueuglmCA56df0))
 CA60_uglm_spec<-spectrum(uniqueuglmCA60df,nrow(uniqueuglmCA60df0))
@@ -438,21 +325,21 @@ CA65_uglm_spec<-spectrum(uniqueuglmCA65df,nrow(uniqueuglmCA65df))
 allcol_uglm<-rbind(uniqueuglmCA56df, uniqueuglmCA60df, uniqueuglmCA65df)
 allcol_uglm_GOH<- subset(allcol_uglm, GoH_or_LoH=="DeNovo")
 allcol_uglm_GOH_dndscv<-data.frame("sampleID"= allcol_uglm_GOH$sample,"chr"= allcol_uglm_GOH$chrom,"pos"= allcol_uglm_GOH$pos, "ref" = allcol_uglm_GOH$ref, "alt"= allcol_uglm_GOH$alt)
-#write.table(allcol_uglm_GOH_dndscv,file="~/Documents/GitHub/CoralGermline/dndscv/uglmallcolonies_GOH_20201210_dndscv.txt",sep="\t",quote=FALSE, row.name=FALSE)
+#write.table(allcol_uglm_GOH_dndscv,file="~/Documents/GitHub/CoralGermline/dndscv/uglmallcolonies_GOH_20210622_dndscv.txt",sep="\t",quote=FALSE, row.name=FALSE)
 
 allcol_uglm_LOH<- subset(allcol_uglm, GoH_or_LoH=="LoH")
 allcol_uglm_LOH_dndscv<-data.frame("sampleID"= allcol_uglm_LOH$sample,"chr"= allcol_uglm_LOH$chrom,"pos"= allcol_uglm_LOH$pos, "ref" = allcol_uglm_LOH$ref, "alt"= allcol_uglm_LOH$alt)
-#write.table(allcol_uglm_LOH_dndscv,file="~/Documents/GitHub/CoralGermline/dndscv/uglmallcolonies_LOH_20201210_dndscv.txt",sep="\t",quote=FALSE, row.name=FALSE)
+#write.table(allcol_uglm_LOH_dndscv,file="~/Documents/GitHub/CoralGermline/dndscv/uglmallcolonies_LOH_20210622_dndscv.txt",sep="\t",quote=FALSE, row.name=FALSE)
 
 
 allcol_uglm_spec<-spectrum(allcol_uglm, nrow(allcol_uglm)) + ggtitle("Single Sperm Pool Only SNVs") 
 allcol_uglm_dndscv<-data.frame("sampleID"= allcol_uglm$sample,"chr"= allcol_uglm$chrom,"pos"= allcol_uglm$pos, "ref" = allcol_uglm$ref, "alt"= allcol_uglm$alt)
-#write.table(allcol_uglm_dndscv,file="~/Documents/GitHub/CoralGermline/dndscv/uglmallcolonies_20201210_dndscv.txt",sep="\t",quote=FALSE, row.name=FALSE)
+#write.table(allcol_uglm_dndscv,file="~/Documents/GitHub/CoralGermline/dndscv/uglmallcolonies_20210622_dndscv.txt",sep="\t",quote=FALSE, row.name=FALSE)
 
 allcol_gglm<-rbind(gglmCA56df, gglmCA60df, gglmCA65df)
 allcol_gglm_spec<-spectrum(allcol_gglm, nrow(allcol_gglm)) + ggtitle("All Sperm Pool SNVs") 
 allcol_gglm_dndscv<-data.frame("sampleID"= allcol_gglm$sample,"chr"= allcol_gglm$chrom,"pos"= allcol_gglm$pos, "ref" = allcol_gglm$ref, "alt"= allcol_gglm$alt)
-#write.table(allcol_gglm_dndscv,file="~/Documents/GitHub/CoralGermline/dndscv/gglmallcolonies_20201210_dndscv.txt",sep="\t",quote=FALSE, row.name=FALSE)
+#write.table(allcol_gglm_dndscv,file="~/Documents/GitHub/CoralGermline/dndscv/gglmallcolonies_20210622_dndscv.txt",sep="\t",quote=FALSE, row.name=FALSE)
 allcol_gglm_LOH<- subset(allcol_gglm, GoH_or_LoH=="LoH")
 allcol_gglm_GOH<- subset(allcol_gglm, GoH_or_LoH=="DeNovo")
 

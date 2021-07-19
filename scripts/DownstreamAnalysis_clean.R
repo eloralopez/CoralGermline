@@ -1,3 +1,4 @@
+#USE ME JULY 2021#######
 setwd("~/Documents/GitHub/CoralGermline/")
 library("reshape2")
 library(ggplot2)
@@ -11,18 +12,21 @@ library(patchwork)
 library(ggpubr)
 sessionInfo()
 #denominators:
-CA56denom<-79943111-(895*14)#11/17  #80718433-(892*14) #9/14
+#CA56denom<-79943111-(895*14)#11/17  #80718433-(892*14) #9/14
 #CA60denom<-   51791529-(895*14)#11/17    #52564929-(892*14) #9/14
-CA65denom<-   47410341-(895*14)#11/17    #48319810-(892*14) #9/14
-CA60denom<- 76882242-(895*14)#12/3
-CA56denom_coding<- 14123208
-CA60denom_coding<- 3823690+9622397 #12/3
-CA65denom_coding<- 8462566
-
+#CA65denom<-   47410341-(895*14)#11/17    #48319810-(892*14) #9/14
+#CA60denom<- 76882242-(895*14)#12/3
+#CA56denom_coding<- 14123208
+#CA60denom_coding<- 3823690+9622397 #12/3
+#CA65denom_coding<- 8462566
+#coding denom mapped to ahya 6/2021:
+CA56denom_coding<- 13167782
+CA60denom_coding<- 13090241
+CA65denom_coding<- 9105020
 #DENOMINATORS MAPPED TO AHYA
 CA56denom<-118928278-(14*949)
 CA60denom<-118886418-(14*949)
-CA65denom<-74856149-(14*949)
+CA65denom<-74856149-159102+5316571-(14*949)
 #CA60_denom_coding<-
 #surface areas:
 CA56sa<-36.25
@@ -354,8 +358,9 @@ threedfs_func<- function(files) {
 }  
 #threedfs_CA56<-threedfs_func(list.files(path="~/Documents/GitHub/CoralGermline/cleanpipeline", pattern="*56_dm_20201210.txt.ann.txt", full.names=T, recursive=FALSE))
 #ahya ref:
-threedfs_CA56<-threedfs_func(list.files(path="~/Documents/GitHub/CoralGermline/mappedtoahya", pattern="*56_dm_20210107.txt", full.names=T, recursive=FALSE))
-
+#threedfs_CA56<-threedfs_func(list.files(path="~/Documents/GitHub/CoralGermline/mappedtoahya", pattern="*56_dm_20210107.txt", full.names=T, recursive=FALSE))
+#ahya ref WITH ANNOTATIONS:
+threedfs_CA56<-threedfs_func(list.files(path="~/Documents/GitHub/CoralGermline/mappedtoahya", pattern="*56_dm_20210107_chrs.txt.ann.txt", full.names=T, recursive=FALSE))
 somaticCA56df<-threedfs_CA56$somatic
 uglmCA56df<-threedfs_CA56$uglm
 uniqueuglmCA56df<-uglmCA56df[match(unique(uglmCA56df$chrom.pos), 					uglmCA56df$chrom.pos),]
@@ -363,7 +368,8 @@ gglmCA56df<-threedfs_CA56$gglm
 metadatadf.0CA56<-threedfs_CA56$metadatadf.0
 
 #threedfs_CA60<-threedfs_func(list.files(path="~/Documents/GitHub/CoralGermline/cleanpipeline", pattern="*60_dm_20201210.txt.ann.txt", full.names=T, recursive=FALSE))
-threedfs_CA60<-threedfs_func(list.files(path="~/Documents/GitHub/CoralGermline/mappedtoahya", pattern="*60_dm_20210107.txt", full.names=T, recursive=FALSE))
+#threedfs_CA60<-threedfs_func(list.files(path="~/Documents/GitHub/CoralGermline/mappedtoahya", pattern="*60_dm_20210107.txt", full.names=T, recursive=FALSE))
+threedfs_CA60<-threedfs_func(list.files(path="~/Documents/GitHub/CoralGermline/mappedtoahya", pattern="*60_dm_20210107_chrs.txt.ann.txt", full.names=T, recursive=FALSE))
 
 somaticCA60df<-threedfs_CA60$somatic
 uglmCA60df<-threedfs_CA60$uglm
@@ -372,7 +378,8 @@ gglmCA60df<-threedfs_CA60$gglm
 metadatadf.0CA60<-threedfs_CA60$metadatadf.0
 
 #threedfs_CA65<-threedfs_func(list.files(path="~/Documents/GitHub/CoralGermline/cleanpipeline", pattern="*65_dm_20201210.txt.ann.txt", full.names=T, recursive=FALSE))
-threedfs_CA65<-threedfs_func(list.files(path="~/Documents/GitHub/CoralGermline/mappedtoahya", pattern="*65_dm_20210107.txt", full.names=T, recursive=FALSE))
+#threedfs_CA65<-threedfs_func(list.files(path="~/Documents/GitHub/CoralGermline/mappedtoahya", pattern="*65_dm_20210107.txt", full.names=T, recursive=FALSE))
+threedfs_CA65<-threedfs_func(list.files(path="~/Documents/GitHub/CoralGermline/mappedtoahya", pattern="*65_dm_20210326_chrs.txt.ann.txt", full.names=T, recursive=FALSE))
 
 somaticCA65df<-threedfs_CA65$somatic
 uglmCA65df<-threedfs_CA65$uglm
@@ -451,9 +458,9 @@ scatterplot_func<-function(somaticmetadatadf) {
     scale_color_manual(labels= c("Parent and Sperm","Parent Only"), values = c("red","black")) +
     labs(color="SNV Type\n")+
     ylab("Average Variant Allele Frequency in the Mutant Sperm Pool") + xlab("Average Variant Allele Frequency in the Mutant Parent")+
-    theme(axis.text=element_text(size=15),
-          axis.title=element_text(size=15))+
-    theme(legend.text=element_text(size=15))
+    theme(axis.text=element_text(size=25),
+          axis.title=element_text(size=25))+
+    theme(legend.text=element_text(size=25),legend.title=element_text(size=25))
 
   
   p<-ggplot(df_denovo, aes(x=ParentAverage, y=SpermAverage, color=Inheritance)) + geom_point(size=2.5) +
@@ -470,15 +477,15 @@ scatterplot_func<-function(somaticmetadatadf) {
   pk<-ggplot(dfk, aes(x=ParentAverage, y=SpermAverage, color=Inheritance)) + geom_point(size=2.5) +
     geom_smooth(method=lm, aes(group=1)) +
     theme_bw() +
-    stat_cor(label.x=0.05,label.y=0.35, aes(group=1)) +
-    stat_regline_equation(label.x = .05, label.y = 0.4)+
+    #stat_cor(label.x=0.05,label.y=0.35, aes(group=1)) +
+    #stat_regline_equation(label.x = .05, label.y = 0.4)+
     ylim(0, 0.5) + xlim(0, .5) +
     scale_color_manual(values = c("red","black")) +
     ylab("Average Variant Allele Frequency in the Mutant Sperm Pool") + xlab("Average Variant Allele Frequency in the Mutant Parent")+
-    theme(axis.text=element_text(size=15),
-          axis.title=element_text(size=15))+
+    theme(axis.text=element_text(size=25),
+          axis.title=element_text(size=25))+
     geom_abline(intercept=0,slope=1)+
-    theme(legend.text=element_blank(),legend.title=element_blank())
+    theme(legend.position="none")
   
   pk2<-ggplot(dfk, aes(x=ParentAverage, y=SpermAverage, color=Inheritance)) + geom_point(size=2.5) +
     geom_smooth(method=lm, aes(group=1)) +
@@ -502,7 +509,8 @@ scatterplot_func<-function(somaticmetadatadf) {
   newlist<-list(p, cor)
   #parentspermcomparison
   #return(newlist)
-  #return(pall | pk ) #this is supplementary figure 1
+  #return(pall +labs(tag="a.")+theme(plot.tag=element_text(face="bold",size=30)) | pk +labs(tag="b.")+
+  #         theme(plot.tag=element_text(face="bold",size=30))) #this is supplementary figure 1
   
   return(df) #use this for the rest of the analyses
   #return(otherframe)
@@ -516,13 +524,38 @@ allcolonies_inherited_GOH<-subset(allcolonies, Inheritance=="inherited" & GoHorL
 allcolonies_notinherited_GOH<-subset(allcolonies, Inheritance=="notinherited" & GoHorLoH=="DeNovo")
 VAFs<-data.frame("PVAF"=c(allcolonies_inherited_GOH$ParentAverage, allcolonies_notinherited_GOH$ParentAverage), 
            "shared"=c(rep("Parent and Sperm",nrow(allcolonies_inherited_GOH)),rep("Parent Only",nrow(allcolonies_notinherited_GOH))))
-ggplot(data=VAFs, aes(x=PVAF, fill=shared)) +
+VAFmeans<-c(mean(subset(VAFs, shared=="Parent and Sperm")$PVAF),mean(subset(VAFs, shared=="Parent Only")$PVAF))
+mu<-data.frame(VAFmeans, shared=c("Parent and Sperm","Parent Only"))
+SuppFig<-ggplot(data=VAFs, aes(x=PVAF*100, fill=shared, ..density..)) +
   geom_density(alpha=0.5) +
+  #geom_histogram()+
+  scale_fill_manual(values = c("#999999","goldenrod")) +
   #xlim(3.9,8.5) +
-  theme_minimal()
+  ylab("Probability Density Function")+ xlab("Average Variant Allele Frequency in the Mutant Parent (as %)")+
+  geom_vline(data=mu, aes(xintercept=VAFmeans*100, color=shared),
+             
+             linetype="dashed",size=2)+
+  scale_color_manual(values = c("#999999","goldenrod")) +
+  theme_bw() +
+  theme(axis.text=element_text(size=25), 
+        axis.text.x=element_text(size=25, angle = 0),
+        axis.title=element_text(size=25))+
+  theme(legend.text=element_text(size=25), legend.title = element_blank())
 
+SuppFig_hist<-ggplot(data=VAFs, aes(x=PVAF, fill=shared)) +
+  #geom_density(alpha=0.3) +
+  geom_histogram(binwidth=0.01, closed = TRUE)+
+  scale_fill_manual(values = c("#999999","lightgoldenrod1")) +
+  #xlim(3.9,8.5) +
+  geom_vline(data=mu, aes(xintercept=VAFmeans, color=shared),
+             linetype="dashed",size=2)+
+  scale_color_manual(values = c("#999999","lightgoldenrod1")) +
+  theme_bw() 
+SuppFig+scale_y_continuous(expand = c(0,0.01))+theme(panel.border = element_blank(), panel.grid.major = element_blank(),panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"))
+SuppFig+ geom_line(data = VAFs, aes(x = x, y = y), color = "red")
 VAFs<-data.frame("PVAF"=c(allcolonies_inherited_GOH$ParentAverage, allcolonies_notinherited_GOH$ParentAverage), 
                  "shared"=c(rep("Parent and Sperm",nrow(allcolonies_inherited_GOH)),rep("Parent Only",nrow(allcolonies_notinherited_GOH))))
+plot(density(subset(VAFs, shared=="Parent Only")$PVAF))
 ggplot(data=VAFs, aes(x=PVAF, fill=shared)) +
   geom_density(alpha=0.5) +
   #xlim(0.0,0.5) +
@@ -549,6 +582,8 @@ PO_v_PS<-data.frame(POcounts,PScounts)
 chisq.test(PO_v_PS)
 CA56_<-scatterplot_func(somaticCA56df)
 CA56_CODING<-subset(CA56_, MutationType=="missense_variant" | MutationType=="synonymous_variant"| MutationType=="synonymous_variant")
+CA56_missense<-subset(CA56_CODING,MutationType=="missense_variant")
+CA56_syn<-subset(CA56_CODING,MutationType=="synonymous_variant")
 CA56_inherited<-subset(CA56_, Inheritance=="inherited")
 CA56_notinherited<-subset(CA56_, Inheritance=="notinherited")
 CA56_loh<-subset(CA56_, GoHorLoH=="LoH")
@@ -591,6 +626,7 @@ CAP26i<-subset(CAP26, Inheritance=="inherited")
 CAP22n<-subset(CAP22, Inheritance=="notinherited")
 CAP23n<-subset(CAP23, Inheritance=="notinherited")
 CAP26n<-subset(CAP26, Inheritance=="notinherited")
+
 
 CA65_<-scatterplot_func(somaticCA65df)
 CA65_CODING<-subset(CA65_, MutationType=="missense_variant" | MutationType=="synonymous_variant"| MutationType=="synonymous_variant")
@@ -840,18 +876,41 @@ df$meanspercent<-100*df$means
 df$allsepercent<-100*allse
 df$shared<-factor(c(rep("All Parent",2),rep("P+S",2),rep("PO",2),rep("SSPO",2),rep("ASP",2)),
                   levels=c("All Parent","PO","P+S","SSPO","ASP"))
+df$newcol<-factor(paste(df$shared, df$typez2))
 df_withoutallsom<-df[-(1:2),]
-z2<- ggplot(df_withoutallsom, aes(x=shared, y=meanspercent,fill=typez2)) +
-  geom_bar(position="dodge", stat="identity") +
+df_eachdatapoint<-data.frame("percents"=c(GOHallsom, LOHallsom, GOHinh, LOHinh, GOHnotinh, LOHnotinh, GOHuglmprop, LOHuglmprop, GOHgglmprop, LOHgglmprop),
+                             "shared"=factor(c(rep("All Parent",14),rep("P+S",14),rep("PO",14),rep("SSPO",14),rep("ASP",6)),
+                                             levels=c("All Parent","PO","P+S","SSPO","ASP")),
+                             "typez"=c(rep(c(rep("GoH2",7),rep("LoH2",7)),4),rep("GoH2",3),rep("LoH2",3)))
+z2<-ggplot(df, aes(x=shared, y=meanspercent)) +
+  scale_color_manual(values=c("red","coral1","blue","royalblue1"))+
+  geom_pointrange(data=df, size=1.5, position=position_dodge(width=0.6), aes(color=typez2,ymin=meanspercent-(allsepercent), ymax=meanspercent+(allsepercent))) +
+  
+  geom_jitter(data=df_eachdatapoint,size=3,position = position_jitterdodge(
+    jitter.width = 0.1,
+    jitter.height = 0,
+    dodge.width = 0.6,
+    seed = NA
+  ),
+  aes(shared, percents*100,colour=typez
+      ))+
+
   theme_bw() +
+  
   #scale_fill_brewer(palette = "Paired") +
+  #scale_fill_manual(values = c("blue", "red"))+
   ylab("Percent of SNVs") + xlab("")+
-  theme(axis.text=element_text(size=15),
-        axis.title=element_text(size=15))   +
-  theme(legend.text=element_text(size=15),
-        axis.text.x = element_text(angle = 90),
-        legend.title=element_blank())+
-  geom_errorbar(position="dodge",aes(ymin=meanspercent-(allsepercent), ymax=meanspercent+(allsepercent)))
+  guides(fill=guide_legend(title="Type"))+
+  theme(axis.text=element_text(size=25),
+        axis.title=element_text(size=25))   +
+  theme(legend.text=element_text(size=25),legend.title=element_text(size=25),
+        axis.text.x = element_text(angle = 0, colour=c("black","goldenrod","#999999","purple","seagreen3")))
+        #legend.title=element_blank())+
+  #geom_errorbar(position="dodge",aes(ymin=meanspercent-(allsepercent), ymax=meanspercent+(allsepercent)))
+
+z2+theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"))  
+
 ##this is figure 2d
 
 ##chisq for fig 2d:
@@ -874,4 +933,101 @@ chisq.test(i_v_asp)
 chisq.test(sspo_v_asp)
 
 df
+
+##test differences in mean GOH by grouping:
+t.test(GOHinh, GOHnotinh, alternative=c("two.sided"),paired=TRUE)
+t.test(GOHinh, GOHuglm, alternative=c("two.sided"),paired=TRUE)
+t.test(GOHnotinh, GOHuglm, alternative=c("two.sided"),paired=TRUE)
+t.test(GOHgglm, GOHuglm, alternative=c("two.sided"),paired=TRUE)
+t.test(GOHnotinh, GOHallsom, alternative=c("two.sided"),paired=TRUE)
+t.test(GOHinh, GOHallsom, alternative=c("two.sided"),paired=TRUE)
+
+###coding###
+allsom_mis_counts<-c(nrow(subset(CAP6, MutationType=="missense_variant"))/CA56denom_coding, nrow(subset(CAP8, MutationType=="missense_variant"))/CA56denom_coding, 
+                     nrow(subset(CAP22, MutationType=="missense_variant"))/CA60denom_coding, nrow(subset(CAP23, MutationType=="missense_variant"))/CA60denom_coding, nrow(subset(CAP26, MutationType=="missense_variant"))/CA60denom_coding,
+                     nrow(subset(CAP11, MutationType=="missense_variant"))/CA65denom_coding,nrow(subset(CAP9, MutationType=="missense_variant"))/CA65denom_coding)
+allsom_syn_counts<-c(nrow(subset(CAP6, MutationType=="synonymous_variant"))/CA56denom_coding, nrow(subset(CAP8, MutationType=="synonymous_variant"))/CA56denom_coding, 
+                     nrow(subset(CAP22, MutationType=="synonymous_variant"))/CA60denom_coding, nrow(subset(CAP23, MutationType=="synonymous_variant"))/CA60denom_coding, nrow(subset(CAP26, MutationType=="synonymous_variant"))/CA60denom_coding,
+                     nrow(subset(CAP11, MutationType=="synonymous_variant"))/CA65denom_coding,nrow(subset(CAP9, MutationType=="synonymous_variant"))/CA65denom_coding)
+
+n_mis_counts<-c(nrow(subset(CAP6n, MutationType=="missense_variant"))/CA56denom_coding, nrow(subset(CAP8n, MutationType=="missense_variant"))/CA56denom_coding, 
+                nrow(subset(CAP22n, MutationType=="missense_variant"))/CA60denom_coding, nrow(subset(CAP23n, MutationType=="missense_variant"))/CA60denom_coding, nrow(subset(CAP26n, MutationType=="missense_variant"))/CA60denom_coding,
+                nrow(subset(CAP11n, MutationType=="missense_variant"))/CA65denom_coding,nrow(subset(CAP9n, MutationType=="missense_variant"))/CA65denom_coding)
+n_syn_counts<-c(nrow(subset(CAP6n, MutationType=="synonymous_variant"))/CA56denom_coding, nrow(subset(CAP8n, MutationType=="synonymous_variant"))/CA56denom_coding, 
+                nrow(subset(CAP22n, MutationType=="synonymous_variant"))/CA60denom_coding, nrow(subset(CAP23n, MutationType=="synonymous_variant"))/CA60denom_coding, nrow(subset(CAP26n, MutationType=="synonymous_variant"))/CA60denom_coding,
+                nrow(subset(CAP11n, MutationType=="synonymous_variant"))/CA65denom_coding,nrow(subset(CAP9n, MutationType=="synonymous_variant"))/CA65denom_coding)
+i_mis_counts<-c(nrow(subset(CAP6i, MutationType=="missense_variant"))/CA56denom_coding, nrow(subset(CAP8i, MutationType=="missense_variant"))/CA56denom_coding, 
+                nrow(subset(CAP22i, MutationType=="missense_variant"))/CA60denom_coding, nrow(subset(CAP23i, MutationType=="missense_variant"))/CA60denom_coding, nrow(subset(CAP26i, MutationType=="missense_variant"))/CA60denom_coding,
+                nrow(subset(CAP11i, MutationType=="missense_variant"))/CA65denom_coding,nrow(subset(CAP9i, MutationType=="missense_variant"))/CA65denom_coding)
+i_syn_counts<-c(nrow(subset(CAP6i, MutationType=="synonymous_variant"))/CA56denom_coding, nrow(subset(CAP8i, MutationType=="synonymous_variant"))/CA56denom_coding, 
+                nrow(subset(CAP22i, MutationType=="synonymous_variant"))/CA60denom_coding, nrow(subset(CAP23i, MutationType=="synonymous_variant"))/CA60denom_coding, nrow(subset(CAP26i, MutationType=="synonymous_variant"))/CA60denom_coding,
+                nrow(subset(CAP11i, MutationType=="synonymous_variant"))/CA65denom_coding,nrow(subset(CAP9i, MutationType=="synonymous_variant"))/CA65denom_coding)
+uglm_mis_counts<-c(nrow(subset(CAS6uglm, MutationType=="missense_variant"))/CA56denom_coding, nrow(subset(CAS8uglm, MutationType=="missense_variant"))/CA56denom_coding, 
+                   nrow(subset(CAS22uglm, MutationType=="missense_variant"))/CA60denom_coding, nrow(subset(CAS23uglm, MutationType=="missense_variant"))/CA60denom_coding, nrow(subset(CAS26uglm, MutationType=="missense_variant"))/CA60denom_coding,
+                   nrow(subset(CAS11uglm, MutationType=="missense_variant"))/CA65denom_coding,nrow(subset(CAS9uglm, MutationType=="missense_variant"))/CA65denom_coding)
+uglm_syn_counts<-c(nrow(subset(CAS6uglm, MutationType=="synonymous_variant"))/CA56denom_coding, nrow(subset(CAS8uglm, MutationType=="synonymous_variant"))/CA56denom_coding, 
+                   nrow(subset(CAS22uglm, MutationType=="synonymous_variant"))/CA60denom_coding, nrow(subset(CAS23uglm, MutationType=="synonymous_variant"))/CA60denom_coding, nrow(subset(CAS26uglm, MutationType=="synonymous_variant"))/CA60denom_coding,
+                   nrow(subset(CAS11uglm, MutationType=="synonymous_variant"))/CA65denom_coding,nrow(subset(CAS9uglm, MutationType=="synonymous_variant"))/CA65denom_coding)
+allsomratio<-allsom_mis_counts/(allsom_syn_counts+allsom_mis_counts)
+nratio<-n_mis_counts/(n_syn_counts+n_mis_counts)
+iratio<-i_mis_counts/(i_syn_counts+i_mis_counts)
+uglmratio<-uglm_mis_counts/(uglm_syn_counts+uglm_mis_counts)
+ratiomeans<-c(mean(allsomratio),mean(nratio), mean(iratio), mean(uglmratio))
+ratioses<-c(se(allsomratio), se(nratio), se(iratio), se(uglmratio))
+ratios_forgeompoint<-data.frame(ratiomeans, ratioses, types=c("All Somatic","PO","P+S","SSPO"))
+ratiopoint1<-ggplot(ratios_forgeompoint, aes(x = types, y = ratiomeans*100, color=types))+
+  geom_point(size=3)+
+  scale_color_manual(values=c("black","red","blue","green"))+
+  geom_errorbar(aes(ymin=ratiomeans*100-ratioses*100, ymax=ratiomeans*100+ratioses*100))+
+  ylab("% of coding mutations that are missense")+xlab("")+
+  theme_bw()+
+  theme(legend.title=element_blank(), axis.title = element_text(size=25),axis.text = element_text(size=25),legend.text = element_text(size=25))
+ratios<-c(allsomratio,nratio, iratio, uglmratio)
+ratiotypes<-c(rep("All Somatic",7), rep("PO",7), rep("P+S",7),rep("SSPO",7))
+ratiosamples<-rep(c("CAP6","CAP8","CAP22","CAP23","CAP26","CAP11","CAP9"),4)
+ratio_df<-data.frame(ratios,ratiotypes,ratiosamples)
+ratiopoint2<-ggplot(ratio_df, aes(x = ratiosamples, y = ratios*100, color=ratiotypes))+
+  geom_jitter(height=0, width=0.15,size=3)+
+  scale_color_manual(values=c("black","red","blue","green"))+
+  geom_hline(yintercept=ratiomeans[1]*100,color="black",linetype="dashed")+geom_hline(yintercept=ratiomeans[2]*100,color="blue",linetype="dashed")+geom_hline(yintercept=ratiomeans[3]*100,color="red",linetype="dashed")+geom_hline(yintercept=ratiomeans[4]*100,color="green",linetype="dashed")+
+  ylab("% of coding mutations that are missense")+xlab("")+
+  theme_bw()+
+  theme(legend.title=element_blank(), axis.title = element_text(size=25),axis.text = element_text(size=25),legend.text = element_text(size=25))
+counts<-c(allsom_mis_counts,n_mis_counts, i_mis_counts, uglm_mis_counts,
+          allsom_syn_counts,n_syn_counts, i_syn_counts, uglm_syn_counts)
+mean(allsom_mis_counts+allsom_syn_counts)
+mean(n_mis_counts+n_syn_counts)
+mean(i_mis_counts+i_syn_counts)
+mean(uglm_mis_counts+uglm_syn_counts)
+
+muttypes<-c(rep("missense",28),rep("synonymous",28))
+counts_df<-data.frame(counts,muttypes,types=rep(ratiotypes,2),samples=rep(ratiosamples,2))
+counts_df$second<-factor(paste0(counts_df$types , counts_df$muttypes))
+countsplot<-ggplot(counts_df, aes(x = samples, y = counts, color=types, shape=muttypes, group=types))+
+  geom_point(size=3, position=position_dodge(width=0.6))+ylab("# of mutations")+
+  scale_color_manual(values=c("black","red","blue","green"))+
+  ylab("# of mutations per bp in coding region")+ xlab("")+
+  theme_bw()+
+  geom_hline(yintercept=mean(allsom_mis_counts+allsom_syn_counts),color="black",linetype="dashed")+geom_hline(yintercept=mean(n_mis_counts+n_syn_counts),color="blue",linetype="dashed")+geom_hline(yintercept=mean(i_mis_counts+i_syn_counts),color="red",linetype="dashed")+geom_hline(yintercept=mean(uglm_mis_counts+uglm_syn_counts),color="green",linetype="dashed")+
+  theme(legend.title=element_blank(), axis.title = element_text(size=25),axis.text = element_text(size=25),legend.text = element_text(size=25))
+
+  
+(countsplot+ labs(tag = "a.")+theme(plot.tag=element_text(face="bold",size=30))) / (ratiopoint2+ labs(tag = "b.")+theme(plot.tag=element_text(face="bold",size=30)) | ratiopoint1 +labs(tag = "c.")+theme(plot.tag=element_text(face="bold",size=30)))
+t.test(iratio,uglmratio)
+t.test(nratio,uglmratio)
+t.test(allsomratio,uglmratio)
+
+box<-ggplot(ratio_df, aes(x = ratiotypes, y = ratios, color=ratiotypes))+
+  geom_boxplot()+
+  scale_color_manual(values=c("red","blue","green"))+
+  theme_bw()
+box2 <- box + labs(x="", y="Percent of Somatic Mutations inherited by Sperm") + geom_boxplot(fill="red",
+                                                                                             position = position_dodge(0.9)
+) +
+  
+  theme_bw()+
+  #stat_compare_means(label.x=1,label.y=30,size=10)+
+  theme(axis.text=element_text(size=25),
+        axis.title=element_text(size=25))
+Ahya_fasta$chr1[1:10]
 

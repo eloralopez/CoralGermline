@@ -1,0 +1,14 @@
+chrom.pos	chrom	pos	sample	ref	alt	normal_allele	mutant_allele	mutant_allele_depth	genotype	totaldepth.x	refdepth	altdepth	GQscore.x	GoH_or_LoH	Ti.Tv	WhattoWhat	TrueorFalse	MutationClass	MutantParent1	MutantParent2	MutantSperm1	MutantSperm2	MutationType	MutationStrength	ColonyName	totaldepth.y	GQscore.y	totaldepth	GQscore
+chr1.9374135	chr1	9374135	CAP6-1_S47	G	A	G	A	0	G/G	29	29	0	81	DeNovo	Transition	GtoA	NA	UniqueGermlineMutation	CAP6-1_S47	CAP6-2_S63	CAS6-2_S9	CAS6_S73	missense_variant	MODERATE	CA56	45.4	76.2	23	49
+chr13.14759938	chr13	14759938	CAS6-2_S9	G	C	C	G	56	G/G	56	56	0	99	LoH	Transversion	CtoG	NA	UniqueGermlineMutation	CAP6-1_S47	CAP6-2_S63	CAS6-2_S9	CAS6_S73	missense_variant	MODERATE	CA56	56.8	92.6	41	35
+chr9.8722628	chr9	8722628	CAS6-2_S9	C	C	A	C	0	C/C	46	46	0	99	LoH	Transversion	AtoC	NA	UniqueGermlineMutation	CAP6-1_S47	CAP6-2_S63	CAS6-2_S9	CAS6_S73	missense_variant	MODERATE	CA56	45.8	88.7	27	44
+chr13.4497217	chr13	4497217	CAP6-1_S47	T	C	C	T	0	C/C	24	0	24	75	DeNovo	Transition	CtoT	NA	UniqueGermlineMutation	CAP6-1_S47	CAP6-2_S63	CAS6-2_S9	CAS6_S73	synonymous_variant	LOW	CA56	33.7	86.9	15	45
+chr4.875736	chr4	875736	CAS6-2_S9	T	C	C	T	55	T/T	55	55	0	82	LoH	Transition	CtoT	NA	UniqueGermlineMutation	CAP6-1_S47	CAP6-2_S63	CAS6-2_S9	CAS6_S73	synonymous_variant	LOW	CA56	38.2	77.4	19	30
+chr4.11358290	chr4	11358290	CAS8-2_S2	G	A	G	A	38	A/A	38	0	38	99	LoH	Transition	GtoA	NA	UniqueGermlineMutation	CAP8-1_S40	CAP8-2_S56	CAS8-2_S2	CAS8_S66	missense_variant	MODERATE	CA56	30.1	99	15	99
+chr5.11101091	chr5	11101091	CAS8-2_S2	G	C	A	G	46	G/G	46	46	0	99	LoH	Transition	AtoG	NA	UniqueGermlineMutation	CAP8-1_S40	CAP8-2_S56	CAS8-2_S2	CAS8_S66	synonymous_variant	LOW	CA56	48.8	85.8	21	38
+chr2.5562727	chr2	5562727	CAS22-2_S5	T	C	C	T	34	T/T	34	34	0	99	LoH	Transition	CtoT	NA	UniqueGermlineMutation	CAP22-1_S43	CAP22-2_S59	CAS22-2_S5	CAS22_S69	synonymous_variant	LOW	CA60	40.75	84	17	35
+chr2.1504872	chr2	1504872	CAS23-2_S7	C	T	T	C	13	C/C	13	13	0	39	LoH	Transition	TtoC	NA	UniqueGermlineMutation	CAP23-1_S45	CAP23-2_S61	CAS23-2_S7	CAS23_S71	synonymous_variant	LOW	CA60	34	83.3125	13	30
+chr2.33798329	chr2	33798329	CAP24-1_S42	G	C	G	C	0	G/G	24	24	0	30	DeNovo	Transversion	GtoC	NA	UniqueGermlineMutation	CAP24-1_S42	CAP24-2_S58	CAS24-2_S4	CAS24_S68	missense_variant	MODERATE	CA60	39.875	77.5	12	30
+chr7.2917599	chr7	2917599	CAS11-2_S3	G	A	A	G	92	G/G	92	92	0	99	LoH	Transition	AtoG	NA	UniqueGermlineMutation	CAP11-1_S41	CAP11-2_S57	CAS11-2_S3	CAS11_S67	synonymous_variant	LOW	CA65	54.8	84.6	14	46
+chr1.28738288	chr1	28738288	CAP9-1_S48	G	C	G	C	0	G/G	39	39	0	99	DeNovo	Transversion	GtoC	NA	UniqueGermlineMutation	CAP9-1_S48	CAP9-2_S64	CAS9-2_S10	CAS9_S74	missense_variant	MODERATE	CA65	34.2	69	10	30
+chr12.7960230	chr12	7960230	CAP9-1_S48	T	C	C	T	0	C/C	39	0	39	99	DeNovo	Transition	CtoT	NA	UniqueGermlineMutation	CAP9-1_S48	CAP9-2_S64	CAS9-2_S10	CAS9_S74	missense_variant	MODERATE	CA65	32.7	71.2	11	33

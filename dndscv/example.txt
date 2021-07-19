@@ -1,0 +1,10 @@
+chr10	maker	gene	78574	86389	.	+	.	ID=Amillepora16770;Name=Amillepora16770;Alias=maker-chr10-snap-gene-0.16;
+chr10	maker	mRNA	78574	86389	.	+	.	ID=Amillepora16770-RA;Parent=Amillepora16770;Name=Amillepora16770-RA;Alias=maker-chr10-snap-gene-0.16-mRNA-1;_AED=0.13;_QI=51|0.5|1|1|1|1|3|427|72;_eAED=0.13;
+chr10	maker	exon	78574	78653	.	+	.	ID=Amillepora16770-RA:exon:0;Parent=Amillepora16770-RA;
+chr10	maker	exon	84594	84712	.	+	.	ID=Amillepora16770-RA:exon:1;Parent=Amillepora16770-RA;
+chr10	maker	exon	85892	86389	.	+	.	ID=Amillepora16770-RA:exon:2;Parent=Amillepora16770-RA;
+chr10	maker	five_prime_UTR	78574	78624	.	+	.	ID=Amillepora16770-RA:five_prime_utr;Parent=Amillepora16770-RA;
+chr10	maker	CDS	78625	78653	.	+	0	ID=Amillepora16770-RA:cds;Parent=Amillepora16770-RA;
+chr10	maker	CDS	84594	84712	.	+	1	ID=Amillepora16770-RA:cds;Parent=Amillepora16770-RA;
+chr10	maker	CDS	85892	85962	.	+	2	ID=Amillepora16770-RA:cds;Parent=Amillepora16770-RA;
+chr10	maker	three_prime_UTR	85963	86389	.	+	.	ID=Amillepora16770-RA:three_prime_utr;Parent=Amillepora16770-RA;

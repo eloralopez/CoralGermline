@@ -19,13 +19,40 @@ Germline Pipeline:
 4. combineGVCFsAHB152.sh
 5a. genotypeGVCFsAHB154.sh #gives just the variant sites
 5b. genotypeGVCFsallsites.sh #gives all sites
-6. use filterVCF.sh on the outputfile from 5a
+#nope#6. use filterVCF.sh on the outputfile from 5a
+selectvariantsDP_CA65_upperlower.sh #(take output from 5b, go to nomissing,filter on upper and lower DP)
+biSNPs.sh #call just biSNPs
 7. inheritanceinvestigator.py
 8. melt
 9.definemutationtypes.py
 10. downstream analyses.r : output write.table(uniquemetadatadf, file="CAcolony60CAP22uniquemuts.txt",sep="\t",quote=FALSE, row.name=FALSE)
 
+TO GATHER 2 GVCFS OF THE SAMPLE SAMPLE, DIFFERENT INTERVALS INTO THE SAME GVCF:
+1.  ml load biology 
+	ml load bedtools 
+	bedtools subtract -a CAS9-2_S10.g.vcf -b CAS9-2_S10intervaljob.g.vcf > CAS9-2_S10_subtracted1.g.vcf
+	bedtools subtract -a CAS9-2_S10intervaljob.g.vcf -b CAS9-2_S10intervaljobpart2.g.vcf > CAS9-2_S10_subtracted2.g.vcf
+	
+	bedtools subtract
+2. add chrom line: 
+	grep 'CHROM' CAS9-2_S10.g.vcf > CAS9headerline
+	cat CAS9headerline CAS9-2_S10_subtracted1.g.vcf > CAS9-2_S10_subtracted1whead.g.vcf
+	cat CAS9headerline CAS9-2_S10_subtracted2.g.vcf > CAS9-2_S10_subtracted2whead.g.vcf
+	
+3. add vcfheader line:
+	head -945 CAS9-2_S10.g.vcf > VCFheader
+	cat VCFheader CAS9-2_S10_subtracted1whead.g.vcf > CAS9-2_S10_subtracted1wheadFULL.g.vcf
+	cat VCFheader CAS9-2_S10_subtracted2whead.g.vcf > CAS9-2_S10_subtracted2wheadFULL.g.vcf
+ sbatch -p spalumbi gatherVCFs.sh CAS11-2_S3_subtractedwheadFULL.g.vcf CAS11-2_S3intervaljob.g.vcf
 
+
+CAS6-2_S9_subtractedwheadFULL.g.vcfgathered.g.vcf 
+CAS8-2_S2_subtractedwheadFULL.g.vcfgathered.g.vcf
+CAS12-2_S8.g.vcf
+
+CAS9-2_S10gathered.g.vcf
+CAS10-2_S6.g.vcf
+CAS11-2_S3_subtractedwheadFULL.g.vcfgathered.g.vcf
 
 snpeff:
 AnnotateVCF.sh on the full colony filtered VCFs
@@ -43,4 +70,976 @@ ie:
 	python3 MatchVerifiedMutswithAnnotatedVCF.py CAcolony60_CAP24muts_relabeled60.txt  ../../BikiniSequencing/NovaSeqS4_20191022/CAcolony60.vcf_genotyped.vcf_filtered_nomissing.vcf.ann.vcf > CAcolony60_CAP24muts_relabeled60.txt.ann.txt
 	python3 MatchVerifiedMutswithAnnotatedVCF.py CAcolony65_CAP11muts_relabeled65.txt ../../BikiniSequencing/NovaSeqS4_20191022/CAcolony65.vcf_genotyped.vcf_filtered_nomissing.vcf.ann.vcf > CAcolony65_CAP11muts_relabeled65.txt.ann.txt
 	python3 MatchVerifiedMutswithAnnotatedVCF.py CAcolony65_CAP9muts_relabeled65.txt ../../BikiniSequencing/NovaSeqS4_20191022/CAcolony65.vcf_genotyped.vcf_filtered_nomissing.vcf.ann.vcf > Acolony65_CAP9muts_relabeled65.txt.ann.txt
+python3 MatchVerifiedMutswithAnnotatedVCF.py CAcolony65_dm_20200430.txt CAcolony65_noCAS10-2_20200407_gathered.vcf_genotyped.vcf_no10atall.vcf.recode.vcf_filtered_nomissing.vcf.ann.vcf > CAcolony65_dm_20200430.txt.ann.txt
+
+To find # of callable coding variants and nonvariants:
+python3 annotatevcfNONvariants.py CA60_chr9_genotyped_allsites_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf exons_$1.gff3 > CA60_$1_coding.txt
+
+
+sbatch -p spalumbi,hns annotatevcfNONvariants.sh chr1
+sbatch -p spalumbi,hns annotatevcfNONvariants.sh chr2
+sbatch -p spalumbi,hns annotatevcfNONvariants.sh chr3
+sbatch -p spalumbi,hns annotatevcfNONvariants.sh chr4
+sbatch -p spalumbi,hns annotatevcfNONvariants.sh chr5
+sbatch -p spalumbi,hns annotatevcfNONvariants.sh chr6
+sbatch -p spalumbi,hns annotatevcfNONvariants.sh chr7
+sbatch -p spalumbi,hns annotatevcfNONvariants.sh chr8
+sbatch -p spalumbi,hns annotatevcfNONvariants.sh chr9
+sbatch -p spalumbi,hns annotatevcfNONvariants.sh chr10
+sbatch -p spalumbi,hns annotatevcfNONvariants.sh chr11
+sbatch -p spalumbi,hns annotatevcfNONvariants.sh chr12
+sbatch -p spalumbi,hns annotatevcfNONvariants.sh chr13
+sbatch -p spalumbi,hns annotatevcfNONvariants.sh chr14
+
+
+grep 'exon' Amil.coding.gff3 | grep 'chr9' > exons_chr9.gff3
+grep 'exon' Amil.coding.gff3 | grep 'chr10' > exons_chr10.gff3
+grep 'exon' Amil.coding.gff3 | grep 'chr11' > exons_chr11.gff3
+grep 'exon' Amil.coding.gff3 | grep 'chr12' > exons_chr12.gff3
+grep 'exon' Amil.coding.gff3 | grep 'chr13' > exons_chr13.gff3
+grep 'exon' Amil.coding.gff3 | grep 'chr14' > exons_chr14.gff3
+grep 'exon' Amil.coding.gff3 | grep 'chr1' > exons_chr1.gff3
+grep 'exon' Amil.coding.gff3 | grep 'chr2' > exons_chr2.gff3
+grep 'exon' Amil.coding.gff3 | grep 'chr3' > exons_chr3.gff3
+grep 'exon' Amil.coding.gff3 | grep 'chr4' > exons_chr4.gff3
+grep 'exon' Amil.coding.gff3 | grep 'chr5' > exons_chr5.gff3
+grep 'exon' Amil.coding.gff3 | grep 'chr6' > exons_chr6.gff3
+grep 'exon' Amil.coding.gff3 | grep 'chr7' > exons_chr7.gff3
+grep 'exon' Amil.coding.gff3 | grep 'chr8' > exons_chr8.gff3
+module load biology samtools
+
+echo $(samtools view -c CAP10-1_S44.bam) > numberofmappedreadsnoF.txt
+
+#############
+###################
+######################
+#!/bin/bash
+#SBATCH --cpus-per-task=1
+#SBATCH -t 3:00:00
+#SBATCH --mem=16000
+#SBATCH --mail-type=BEGIN,END,FAIL
+#ml load java
+ml load biology gatk/4.1.0.0
+gatk CombineGVCFs \
+        -R /scratch/users/elora/BiohubSequencing/refs/Amil_v2.01/Amil.v2.01.chrs.fasta \
+        --variant AHP01-1_S11_$1.g.vcf \
+        --variant AHP01-2_S27_$1.g.vcf \
+        --variant AHP02_S33_$1.g.vcf \
+        --variant AHP03-1_S12_$1.g.vcf \
+        --variant AHP03-2_S28_$1.g.vcf \
+        --variant AHP04_S34_$1.g.vcf \
+        --variant AHP05_S49_$1.g.vcf \
+        -O AHP01-05_combined_$1.vcf
+
+ml load biology gatk/4.1.0.0
+gatk CombineGVCFs \
+        -R /scratch/users/elora/BiohubSequencing/refs/Amil_v2.01/Amil.v2.01.chrs.fasta \
+        --variant AHP06-1_S13_$1.g.vcf \
+        --variant AHP06-2_S29_$1.g.vcf \
+        --variant AHP07_S50_$1.g.vcf \
+        --variant AHP08-1_S14_$1.g.vcf \
+        --variant AHP08-2_S30_$1.g.vcf \
+        --variant AHP09_S75_$1.g.vcf \
+        --variant AHP10_S76_$1.g.vcf \
+        -O AHP06-10_combined_$1.vcf
+
+ml load biology gatk/4.1.0.0
+gatk CombineGVCFs \
+        -R /scratch/users/elora/BiohubSequencing/refs/Amil_v2.01/Amil.v2.01.chrs.fasta \
+        --variant AHP11_S77_$1.g.vcf \
+        --variant AHP12-1_S15_$1.g.vcf \
+        --variant AHP12-2_S31_$1.g.vcf \
+        --variant AHP13_S78_$1.g.vcf \
+        --variant AHP14-1_S16_$1.g.vcf \
+        --variant AHP14-2_S32_$1.g.vcf \
+        --variant AHP15_S79_$1.g.vcf \
+        -O AHP11-15_combined_$1.vcf
+
+ml load biology gatk/4.1.0.0
+gatk CombineGVCFs \
+        -R /scratch/users/elora/BiohubSequencing/refs/Amil_v2.01/Amil.v2.01.chrs.fasta \
+        --variant AHP16-1_S35_$1.g.vcf \
+        --variant AHP16-2_S51_$1.g.vcf \
+        --variant AHP17_S80_$1.g.vcf \
+        --variant AHP18-1_S36_$1.g.vcf \
+        --variant AHP18-2_S52_$1.g.vcf \
+        --variant AHP19_S81_$1.g.vcf \
+        --variant AHP20_S82_$1.g.vcf \
+        -O AHP16-20_combined_$1.vcf
+
+ml load biology gatk/4.1.0.0
+gatk CombineGVCFs \
+        -R /scratch/users/elora/BiohubSequencing/refs/Amil_v2.01/Amil.v2.01.chrs.fasta \
+        --variant AHP21-1_S37_$1.g.vcf \
+        --variant AHP21-2_S53_$1.g.vcf \
+        --variant AHP22-1_S38_$1.g.vcf \
+        --variant AHP22-2_S54_$1.g.vcf \
+        --variant AHP23_S83_$1.g.vcf \
+        --variant AHP24_S84_$1.g.vcf \
+        --variant AHP25_S85_$1.g.vcf \
+        -O AHP21-25_combined_$1.vcf
+
+
+sbatch -p hns,normal CombineAHB151-155.sh chr1
+sbatch -p hns,normal CombineAHB151-155.sh chr2
+sbatch -p hns,normal CombineAHB151-155.sh chr3
+sbatch -p hns,normal CombineAHB151-155.sh chr4
+sbatch -p hns,normal CombineAHB151-155.sh chr5
+sbatch -p hns,normal CombineAHB151-155.sh chr6
+sbatch -p hns,normal CombineAHB151-155.sh chr7
+sbatch -p hns,normal CombineAHB151-155.sh chr8
+sbatch -p hns,normal CombineAHB151-155.sh chr9
+sbatch -p hns,normal CombineAHB151-155.sh chr10
+sbatch -p hns,normal CombineAHB151-155.sh chr11
+sbatch -p hns,normal CombineAHB151-155.sh chr12
+sbatch -p hns,normal CombineAHB151-155.sh chr13
+sbatch -p hns,normal CombineAHB151-155.sh chr14
+
+sbatch -p spalumbi,hns,normal genotypeGVCFsallsites.sh AHE11-12_combined_chr10
+sbatch -p spalumbi,hns,normal genotypeGVCFsallsites.sh AHE11-12_combined_chr11
+sbatch -p spalumbi,hns,normal genotypeGVCFsallsites.sh AHE11-12_combined_chr12
+sbatch -p spalumbi,hns,normal genotypeGVCFsallsites.sh AHE11-12_combined_chr13
+sbatch -p spalumbi,hns,normal genotypeGVCFsallsites.sh AHE11-12_combined_chr14
+sbatch -p spalumbi,hns,normal genotypeGVCFsallsites.sh AHE11-12_combined_chr1
+sbatch -p spalumbi,hns,normal genotypeGVCFsallsites.sh AHE11-12_combined_chr2
+sbatch -p spalumbi,hns,normal genotypeGVCFsallsites.sh AHE11-12_combined_chr3
+sbatch -p spalumbi,hns,normal genotypeGVCFsallsites.sh AHE11-12_combined_chr4
+sbatch -p spalumbi,hns,normal genotypeGVCFsallsites.sh AHE11-12_combined_chr5
+sbatch -p spalumbi,hns,normal genotypeGVCFsallsites.sh AHE11-12_combined_chr6
+sbatch -p spalumbi,hns,normal genotypeGVCFsallsites.sh AHE11-12_combined_chr7
+sbatch -p spalumbi,hns,normal genotypeGVCFsallsites.sh AHE11-12_combined_chr8
+sbatch -p spalumbi,hns,normal genotypeGVCFsallsites.sh AHE11-12_combined_chr9
+
+
+        --variant AHP01-1_S11_$1.g.vcf \
+        --variant AHP01-2_S27_$1.g.vcf \
+        --variant AHP02_S33_$1.g.vcf \
+        --variant AHP03-1_S12_$1.g.vcf \
+        --variant AHP03-2_S28_$1.g.vcf \
+        --variant AHP04_S34_$1.g.vcf \
+        --variant AHP05_S49_$1.g.vcf \
+        --variant AHP06-1_S13_$1.g.vcf \
+        --variant AHP06-2_S29_$1.g.vcf \
+        --variant AHP07_S50_$1.g.vcf \
+        --variant AHP08-1_S14_$1.g.vcf \
+        --variant AHP08-2_S30_$1.g.vcf \
+        --variant AHP09_S75_$1.g.vcf \
+        --variant AHP10_S76_$1.g.vcf \
+        --variant AHP11_S77_$1.g.vcf \
+        --variant AHP12-1_S15_$1.g.vcf \
+        --variant AHP12-2_S31_$1.g.vcf \
+        --variant AHP13_S78_$1.g.vcf \
+        --variant AHP14-1_S16_$1.g.vcf \
+        --variant AHP14-2_S32_$1.g.vcf \
+        --variant AHP15_S79_$1.g.vcf \
+        --variant AHP16-1_S35_$1.g.vcf \
+        --variant AHP16-2_S51_$1.g.vcf \
+        --variant AHP17_S80_$1.g.vcf \
+        --variant AHP18-1_S36_$1.g.vcf \
+        --variant AHP18-2_S52_$1.g.vcf \
+        --variant AHP19_S81_$1.g.vcf \
+        --variant AHP20_S82_$1.g.vcf \
+        --variant AHP21-1_S37_$1.g.vcf \
+        --variant AHP21-2_S53_$1.g.vcf \
+        --variant AHP22-1_S38_$1.g.vcf \
+        --variant AHP22-2_S54_$1.g.vcf \
+        --variant AHP23_S83_$1.g.vcf \
+        --variant AHP24_S84_$1.g.vcf \
+        --variant AHP25_S85_$1.g.vcf \
+
+#!/bin/bash
+#SBATCH --cpus-per-task=1
+#SBATCH -t 5:00:00
+#SBATCH --mem=16000
+#SBATCH --mail-type=BEGIN,END,FAIL
+#ml load java
+ml load biology gatk/4.1.0.0
+gatk CombineGVCFs \
+        -R /scratch/users/elora/BiohubSequencing/refs/Amil_v2.01/Amil.v2.01.chrs.fasta \
+        --variant AHAS41_S49_$1.g.vcf \
+        --variant AHAS42-1_S50_$1.g.vcf \
+        --variant AHAS42-2_S73_$1.g.vcf \
+        --variant AHAS43_S25_$1.g.vcf \
+        --variant AHAS44-1_S26_$1.g.vcf \
+        --variant AHAS44-2_S74_$1.g.vcf \
+        --variant AHAS45_S21_$1.g.vcf \
+        -O AHAS41-45_combined_$1.vcf
+
+ml load biology gatk/4.1.0.0
+gatk CombineGVCFs \
+        -R /scratch/users/elora/BiohubSequencing/refs/Amil_v2.01/Amil.v2.01.chrs.fasta \
+        --variant AHAS46_S27_$1.g.vcf \
+        --variant AHAS47-1_S51_$1.g.vcf \
+        --variant AHAS47-2_S75_$1.g.vcf \
+        --variant AHAS48_S52_$1.g.vcf \
+        --variant AHAS49-1_S1_$1.g.vcf \
+        --variant AHAS49-2_S76_$1.g.vcf \
+        --variant AHAS50_S28_$1.g.vcf \
+        -O AHAS46-50_combined_$1.vcf
+
+ml load biology gatk/4.1.0.0
+gatk CombineGVCFs \
+        -R /scratch/users/elora/BiohubSequencing/refs/Amil_v2.01/Amil.v2.01.chrs.fasta \
+        --variant AHAS51_S29_$1.g.vcf \
+        --variant AHAS52-1_S30_$1.g.vcf \
+        --variant AHAS52-2_S69_$1.g.vcf \
+        --variant AHAS53_S31_$1.g.vcf \
+        --variant AHAS54-1_S46_$1.g.vcf \
+        --variant AHAS54-2_S70_$1.g.vcf \
+        --variant AHAS55_S47_$1.g.vcf \
+        -O AHAS51-55_combined_$1.vcf
+			
+ml load biology gatk/4.1.0.0
+gatk CombineGVCFs \
+        -R /scratch/users/elora/BiohubSequencing/refs/Amil_v2.01/Amil.v2.01.chrs.fasta \
+        --variant AHAS56_S32_$1.g.vcf \
+        --variant AHAS57-1_S53_$1.g.vcf \
+        --variant AHAS57-2_S77_$1.g.vcf \
+        --variant AHAS58_S33_$1.g.vcf \
+        --variant AHAS59-1_S23_$1.g.vcf \
+        --variant AHAS59-2_S78_$1.g.vcf \
+        --variant AHAS60_S34_$1.g.vcf \
+        -O AHAS56-60_combined_$1.vcf
+			
+ml load biology gatk/4.1.0.0
+gatk CombineGVCFs \
+        -R /scratch/users/elora/BiohubSequencing/refs/Amil_v2.01/Amil.v2.01.chrs.fasta \
+        --variant AHAS61_S48_$1.g.vcf \
+        --variant AHAS62-1_S58_$1.g.vcf \
+        --variant AHAS62-2_S83_$1.g.vcf \
+        --variant AHAS63_S59_$1.g.vcf \
+        --variant AHAS64-1_S60_$1.g.vcf \
+        --variant AHAS64-2_S84_$1.g.vcf \
+        --variant AHAS65_S14_$1.g.vcf \
+        -O AHAS61-65_combined_$1.vcf
+
+
+#!/bin/bash
+#SBATCH --cpus-per-task=1
+#SBATCH -t 5:00:00
+#SBATCH --mem=16000
+#SBATCH --mail-type=BEGIN,END,FAIL
+#ml load java
+ml load biology gatk/4.1.0.0
+gatk CombineGVCFs \
+        -R /scratch/users/elora/BiohubSequencing/refs/Amil_v2.01/Amil.v2.01.chrs.fasta \
+        --variant AHE01-1_S1_chr8.g.vcf \
+        --variant AHE01-2_S17_chr8.g.vcf \
+        --variant AHE02-1_S2_chr8.g.vcf \
+        --variant AHE02-2_S18_chr8.g.vcf \
+        -O AHE01-02_combined_$1.vcf
+			
+			
+ml load biology gatk/4.1.0.0
+gatk CombineGVCFs \
+        -R /scratch/users/elora/BiohubSequencing/refs/Amil_v2.01/Amil.v2.01.chrs.fasta \
+        --variant AHE05-1_S3_chr8.g.vcf \
+        --variant AHE05-2_S19_chr8.g.vcf \
+        --variant AHE06-1_S4_chr8.g.vcf \
+        --variant AHE06-2_S20_chr8.g.vcf \
+        -O AHE05-06_combined_$1.vcf
+			
+			
+ml load biology gatk/4.1.0.0
+gatk CombineGVCFs \
+        -R /scratch/users/elora/BiohubSequencing/refs/Amil_v2.01/Amil.v2.01.chrs.fasta \
+        --variant AHE07-1_S5_chr8.g.vcf \
+        --variant AHE07-2_S21_chr8.g.vcf \
+        --variant AHE08-1_S6_chr8.g.vcf \
+        --variant AHE08-2_S22_chr8.g.vcf \
+        -O AHE07-08_combined_$1.vcf
+			
+						
+ml load biology gatk/4.1.0.0
+gatk CombineGVCFs \
+        -R /scratch/users/elora/BiohubSequencing/refs/Amil_v2.01/Amil.v2.01.chrs.fasta \
+        --variant AHE09-1_S7_chr8.g.vcf \
+        --variant AHE09-2_S23_chr8.g.vcf \
+        --variant AHE10-1_S8_chr8.g.vcf \
+        --variant AHE10-2_S24_chr8.g.vcf \
+        -O AHE09-10_combined_$1.vcf
+			
+									
+ml load biology gatk/4.1.0.0
+gatk CombineGVCFs \
+        -R /scratch/users/elora/BiohubSequencing/refs/Amil_v2.01/Amil.v2.01.chrs.fasta \
+        --variant AHE11-1_S9_chr8.g.vcf \
+        --variant AHE11-2_S25_chr8.g.vcf \
+        --variant AHE12-1_S10_chr8.g.vcf \
+        --variant AHE12-2_S26_chr8.g.vcf \
+        -O AHE11-12_combined_$1.vcf
+			
+
+#DEPTH:#
+sbatch -p spalumbi,hns,normal DepthofCoverage_allchrs.sh AHB125_S36.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHB126-1_S37.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHB126-2_S61.bam
+sbatch -p spalumbi,hns,normal DepthofCoverage_allchrs.sh AHB127_S38.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHB128-1_S39.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHB128-2_S62.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHB129_S40.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHB145_S15.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHB146-1_S16.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHB146-2_S71.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHB147_S17.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHB148-1_S18.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHB148-2_S72.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHB149_S19.bam
+sbatch -p spalumbi,hns,normal DepthofCoverage_allchrs.sh AHB151_S41.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHB152-1_S42.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHB152-2_S63.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHB153_S43.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHB154-1_S44.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHB154-2_S64.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHB155_S45.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHB176_S54.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHB177-1_S5.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHB177-2_S65.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHB178_S6.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHB179-1_S7.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHB179-2_S66.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHB180_S8.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHB195_S2.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHB196-1_S3.bam
+sbatch -p spalumbi,hns,normal DepthofCoverage_allchrs.sh AHB196-2_S79.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHB197_S4.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHB198-1_S22.bam
+sbatch -p spalumbi,hns,normal DepthofCoverage_allchrs.sh AHB198-2_S80.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHB199_S35.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHB70_S20.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHB71-1_S56.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHB71-2_S81.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHB72_S24.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHB73-1_S13.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHB73-2_S82.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHB74_S57.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHB90_S9.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHB91-1_S10.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHB91-2_S67.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHB92_S55.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHB93-1_S11.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHB93-2_S68.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHB94_S12.bam
+
+
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHAS41_S49.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHAS42-1_S50.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHAS42-2_S73.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHAS43_S25.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHAS44-1_S26.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHAS44-2_S74.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHAS45_S21.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHAS46_S27.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHAS47-1_S51.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHAS47-2_S75.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHAS48_S52.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHAS49-1_S1.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHAS49-2_S76.bam
+sbatch -p spalumbi,hns,normal DepthofCoverage_allchrs.sh AHAS50_S28.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHAS51_S29.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHAS52-1_S30.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHAS52-2_S69.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHAS53_S31.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHAS54-1_S46.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHAS54-2_S70.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHAS55_S47.bam
+sbatch -p spalumbi,hns,normal DepthofCoverage_allchrs.sh AHAS56_S32.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHAS57-1_S53.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHAS57-2_S77.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHAS58_S33.bam
+
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHAS59-1_S23.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHAS59-2_S78.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHAS60_S34.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHAS61_S48.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHAS62-1_S58.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHAS62-2_S83.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHAS63_S59.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHAS64-1_S60.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHAS64-2_S84.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHAS65_S14.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHE01-1_S1.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHE01-2_S17.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHE02-1_S2.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHE02-2_S18.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHE05-1_S3.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHE05-2_S19.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHE06-1_S4.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHE06-2_S20.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHE07-1_S5.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHE07-2_S21.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHE08-1_S6.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHE08-2_S22.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHE09-1_S7.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHE09-2_S23.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHE10-1_S8.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHE10-2_S24.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHE11-1_S9.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHE11-2_S25.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHE12-1_S10.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHE12-2_S26.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHP01-1_S11.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHP01-2_S27.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHP02_S33.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHP03-1_S12.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHP03-2_S28.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHP04_S34.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHP05_S49.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHP06-1_S13.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHP06-2_S29.bam
+
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHP07_S50.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHP08-1_S14.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHP08-2_S30.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHP09_S75.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHP10_S76.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHP11_S77.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHP12-1_S15.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHP12-2_S31.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHP13_S78.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHP14-1_S16.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHP14-2_S32.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHP15_S79.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHP16-1_S35.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHP16-2_S51.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHP17_S80.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHP18-1_S36.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHP18-2_S52.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHP19_S81.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHP20_S82.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHP21-1_S37.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHP21-2_S53.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHP22-1_S38.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHP22-2_S54.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHP23_S83.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHP24_S84.bam
+sbatch -p hns,normal DepthofCoverage_allchrs.sh AHP25_S85.bam
+
+7078336084
+
+sbatch -p spalumbi,hns,normal genotypeGVCFsallsites.sh AHB151-155_combined_chr8
+sbatch -p hns,normal genotypeGVCFsallsites.sh AHB151-155_combined_chr11
+sbatch -p hns,normal genotypeGVCFsallsites.sh AHB151-155_combined_chr14
+
+    "AHB125_S36",
+    "AHB126-1_S37",
+    "AHB126-2_S61",
+    "AHB127_S38",
+    "AHB128-1_S39",
+    "AHB128-2_S62",
+    "AHB129_S40",
+    "AHB145_S15",
+    "AHB146-1_S16",
+    "AHB146-2_S71",
+    "AHB147_S17",
+    "AHB148-1_S18",
+    "AHB148-2_S72",
+    "AHB149_S19",
+    "AHB151_S41",
+    "AHB152-1_S42",
+    "AHB152-2_S63",
+    "AHB153_S43",
+    "AHB154-1_S44",
+    "AHB154-2_S64",
+    "AHB155_S45",
+    "AHB176_S54",
+    "AHB177-1_S5",
+    "AHB177-2_S65",
+    "AHB178_S6",
+    "AHB179-1_S7",
+    "AHB179-2_S66",
+    "AHB180_S8",
+    "AHB195_S2",
+    "AHB196-1_S3",
+    "AHB196-2_S79",
+    "AHB197_S4",
+    "AHB198-1_S22",
+    "AHB198-2_S80",
+    "AHB199_S35",
+    "AHB70_S20",
+    "AHB71-1_S56",
+    "AHB71-2_S81",
+    "AHB72_S24",
+    "AHB73-1_S13",
+    "AHB73-2_S82",
+    "AHB74_S57",
+    "AHB90_S9",
+    "AHB91-1_S10",
+    "AHB91-2_S67",
+    "AHB92_S55",
+    "AHB93-1_S11",
+    "AHB93-2_S68",
+    "AHB94_S12"
+	
+	"AHE01-1_S1",
+	"AHE01-2_S17",
+	"AHE02-1_S2",
+	"AHE02-2_S18",
+	"AHE05-1_S3",
+	"AHE05-2_S19",
+	"AHE06-1_S4",
+	"AHE06-2_S20",
+	"AHE07-1_S5",
+	"AHE07-2_S21",
+	"AHE08-1_S6",
+	"AHE08-2_S22",
+	"AHE09-1_S7",
+	"AHE09-2_S23",
+	"AHE10-1_S8",
+	"AHE10-2_S24",
+	"AHE11-1_S9",
+	"AHE11-2_S25",
+	"AHE12-1_S10",
+	"AHE12-2_S26"
+	
+	"AHAS41_S49",
+	"AHAS42-1_S50",
+	"AHAS42-2_S73",
+	"AHAS43_S25",
+	"AHAS44-1_S26",
+	"AHAS44-2_S74",
+	"AHAS45_S21",
+	"AHAS46_S27",
+	"AHAS47-1_S51",
+	"AHAS47-2_S75",
+	"AHAS48_S52",
+	"AHAS49-1_S1",
+	"AHAS49-2_S76",
+	"AHAS50_S28",
+	"AHAS51_S29",
+	"AHAS52-1_S30",
+	"AHAS52-2_S69",
+	"AHAS53_S31",
+	"AHAS54-1_S46",
+	"AHAS54-2_S70",
+	"AHAS55_S47",
+	"AHAS56_S32",
+	"AHAS57-1_S53",
+	"AHAS57-2_S77",
+	"AHAS58_S33",
+	"AHAS59-1_S23",
+	"AHAS59-2_S78",
+	"AHAS60_S34",
+	"AHAS61_S48",
+	"AHAS62-1_S58",
+	"AHAS62-2_S83",
+	"AHAS63_S59",
+	"AHAS64-1_S60",
+	"AHAS64-2_S84",
+	"AHAS65_S14"
+	
+	"AHP01-1_S11",
+	"AHP01-2_S27",
+	"AHP02_S33",
+	"AHP03-1_S12",
+	"AHP03-2_S28",
+	"AHP04_S34",
+	"AHP05_S49",
+	"AHP06-1_S13",
+	"AHP06-2_S29",
+	"AHP07_S50",
+	"AHP08-1_S14",
+	"AHP08-2_S30",
+	"AHP09_S75",
+	"AHP10_S76",
+	"AHP11_S77",
+	"AHP12-1_S15",
+	"AHP12-2_S31",
+	"AHP13_S78",
+	"AHP14-1_S16",
+	"AHP14-2_S32",
+	"AHP15_S79",
+	"AHP16-1_S35",
+	"AHP16-2_S51",
+	"AHP17_S80",
+	"AHP18-1_S36",
+	"AHP18-2_S52",
+	"AHP19_S81",
+	"AHP20_S82",
+	"AHP21-1_S37",
+	"AHP21-2_S53",
+	"AHP22-1_S38",
+	"AHP22-2_S54",
+	"AHP23_S83",
+	"AHP24_S84",
+	"AHP25_S85"
+	############################
+#!/bin/bash
+#SBATCH --cpus-per-task=1
+#SBATCH -t 0:59:00
+#SBATCH --mem=10000
+#SBATCH --mail-type=BEGIN,END,FAIL
+ml load java
+ml load biology gatk/4.1.0.0
+gatk SelectVariants \
+    -R /scratch/users/elora/BiohubSequencing/refs/Amil_v2.01/Amil.v2.01.chrs.fasta \
+    -V AHP01-05_combined_$1_genotyped_allsites.vcf \
+	-select '(vc.getGenotype("'AHP01-1_S11'").getDP()<70 && vc.getGenotype("'AHP01-1_S11'").getDP()>21 && vc.getGenotype("'AHP01-2_S27'").getDP()<70 && vc.getGenotype("'AHP01-2_S27'").getDP()>21 && vc.getGenotype("'AHP02_S33'").getDP()<41 && vc.getGenotype("'AHP02_S33'").getDP()>7 && vc.getGenotype("'AHP03-1_S12'").getDP()<48 && vc.getGenotype("'AHP03-1_S12'").getDP()>10 && vc.getGenotype("'AHP03-2_S28'").getDP()<41 && vc.getGenotype("'AHP03-2_S28'").getDP()>7 && vc.getGenotype("'AHP04_S34'").getDP()<50 && vc.getGenotype("'AHP04_S34'").getDP()>11 && vc.getGenotype("'AHP05_S49'").getDP()<50 && vc.getGenotype("'AHP05_S49'").getDP()>11)' \ 
+    -O AHP01-05_combined_$1_genotyped_allsites_DPupper_DPlower.vcf
+
+
+sbatch -p spalumbi,hns,normal genotypeGVCFsallsites.sh AHB151-155_combined_chr1 
+sbatch -p spalumbi,hns,normal genotypeGVCFsallsites.sh AHB151-155_combined_chr2 
+sbatch -p spalumbi,hns,normal genotypeGVCFsallsites.sh AHB151-155_combined_chr3 
+sbatch -p spalumbi,hns,normal genotypeGVCFsallsites.sh AHB151-155_combined_chr4 
+sbatch -p spalumbi,hns,normal genotypeGVCFsallsites.sh AHB151-155_combined_chr5 
+sbatch -p spalumbi,hns,normal genotypeGVCFsallsites.sh AHB151-155_combined_chr6 
+sbatch -p spalumbi,hns,normal genotypeGVCFsallsites.sh AHB151-155_combined_chr7 
+sbatch -p spalumbi,hns,normal genotypeGVCFsallsites.sh AHB151-155_combined_chr8 
+sbatch -p spalumbi,hns,normal genotypeGVCFsallsites.sh AHB151-155_combined_chr9 
+sbatch -p spalumbi,hns,normal genotypeGVCFsallsites.sh AHB151-155_combined_chr10 
+sbatch -p spalumbi,hns,normal genotypeGVCFsallsites.sh AHB151-155_combined_chr11
+sbatch -p spalumbi,hns,normal genotypeGVCFsallsites.sh AHB151-155_combined_chr12 
+sbatch -p spalumbi,hns,normal genotypeGVCFsallsites.sh AHB151-155_combined_chr13 
+sbatch -p spalumbi,hns,normal genotypeGVCFsallsites.sh AHB151-155_combined_chr14 
+
+sbatch -p spalumbi,hns,normal DPupperlower_AHB151-155.sh chr1 
+sbatch -p spalumbi,hns,normal DPupperlower_AHB151-155.sh chr2 
+sbatch -p spalumbi,hns,normal DPupperlower_AHB151-155.sh chr3 
+sbatch -p spalumbi,hns,normal DPupperlower_AHB151-155.sh chr4 
+sbatch -p spalumbi,hns,normal DPupperlower_AHB151-155.sh chr5 
+sbatch -p spalumbi,hns,normal DPupperlower_AHB151-155.sh chr6 
+sbatch -p spalumbi,hns,normal DPupperlower_AHB151-155.sh chr7 
+sbatch -p spalumbi,hns,normal DPupperlower_AHB151-155.sh chr8 
+sbatch -p spalumbi,hns,normal DPupperlower_AHB151-155.sh chr9 
+sbatch -p spalumbi,hns,normal DPupperlower_AHB151-155.sh chr10 
+sbatch -p spalumbi,hns,normal DPupperlower_AHB151-155.sh chr11
+sbatch -p spalumbi,hns,normal DPupperlower_AHB151-155.sh chr12 
+sbatch -p spalumbi,hns,normal DPupperlower_AHB151-155.sh chr13 
+sbatch -p spalumbi,hns,normal DPupperlower_AHB151-155.sh chr14 
+
+
+
+#!/bin/bash
+#SBATCH --cpus-per-task=1
+#SBATCH -t 0:59:00
+#SBATCH --mem=10000
+#SBATCH --mail-type=BEGIN,END,FAIL
+ml load java
+ml load biology gatk/4.1.0.0
+gatk SelectVariants \
+    -R /scratch/users/elora/BiohubSequencing/refs/Amil_v2.01/Amil.v2.01.chrs.fasta \
+    -V AHB125-129_combined_$1_genotyped_allsites.vcf \
+    -select '(vc.getGenotype("'AHB125_S36'").getDP()<57 && vc.getGenotype("'AHB125_S36'").getDP()>14 && vc.getGenotype("'AHB126-1_S37'").getDP()<48 && vc.getGenotype("'AHB126-1_S37'").getDP()>10 && vc.getGenotype("'AHB126-2_S61'").getDP()<53 && vc.getGenotype("'AHB126-2_S61'").getDP()>12 && vc.getGenotype("'AHB127_S38'").getDP()<46 && vc.getGenotype("'AHB127_S38'").getDP()>9 && vc.getGenotype("'AHB128-1_S39'").getDP()<47 && vc.getGenotype("'AHB128-1_S39'").getDP()>9 && vc.getGenotype("'AHB128-2_S62'").getDP()<44 && vc.getGenotype("'AHB128-2_S62'").getDP()>8 && vc.getGenotype("'AHB129_S40'").getDP()<55 && vc.getGenotype("'AHB129_S40'").getDP()>13)' \
+    -O AHPB125-129_combined_$1_genotyped_allsites_DPupper_DPlower.vcf
+
+#!/bin/bash
+#SBATCH --cpus-per-task=1
+#SBATCH -t 5:59:00
+#SBATCH --mem=10000
+#SBATCH --mail-type=BEGIN,END,FAIL
+ml load java
+ml load biology gatk/4.1.0.0
+gatk SelectVariants \
+    -R /scratch/users/elora/BiohubSequencing/refs/Amil_v2.01/Amil.v2.01.chrs.fasta \
+    -V AHB145-149_combined_$1_genotyped_allsites.vcf \
+    -select '(vc.getGenotype("'AHB145_S15'").getDP()<59 && vc.getGenotype("'AHB145_S15'").getDP()>15 && vc.getGenotype("'AHB146-1_S16'").getDP()<46 && vc.getGenotype("'AHB146-1_S16'").getDP()>9 && vc.getGenotype("'AHB146-2_S71'").getDP()<80 && vc.getGenotype("'AHB146-2_S71'").getDP()>27 && vc.getGenotype("'AHB147_S17'").getDP()<56 && vc.getGenotype("'AHB147_S17'").getDP()>14 && vc.getGenotype("'AHB148-1_S18'").getDP()<49 && vc.getGenotype("'AHB148-1_S18'").getDP()>11 && vc.getGenotype("'AHB148-2_S72'").getDP()<48 && vc.getGenotype("'AHB148-2_S72'").getDP()>10 && vc.getGenotype("'AHB149_S19'").getDP()<46 && vc.getGenotype("'AHB149_S19'").getDP()>9)' \
+    -O AHPB145-149_combined_$1_genotyped_allsites_DPupper_DPlower.vcf
+
+
+ml load java
+ml load biology gatk/4.1.0.0
+gatk SelectVariants \
+    -R /scratch/users/elora/BiohubSequencing/refs/Amil_v2.01/Amil.v2.01.chrs.fasta \
+    -V AHB151-155_combined_$1_genotyped_allsites.vcf \
+    -select '(vc.getGenotype("'AHB151_S41'").getDP()<53 && vc.getGenotype("'AHB151_S41'").getDP()>12 && vc.getGenotype("'AHB152-1_S42'").getDP()<57 && vc.getGenotype("'AHB152-1_S42'").getDP()>14 && vc.getGenotype("'AHB152-2_S63'").getDP()<62 && vc.getGenotype("'AHB152-2_S63'").getDP()>17 && vc.getGenotype("'AHB153_S43'").getDP()<0 && vc.getGenotype("'AHB153_S43'").getDP()>0 && vc.getGenotype("'AHB154-1_S44'").getDP()<54 && vc.getGenotype("'AHB154-1_S44'").getDP()>13 && vc.getGenotype("'AHB154-2_S64'").getDP()<54 && vc.getGenotype("'AHB154-2_S64'").getDP()>13 && vc.getGenotype("'AHB155_S45'").getDP()<54 && vc.getGenotype("'AHB155_S45'").getDP()>13)' \
+    -O AHB151-155_combined_$1_genotyped_allsites_DPupper_DPlower.vcf
+
+
+ml load java
+ml load biology gatk/4.1.0.0
+gatk SelectVariants \
+    -R /scratch/users/elora/BiohubSequencing/refs/Amil_v2.01/Amil.v2.01.chrs.fasta \
+    -V AHB176-180_combined_$1_genotyped_allsites.vcf \
+    -select '(vc.getGenotype("'AHB176_S54'").getDP()<30 && vc.getGenotype("'AHB176_S54'").getDP()>2 && vc.getGenotype("'AHB177-1_S5'").getDP()<55 && vc.getGenotype("'AHB177-1_S5'").getDP()>13 && vc.getGenotype("'AHB177-2_S65'").getDP()<50 && vc.getGenotype("'AHB177-2_S65'").getDP()>11 && vc.getGenotype("'AHB178_S6'").getDP()<21 && vc.getGenotype("'AHB178_S6'").getDP()>0 && vc.getGenotype("'AHB179-1_S7'").getDP()<52 && vc.getGenotype("'AHB179-1_S7'").getDP()>12 && vc.getGenotype("'AHB179-2_S66'").getDP()<55 && vc.getGenotype("'AHB179-2_S66'").getDP()>13 && vc.getGenotype("'AHB180_S8'").getDP()<60 && vc.getGenotype("'AHB180_S8'").getDP()>16)' \
+    -O AHB176-180_combined_$1_genotyped_allsites_DPupper_DPlower.vcf
+
+ml load java
+ml load biology gatk/4.1.0.0
+gatk SelectVariants \
+    -R /scratch/users/elora/BiohubSequencing/refs/Amil_v2.01/Amil.v2.01.chrs.fasta \
+    -V AHB70-74_combined_$1_genotyped_allsites.vcf \
+    -select '(vc.getGenotype("'AHB70_S20'").getDP()<45 && vc.getGenotype("'AHB70_S20'").getDP()>9 && vc.getGenotype("'AHB71-1_S56'").getDP()<46 && vc.getGenotype("'AHB71-1_S56'").getDP()>9 && vc.getGenotype("'AHB71-2_S81'").getDP()<45 && vc.getGenotype("'AHB71-2_S81'").getDP()>9 && vc.getGenotype("'AHB72_S24'").getDP()<22 && vc.getGenotype("'AHB72_S24'").getDP()>0 && vc.getGenotype("'AHB73-1_S13'").getDP()<50 && vc.getGenotype("'AHB73-1_S13'").getDP()>11 && vc.getGenotype("'AHB73-2_S82'").getDP()<50 && vc.getGenotype("'AHB73-2_S82'").getDP()>11 && vc.getGenotype("'AHB74_S57'").getDP()<48 && vc.getGenotype("'AHB74_S57'").getDP()>10)' \
+    -O AHB70-74_combined_$1_genotyped_allsites_DPupper_DPlower.vcf
+
+ml load java
+ml load biology gatk/4.1.0.0
+gatk SelectVariants \
+    -R /scratch/users/elora/BiohubSequencing/refs/Amil_v2.01/Amil.v2.01.chrs.fasta \
+    -V AHB90-94_combined_$1_genotyped_allsites.vcf \
+    -select '(vc.getGenotype("'AHB90_S9'").getDP()<45 && vc.getGenotype("'AHB90_S9'").getDP()>8 && vc.getGenotype("'AHB91-1_S10'").getDP()<58 && vc.getGenotype("'AHB91-1_S10'").getDP()>15 && vc.getGenotype("'AHB91-2_S67'").getDP()<60 && vc.getGenotype("'AHB91-2_S67'").getDP()>16 && vc.getGenotype("'AHB92_S55'").getDP()<34 && vc.getGenotype("'AHB92_S55'").getDP()>4 && vc.getGenotype("'AHB93-1_S11'").getDP()<49 && vc.getGenotype("'AHB93-1_S11'").getDP()>10 && vc.getGenotype("'AHB93-2_S68'").getDP()<52 && vc.getGenotype("'AHB93-2_S68'").getDP()>12 && vc.getGenotype("'AHB94_S12'").getDP()<47 && vc.getGenotype("'AHB94_S12'").getDP()>9)' \
+    -O AHB90-94_combined_$1_genotyped_allsites_DPupper_DPlower.vcf
+
+
+ml load java
+ml load biology gatk/4.1.0.0
+gatk SelectVariants \
+    -R /scratch/users/elora/BiohubSequencing/refs/Amil_v2.01/Amil.v2.01.chrs.fasta \
+    -V AHP06-10_combined_$1_genotyped_allsites.vcf \
+    -select '(vc.getGenotype("'AHP06-1_S13'").getDP()<23 && vc.getGenotype("'AHP06-1_S13'").getDP()>1 && vc.getGenotype("'AHP06-2_S29'").getDP()<33 && vc.getGenotype("'AHP06-2_S29'").getDP()>3 && vc.getGenotype("'AHP07_S50'").getDP()<36 && vc.getGenotype("'AHP07_S50'").getDP()>5 && vc.getGenotype("'AHP08-1_S14'").getDP()<14 && vc.getGenotype("'AHP08-1_S14'").getDP()>0 && vc.getGenotype("'AHP08-2_S30'").getDP()<12 && vc.getGenotype("'AHP08-2_S30'").getDP()>0 && vc.getGenotype("'AHP09_S75'").getDP()<55 && vc.getGenotype("'AHP09_S75'").getDP()>13 && vc.getGenotype("'AHP10_S76'").getDP()<89 && vc.getGenotype("'AHP10_S76'").getDP()>32)' \
+    -O AHP06-10_combined_$1_genotyped_allsites_DPupper_DPlower.vcf
+
+
+ml load java
+ml load biology gatk/4.1.0.0
+gatk SelectVariants \
+    -R /scratch/users/elora/BiohubSequencing/refs/Amil_v2.01/Amil.v2.01.chrs.fasta \
+    -V AHP11-15_combined_$1_genotyped_allsites.vcf \
+    -select '(vc.getGenotype("'AHP11_S77'").getDP()<62 && vc.getGenotype("'AHP11_S77'").getDP()>17 && vc.getGenotype("'AHP12-1_S15'").getDP()<41 && vc.getGenotype("'AHP12-1_S15'").getDP()>7 && vc.getGenotype("'AHP12-2_S31'").getDP()<73 && vc.getGenotype("'AHP12-2_S31'").getDP()>23 && vc.getGenotype("'AHP13_S78'").getDP()<39 && vc.getGenotype("'AHP13_S78'").getDP()>6 && vc.getGenotype("'AHP14-1_S16'").getDP()<15 && vc.getGenotype("'AHP14-1_S16'").getDP()>0 && vc.getGenotype("'AHP14-2_S32'").getDP()<14 && vc.getGenotype("'AHP14-2_S32'").getDP()>0 && vc.getGenotype("'AHP15_S79'").getDP()<53 && vc.getGenotype("'AHP15_S79'").getDP()>12)' \
+    -O AHP11-15_combined_$1_genotyped_allsites_DPupper_DPlower.vcf
+
+
+ml load java
+ml load biology gatk/4.1.0.0
+gatk SelectVariants \
+    -R /scratch/users/elora/BiohubSequencing/refs/Amil_v2.01/Amil.v2.01.chrs.fasta \
+    -V AHP16-20_combined_$1_genotyped_allsites.vcf \
+    -select '(vc.getGenotype("'AHP16-1_S35'").getDP()<54 && vc.getGenotype("'AHP16-1_S35'").getDP()>13 && vc.getGenotype("'AHP16-2_S51'").getDP()<42 && vc.getGenotype("'AHP16-2_S51'").getDP()>7 && vc.getGenotype("'AHP17_S80'").getDP()<77 && vc.getGenotype("'AHP17_S80'").getDP()>25 && vc.getGenotype("'AHP18-1_S36'").getDP()<44 && vc.getGenotype("'AHP18-1_S36'").getDP()>8 && vc.getGenotype("'AHP18-2_S52'").getDP()<48 && vc.getGenotype("'AHP18-2_S52'").getDP()>10 && vc.getGenotype("'AHP19_S81'").getDP()<53 && vc.getGenotype("'AHP19_S81'").getDP()>12 && vc.getGenotype("'AHP20_S82'").getDP()<39 && vc.getGenotype("'AHP20_S82'").getDP()>6)' \
+    -O AHP16-20_combined_$1_genotyped_allsites_DPupper_DPlower.vcf
+
+
+ml load java
+ml load biology gatk/4.1.0.0
+gatk SelectVariants \
+    -R /scratch/users/elora/BiohubSequencing/refs/Amil_v2.01/Amil.v2.01.chrs.fasta \
+    -V AHP21-25_combined_$1_genotyped_allsites.vcf \
+    -select '(vc.getGenotype("'AHP21-1_S37'").getDP()<63 && vc.getGenotype("'AHP21-1_S37'").getDP()>17 && vc.getGenotype("'AHP21-2_S53'").getDP()<64 && vc.getGenotype("'AHP21-2_S53'").getDP()>18 && vc.getGenotype("'AHP22-1_S38'").getDP()<61 && vc.getGenotype("'AHP22-1_S38'").getDP()>16 && vc.getGenotype("'AHP22-2_S54'").getDP()<62 && vc.getGenotype("'AHP22-2_S54'").getDP()>17 && vc.getGenotype("'AHP23_S83'").getDP()<57 && vc.getGenotype("'AHP23_S83'").getDP()>14 && vc.getGenotype("'AHP24_S84'").getDP()<66 && vc.getGenotype("'AHP24_S84'").getDP()>19 && vc.getGenotype("'AHP25_S85'").getDP()<56 && vc.getGenotype("'AHP25_S85'").getDP()>14)' \
+    -O AHP21-25_combined_$1_genotyped_allsites_DPupper_DPlower.vcf
+
+ml load java
+ml load biology gatk/4.1.0.0
+gatk SelectVariants \
+    -R /scratch/users/elora/BiohubSequencing/refs/Amil_v2.01/Amil.v2.01.chrs.fasta \
+    -V AHAS41-45_combined_$1_genotyped_allsites.vcf \
+    -select '(vc.getGenotype("'AHAS41_S49'").getDP()<24 && vc.getGenotype("'AHAS41_S49'").getDP()>1 && vc.getGenotype("'AHAS42-1_S50'").getDP()<26 && vc.getGenotype("'AHAS42-1_S50'").getDP()>1 && vc.getGenotype("'AHAS42-2_S73'").getDP()<29 && vc.getGenotype("'AHAS42-2_S73'").getDP()>2 && vc.getGenotype("'AHAS43_S25'").getDP()<46 && vc.getGenotype("'AHAS43_S25'").getDP()>9 && vc.getGenotype("'AHAS44-1_S26'").getDP()<35 && vc.getGenotype("'AHAS44-1_S26'").getDP()>4 && vc.getGenotype("'AHAS44-2_S74'").getDP()<37 && vc.getGenotype("'AHAS44-2_S74'").getDP()>5 && vc.getGenotype("'AHAS45_S21'").getDP()<3 && vc.getGenotype("'AHAS45_S21'").getDP()>0)' \
+    -O AHAS41-45_combined_$1_genotyped_allsites_DPupper_DPlower.vcf
+
+ml load java
+ml load biology gatk/4.1.0.0
+gatk SelectVariants \
+    -R /scratch/users/elora/BiohubSequencing/refs/Amil_v2.01/Amil.v2.01.chrs.fasta \
+    -V AHAS46-50_combined_$1_genotyped_allsites.vcf \
+    -select '(vc.getGenotype("'AHAS46_S27'").getDP()<46 && vc.getGenotype("'AHAS46_S27'").getDP()>9 && vc.getGenotype("'AHAS47-1_S51'").getDP()<19 && vc.getGenotype("'AHAS47-1_S51'").getDP()>0 && vc.getGenotype("'AHAS47-2_S75'").getDP()<21 && vc.getGenotype("'AHAS47-2_S75'").getDP()>0 && vc.getGenotype("'AHAS48_S52'").getDP()<40 && vc.getGenotype("'AHAS48_S52'").getDP()>6 && vc.getGenotype("'AHAS49-1_S1'").getDP()<27 && vc.getGenotype("'AHAS49-1_S1'").getDP()>2 && vc.getGenotype("'AHAS49-2_S76'").getDP()<28 && vc.getGenotype("'AHAS49-2_S76'").getDP()>2 && vc.getGenotype("'AHAS50_S28'").getDP()<35 && vc.getGenotype("'AHAS50_S28'").getDP()>4)' \
+    -O AHAS46-50_combined_$1_genotyped_allsites_DPupper_DPlower.vcf
+
+ml load java
+ml load biology gatk/4.1.0.0
+gatk SelectVariants \
+    -R /scratch/users/elora/BiohubSequencing/refs/Amil_v2.01/Amil.v2.01.chrs.fasta \
+    -V AHAS51-55_combined_$1_genotyped_allsites.vcf \
+    -select '(vc.getGenotype("'AHAS51_S29'").getDP()<41 && vc.getGenotype("'AHAS51_S29'").getDP()>7 && vc.getGenotype("'AHAS52-1_S30'").getDP()<28 && vc.getGenotype("'AHAS52-1_S30'").getDP()>2 && vc.getGenotype("'AHAS52-2_S69'").getDP()<55 && vc.getGenotype("'AHAS52-2_S69'").getDP()>13 && vc.getGenotype("'AHAS53_S31'").getDP()<43 && vc.getGenotype("'AHAS53_S31'").getDP()>7 && vc.getGenotype("'AHAS54-1_S46'").getDP()<35 && vc.getGenotype("'AHAS54-1_S46'").getDP()>4 && vc.getGenotype("'AHAS54-2_S70'").getDP()<50 && vc.getGenotype("'AHAS54-2_S70'").getDP()>11 && vc.getGenotype("'AHAS55_S47'").getDP()<44 && vc.getGenotype("'AHAS55_S47'").getDP()>8)' \
+    -O AHAS51-55_combined_$1_genotyped_allsites_DPupper_DPlower.vcf
+
+ml load java
+ml load biology gatk/4.1.0.0
+gatk SelectVariants \
+    -R /scratch/users/elora/BiohubSequencing/refs/Amil_v2.01/Amil.v2.01.chrs.fasta \
+    -V AHAS56-60_combined_$1_genotyped_allsites.vcf \
+    -select '(vc.getGenotype("'AHAS56_S32'").getDP()<27 && vc.getGenotype("'AHAS56_S32'").getDP()>2 && vc.getGenotype("'AHAS57-1_S53'").getDP()<30 && vc.getGenotype("'AHAS57-1_S53'").getDP()>3 && vc.getGenotype("'AHAS57-2_S77'").getDP()<35 && vc.getGenotype("'AHAS57-2_S77'").getDP()>4 && vc.getGenotype("'AHAS58_S33'").getDP()<44 && vc.getGenotype("'AHAS58_S33'").getDP()>8 && vc.getGenotype("'AHAS59-1_S23'").getDP()<23 && vc.getGenotype("'AHAS59-1_S23'").getDP()>1 && vc.getGenotype("'AHAS59-2_S78'").getDP()<19 && vc.getGenotype("'AHAS59-2_S78'").getDP()>0 && vc.getGenotype("'AHAS60_S34'").getDP()<40 && vc.getGenotype("'AHAS60_S34'").getDP()>6)' \
+    -O AHAS56-60_combined_$1_genotyped_allsites_DPupper_DPlower.vcf
+
+ml load java
+ml load biology gatk/4.1.0.0
+gatk SelectVariants \
+    -R /scratch/users/elora/BiohubSequencing/refs/Amil_v2.01/Amil.v2.01.chrs.fasta \
+    -V AHAS61-65_combined_$1_genotyped_allsites.vcf \
+    -select '(vc.getGenotype("'AHAS61_S48'").getDP()<45 && vc.getGenotype("'AHAS61_S48'").getDP()>8 && vc.getGenotype("'AHAS62-1_S58'").getDP()<50 && vc.getGenotype("'AHAS62-1_S58'").getDP()>11 && vc.getGenotype("'AHAS62-2_S83'").getDP()<50 && vc.getGenotype("'AHAS62-2_S83'").getDP()>11 && vc.getGenotype("'AHAS63_S59'").getDP()<36 && vc.getGenotype("'AHAS63_S59'").getDP()>5 && vc.getGenotype("'AHAS64-1_S60'").getDP()<36 && vc.getGenotype("'AHAS64-1_S60'").getDP()>5 && vc.getGenotype("'AHAS64-2_S84'").getDP()<37 && vc.getGenotype("'AHAS64-2_S84'").getDP()>5 && vc.getGenotype("'AHAS65_S14'").getDP()<37 && vc.getGenotype("'AHAS65_S14'").getDP()>5)' \
+    -O AHAS61-65_combined_$1_genotyped_allsites_DPupper_DPlower.vcf
+
+ml load java
+ml load biology gatk/4.1.0.0
+gatk SelectVariants \
+    -R /scratch/users/elora/BiohubSequencing/refs/Amil_v2.01/Amil.v2.01.chrs.fasta \
+    -V AHE01-02_combined_$1_genotyped_allsites.vcf \
+    -select '(vc.getGenotype("'AHE01-1_S1'").getDP()<18 && vc.getGenotype("'AHE01-1_S1'").getDP()>0 && vc.getGenotype("'AHE01-2_S17'").getDP()<14 && vc.getGenotype("'AHE01-2_S17'").getDP()>0 && vc.getGenotype("'AHE02-1_S2'").getDP()<30 && vc.getGenotype("'AHE02-1_S2'").getDP()>3 && vc.getGenotype("'AHE02-2_S18'").getDP()<29 && vc.getGenotype("'AHE02-2_S18'").getDP()>2)' \
+    -O AHE01-02_combined_$1_genotyped_allsites_DPupper_DPlower.vcf
+
+ml load java
+ml load biology gatk/4.1.0.0
+gatk SelectVariants \
+    -R /scratch/users/elora/BiohubSequencing/refs/Amil_v2.01/Amil.v2.01.chrs.fasta \
+    -V AHE05-06_combined_$1_genotyped_allsites.vcf \
+    -select '(vc.getGenotype("'AHE05-1_S3'").getDP()<8 && vc.getGenotype("'AHE05-1_S3'").getDP()>0 && vc.getGenotype("'AHE05-2_S19'").getDP()<8 && vc.getGenotype("'AHE05-2_S19'").getDP()>0 && vc.getGenotype("'AHE06-1_S4'").getDP()<5 && vc.getGenotype("'AHE06-1_S4'").getDP()>0 && vc.getGenotype("'AHE06-2_S20'").getDP()<6 && vc.getGenotype("'AHE06-2_S20'").getDP()>0)' \
+    -O AHE05-06_combined_$1_genotyped_allsites_DPupper_DPlower.vcf
+
+ml load java
+ml load biology gatk/4.1.0.0
+gatk SelectVariants \
+    -R /scratch/users/elora/BiohubSequencing/refs/Amil_v2.01/Amil.v2.01.chrs.fasta \
+    -V AHE07-08_combined_$1_genotyped_allsites.vcf \
+    -select '(vc.getGenotype("'AHE07-1_S5'").getDP()<17 && vc.getGenotype("'AHE07-1_S5'").getDP()>0 && vc.getGenotype("'AHE07-2_S21'").getDP()<14 && vc.getGenotype("'AHE07-2_S21'").getDP()>0 && vc.getGenotype("'AHE08-1_S6'").getDP()<39 && vc.getGenotype("'AHE08-1_S6'").getDP()>6 && vc.getGenotype("'AHE08-2_S22'").getDP()<39 && vc.getGenotype("'AHE08-2_S22'").getDP()>6)' \
+    -O AHE07-08_combined_$1_genotyped_allsites_DPupper_DPlower.vcf
+
+ml load java
+ml load biology gatk/4.1.0.0
+gatk SelectVariants \
+    -R /scratch/users/elora/BiohubSequencing/refs/Amil_v2.01/Amil.v2.01.chrs.fasta \
+    -V AHE09-10_combined_$1_genotyped_allsites.vcf \
+    -select '(vc.getGenotype("'AHE09-1_S7'").getDP()<20 && vc.getGenotype("'AHE09-1_S7'").getDP()>0 && vc.getGenotype("'AHE09-2_S23'").getDP()<19 && vc.getGenotype("'AHE09-2_S23'").getDP()>0 && vc.getGenotype("'AHE10-1_S8'").getDP()<14 && vc.getGenotype("'AHE10-1_S8'").getDP()>0 && vc.getGenotype("'AHE10-2_S24'").getDP()<14 && vc.getGenotype("'AHE10-2_S24'").getDP()>0)' \
+    -O AHE09-10_combined_$1_genotyped_allsites_DPupper_DPlower.vcf
+
+ml load java
+ml load biology gatk/4.1.0.0
+gatk SelectVariants \
+    -R /scratch/users/elora/BiohubSequencing/refs/Amil_v2.01/Amil.v2.01.chrs.fasta \
+    -V AHE11-12_combined_$1_genotyped_allsites.vcf \
+    -select '(vc.getGenotype("'AHE11-1_S9'").getDP()<39 && vc.getGenotype("'AHE11-1_S9'").getDP()>6 && vc.getGenotype("'AHE11-2_S25'").getDP()<50 && vc.getGenotype("'AHE11-2_S25'").getDP()>11 && vc.getGenotype("'AHE12-1_S10'").getDP()<33 && vc.getGenotype("'AHE12-1_S10'").getDP()>3 && vc.getGenotype("'AHE12-2_S26'").getDP()<32 && vc.getGenotype("'AHE12-2_S26'").getDP()>3)' \
+    -O AHE11-12_combined_$1_genotyped_allsites_DPupper_DPlower.vcf
+	
+sbatch -p spalumbi,hns,normal selectvariantsDP_CA65_upperlower.sh CA65_chr1_genotyped_allsites.vcfqualgq30.vcf
+sbatch -p spalumbi,hns,normal selectvariantsDP_CA65_upperlower.sh CA65_chr2_genotyped_allsites.vcfqualgq30.vcf
+sbatch -p spalumbi,hns,normal selectvariantsDP_CA65_upperlower.sh CA65_chr3_genotyped_allsites.vcfqualgq30.vcf
+sbatch -p spalumbi,hns,normal selectvariantsDP_CA65_upperlower.sh CA65_chr4_genotyped_allsites.vcfqualgq30.vcf
+sbatch -p spalumbi,hns,normal selectvariantsDP_CA65_upperlower.sh CA65_chr5_genotyped_allsites.vcfqualgq30.vcf
+sbatch -p spalumbi,hns,normal selectvariantsDP_CA65_upperlower.sh CA65_chr6_genotyped_allsites.vcfqualgq30.vcf
+sbatch -p spalumbi,hns,normal selectvariantsDP_CA65_upperlower.sh CA65_chr7_genotyped_allsites.vcfqualgq30.vcf
+sbatch -p spalumbi,hns,normal selectvariantsDP_CA65_upperlower.sh CA65_chr8_genotyped_allsites.vcfqualgq30.vcf
+sbatch -p spalumbi,hns,normal selectvariantsDP_CA65_upperlower.sh CA65_chr9_genotyped_allsites.vcfqualgq30.vcf
+sbatch -p spalumbi,hns,normal selectvariantsDP_CA65_upperlower.sh CA65_chr10_genotyped_allsites.vcfqualgq30.vcf
+sbatch -p spalumbi,hns,normal selectvariantsDP_CA65_upperlower.sh CA65_chr11_genotyped_allsites.vcfqualgq30.vcf
+sbatch -p spalumbi,hns,normal selectvariantsDP_CA65_upperlower.sh CA65_chr12_genotyped_allsites.vcfqualgq30.vcf
+sbatch -p spalumbi,hns,normal selectvariantsDP_CA65_upperlower.sh CA65_chr13_genotyped_allsites.vcfqualgq30.vcf
+sbatch -p spalumbi,hns,normal selectvariantsDP_CA65_upperlower.sh CA65_chr14_genotyped_allsites.vcfqualgq30.vcf
+
+sbatch -p spalumbi,hns,normal selectvariantsDP_CA56_upperlower.sh CA56_chr1_noCAS12_genotyped_allsites.vcfqualgq30.vcf
+sbatch -p spalumbi,hns,normal selectvariantsDP_CA56_upperlower.sh CA56_chr2_noCAS12_genotyped_allsites.vcfqualgq30.vcf
+sbatch -p spalumbi,hns,normal selectvariantsDP_CA56_upperlower.sh CA56_chr3_noCAS12_genotyped_allsites.vcfqualgq30.vcf
+sbatch -p spalumbi,hns,normal selectvariantsDP_CA56_upperlower.sh CA56_chr4_noCAS12_genotyped_allsites.vcfqualgq30.vcf
+sbatch -p spalumbi,hns,normal selectvariantsDP_CA56_upperlower.sh CA56_chr5_noCAS12_genotyped_allsites.vcfqualgq30.vcf
+sbatch -p spalumbi,hns,normal selectvariantsDP_CA56_upperlower.sh CA56_chr6_noCAS12_genotyped_allsites.vcfqualgq30.vcf
+sbatch -p spalumbi,hns,normal selectvariantsDP_CA56_upperlower.sh CA56_chr7_noCAS12_genotyped_allsites.vcfqualgq30.vcf
+sbatch -p spalumbi,hns,normal selectvariantsDP_CA56_upperlower.sh CA56_chr8_noCAS12_genotyped_allsites.vcfqualgq30.vcf
+sbatch -p spalumbi,hns,normal selectvariantsDP_CA56_upperlower.sh CA56_chr9_noCAS12_genotyped_allsites.vcfqualgq30.vcf
+sbatch -p spalumbi,hns,normal selectvariantsDP_CA56_upperlower.sh CA56_chr10_noCAS12_genotyped_allsites.vcfqualgq30.vcf
+sbatch -p spalumbi,hns,normal selectvariantsDP_CA56_upperlower.sh CA56_chr11_noCAS12_genotyped_allsites.vcfqualgq30.vcf
+sbatch -p spalumbi,hns,normal selectvariantsDP_CA56_upperlower.sh CA56_chr12_noCAS12_genotyped_allsites.vcfqualgq30.vcf
+sbatch -p spalumbi,hns,normal selectvariantsDP_CA56_upperlower.sh CA56_chr13_noCAS12_genotyped_allsites.vcfqualgq30.vcf
+sbatch -p spalumbi,hns,normal selectvariantsDP_CA56_upperlower.sh CA56_chr14_noCAS12_genotyped_allsites.vcfqualgq30.vcf
+
+sbatch -p spalumbi,hns,normal biSNPs.sh CA56_chr10_noCAS12_genotyped_allsites.vcf_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf
+sbatch -p spalumbi,hns,normal biSNPs.sh CA56_chr11_noCAS12_genotyped_allsites.vcf_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf
+sbatch -p spalumbi,hns,normal biSNPs.sh CA56_chr12_noCAS12_genotyped_allsites.vcf_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf
+sbatch -p spalumbi,hns,normal biSNPs.sh CA56_chr13_noCAS12_genotyped_allsites.vcf_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf
+sbatch -p spalumbi,hns,normal biSNPs.sh CA56_chr14_noCAS12_genotyped_allsites.vcf_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf
+sbatch -p spalumbi,hns,normal biSNPs.sh CA56_chr1_noCAS12_genotyped_allsites.vcf_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf
+sbatch -p spalumbi,hns,normal biSNPs.sh CA56_chr2_noCAS12_genotyped_allsites.vcf_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf
+sbatch -p spalumbi,hns,normal biSNPs.sh CA56_chr3_noCAS12_genotyped_allsites.vcf_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf
+sbatch -p spalumbi,hns,normal biSNPs.sh CA56_chr4_noCAS12_genotyped_allsites.vcf_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf
+sbatch -p spalumbi,hns,normal biSNPs.sh CA56_chr5_noCAS12_genotyped_allsites.vcf_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf
+sbatch -p spalumbi,hns,normal biSNPs.sh CA56_chr6_noCAS12_genotyped_allsites.vcf_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf
+sbatch -p spalumbi,hns,normal biSNPs.sh CA56_chr7_noCAS12_genotyped_allsites.vcf_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf
+sbatch -p spalumbi,hns,normal biSNPs.sh CA56_chr8_noCAS12_genotyped_allsites.vcf_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf
+sbatch -p spalumbi,hns,normal biSNPs.sh CA56_chr9_noCAS12_genotyped_allsites.vcf_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf
+
+gatk GatherVcfs \
+    -I CA60_chr1_genotyped_allsites_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf \
+    -I CA60_chr2_genotyped_allsites_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf \
+    -I CA60_chr3_genotyped_allsites_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf \
+    -I CA60_chr4_genotyped_allsites_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf \
+    -I CA60_chr5_genotyped_allsites_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf \
+    -I CA60_chr6_genotyped_allsites_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf \
+    -I CA60_chr7_genotyped_allsites_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf \
+    -I CA60_chr8_genotyped_allsites_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf \
+    -I CA60_chr9_genotyped_allsites_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf \
+    -I CA60_chr10_genotyped_allsites_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf \
+    -I CA60_chr11_genotyped_allsites_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf \
+    -I CA60_chr12_genotyped_allsites_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf \
+    -I CA60_chr13_genotyped_allsites_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf \
+    -I CA60_chr14_genotyped_allsites_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf \
+    -O CA60_GATHERED_genotyped_allsites_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf
+
+gatk GatherVcfs \
+    -I CA56_chr1_noCAS12_genotyped_allsites.vcf_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf \
+    -I CA56_chr2_noCAS12_genotyped_allsites.vcf_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf \
+    -I CA56_chr3_noCAS12_genotyped_allsites.vcf_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf \
+    -I CA56_chr4_noCAS12_genotyped_allsites.vcf_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf \
+    -I CA56_chr5_noCAS12_genotyped_allsites.vcf_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf \
+    -I CA56_chr6_noCAS12_genotyped_allsites.vcf_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf \
+    -I CA56_chr7_noCAS12_genotyped_allsites.vcf_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf \
+    -I CA56_chr8_noCAS12_genotyped_allsites.vcf_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf \
+    -I CA56_chr9_noCAS12_genotyped_allsites.vcf_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf \
+    -I CA56_chr10_noCAS12_genotyped_allsites.vcf_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf \
+    -I CA56_chr11_noCAS12_genotyped_allsites.vcf_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf \
+    -I CA56_chr12_noCAS12_genotyped_allsites.vcf_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf \
+    -I CA56_chr13_noCAS12_genotyped_allsites.vcf_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf \
+    -I CA56_chr14_noCAS12_genotyped_allsites.vcf_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf \	
+    -O CA56_GATHERED_noCAS12_genotyped_allsites.vcf_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf	
+
+gatk GatherVcfs \
+    -I CA65_chr1_genotyped_allsites_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf \
+    -I CA65_chr2_genotyped_allsites_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf \
+    -I CA65_chr3_genotyped_allsites_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf \
+    -I CA65_chr4_genotyped_allsites_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf \
+    -I CA65_chr5_genotyped_allsites_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf \
+    -I CA65_chr6_genotyped_allsites_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf \
+    -I CA65_chr7_genotyped_allsites_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf \
+    -I CA65_chr8_genotyped_allsites_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf \
+    -I CA65_chr9_genotyped_allsites_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf \
+    -I CA65_chr10_genotyped_allsites_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf \
+    -I CA65_chr11_genotyped_allsites_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf \
+    -I CA65_chr12_genotyped_allsites_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf \
+    -I CA65_chr13_genotyped_allsites_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf \
+    -I CA65_chr14_genotyped_allsites_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf \
+    -O CA65_GATHERED_genotyped_allsites_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf
+	
+python3 definemutationtypes_CAcolony56.py CA56_ii_20201117.txt meltedCA56_ii_20201117.txt 6 4 genolike.minMapQ20.minmaf01.minInd100.minQ20.vcf > CA56_dm_20201117.txt
+#python3 definemutationtypes_CAcolony56.py CA65_ii_20201117.txt meltedCA65_ii_20201117.txt 6 4 genolike.minMapQ20.minmaf01.minInd100.minQ20.vcf > CA65_dm_20201117.txt
+#python3 definemutationtypes_CAcolony56.py CA60_ii_20201117.txt meltedCA60_ii_20201117.txt 8 8 genolike.minMapQ20.minmaf01.minInd100.minQ20.vcf > CA60_dm_20201117.txt
+
+java -Xmx64g -jar /scratch/users/elora/snpEff/snpEff.jar -v -c /scratch/users/elora/snpEff/snpEff.config Amil_v2.01 CA56_GATHERED_noCAS12_genotyped_allsites.vcf_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf_biSNPs.vcf > CA56_GATHERED_noCAS12_genotyped_allsites.vcf_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf_biSNPs.vcf.ann.vcf
+
+java -Xmx64g -jar /scratch/users/elora/snpEff/snpEff.jar -v -c /scratch/users/elora/snpEff/snpEff.config Amil_v2.01 CA60_GATHERED_genotyped_allsites_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf_biSNPs.vcf > CA60_GATHERED_genotyped_allsites_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf_biSNPs.vcf.ann.vcf
+
+java -Xmx64g -jar /scratch/users/elora/snpEff/snpEff.jar -v -c /scratch/users/elora/snpEff/snpEff.config Amil_v2.01 CA65_GATHERED_genotyped_allsites_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf_biSNPs.vcf > CA65_GATHERED_genotyped_allsites_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf_biSNPs.vcf.ann.vcf
+
+python3 MatchVerifiedMutswithAnnotatedVCF.py CA65_dm_20201117.txt CA65_GATHERED_genotyped_allsites_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf_biSNPs.vcf.ann.vcf > CA65_dm_20201117.txt.ann.txt
+
+python3 MatchVerifiedMutswithAnnotatedVCF.py CA60_dm_20201117.txt CA60_GATHERED_genotyped_allsites_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf_biSNPs.vcf.ann.vcf > CA60_dm_20201117.txt.ann.txt
+
+python3 MatchVerifiedMutswithAnnotatedVCF.py CA56_dm_20201117.txt CA56_GATHERED_noCAS12_genotyped_allsites.vcf_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf_biSNPs.vcf.ann.vcf > CA56_dm_20201117.txt.ann.txt
+ml load biology
+ml load java
+ml load R
+ml load samtools/1.8
+ml load bwa
+/home/users/elora/gridss.sh --reference /scratch/users/elora/BiohubSequencing/refs/Amil_v2.01/Amil.v2.01.chrs.fasta --output GRIDSS.vcf.gz --assembly assembly.bam --jar /home/users/elora/gridss-2.10.2-gridss-jar-with-dependencies.jar --labels testAHB125 AHB125_S36.bam
+
+#!/bin/bash
+#SBATCH --cpus-per-task=6
+#SBATCH -t 60:00:00
+#SBATCH --mem=64000
+#SBATCH --mail-type=BEGIN,END,FAIL
+
+ml biology hisat2/2.1.0
+ml load java
+ml load samtools
+
+#java -Xmx64g -jar /home/groups/spalumbi/programs/Trimmomatic-0.39/trimmomatic-0.39.jar PE ../../BikiniSequencing/NovaSeqS1_20200224/$1_R1.fastq.gz ../../BikiniSequencing/NovaSeqS1_20200224/$1_R2.fastq.gz $1_forward_paired.fq.gz  $1_forward_unpaired.fq.gz $1_reverse_paired.fq.gz $1_reverse_unpaired.fastq.gz ILLUMINACLIP:/home/groups/spalumbi/programs/Trimmomatic-0.39/adapters/TruSeq3-PE.fa:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:36
+
+hisat2 --very-sensitive --no-spliced-alignment -p 3 -X 1500 --rg-id $1 --rg SM:$1 -x /oak/stanford/groups/spalumbi/Ahya_genome/jasmine-sta1387-mb-hirise-eyx9u_12-15-2020__final_assembly -1 $1_forward_paired.fq.gz -2 $1_reverse_paired.fq.gz > $1.sam
+samtools view -bS $1.sam > $1.BTVS-UNSORTED.bam
+samtools sort $1.BTVS-UNSORTED.bam > $1.UNDEDUP.bam
+java -Xmx64g -jar /share/PI/spalumbi/programs/picard.jar MarkDuplicates REMOVE_DUPLICATES=true INPUT=$1.UNDEDUP.bam OUTPUT=$1.bam METRICS_FILE=$1.metrics.txt VALIDATION_STRINGENCY=LENIENT
+samtools index $1.bam
+
+
+#!/bin/bash
+#SBATCH --cpus-per-task=6
+#SBATCH -t 60:00:00
+#SBATCH --mem=64000
+#SBATCH --mail-type=BEGIN,END,FAIL
+
+ml biology bwa
+ml load java
+ml load samtools
+
+#java -Xmx64g -jar /home/groups/spalumbi/programs/Trimmomatic-0.39/trimmomatic-0.39.jar PE ../../BikiniSequencing/NovaSeqS1_20200224/$1_R1.fastq.gz ../../BikiniSequencing/NovaSeqS1_20200224/$1_R2.fastq.gz $1_forward_paired.fq.gz  $1_forward_unpaired.fq.gz $1_reverse_paired.fq.gz $1_reverse_unpaired.fastq.gz ILLUMINACLIP:/home/groups/spalumbi/programs/Trimmomatic-0.39/adapters/TruSeq3-PE.fa:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:36
+
+bwa mem -pt 12 -R "@RG\\tID:$1\\tSM:$1\\tPL:ILLUMINA\\tLB:$1\\tPI:200" /oak/stanford/groups/spalumbi/Ahya_genome/jasmine-sta1387-mb-hirise-eyx9u_12-15-2020__final_assembly > ./bwa/$1.sam
+samtools view -bS ./bwa/$1.sam > ./bwa/$1.BTVS-UNSORTED.bam
+samtools sort ./bwa/$1.BTVS-UNSORTED.bam > ./bwa/$1.UNDEDUP.bam
+java -Xmx64g -jar /share/PI/spalumbi/programs/picard.jar MarkDuplicates REMOVE_DUPLICATES=true INPUT=$./bwa/1.UNDEDUP.bam OUTPUT=./bwa/$1.bam METRICS_FILE=./bwa/$1.metrics.txt VALIDATION_STRINGENCY=LENIENT
+samtools index ./bwa/$1.bam
+
+
 

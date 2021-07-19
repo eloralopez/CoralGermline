@@ -73,9 +73,16 @@ freq_func<-function(CA56n, CA56denom, CA60n, CA60denom, CA65n, CA65denom, CA56i,
           axis.title=element_text(size=15),
           axis.text.x = element_text(angle = 90))+
     labs(y="# mutations bp per sample", x="") ##Figure 1
-  return(df)
+  persamplemeans<-c(mean(nfreqs), mean(ifreqs),mean(uglmfreqs))
+  persampleses<-c(se(nfreqs), se(ifreqs),se(uglmfreqs))
+  persampletypes<-c("notinherited","inherited","uglm")
+  persampledf<-data.frame(persamplemeans,persampleses,persampletypes)
+  persampledf_notmeans<-data.frame("persample"=c(nfreqs,ifreqs,uglmfreqs),"persampletypes"=c(rep("notinherited",7),rep("inherited",7),rep("uglm",7)))
+  return(list("means"=persampledf,"eachdatapoint"=persampledf_notmeans))
 }
 meanfreqpersampleplot<-freq_func(CA56n, CA56denom, CA60n, CA60denom, CA65n, CA65denom, CA56i, CA60i, CA65i, CA56uglm,CA60uglm,CA65uglm)
+meanfreqpersampleplot$Type<-rep("LOH+GOH",3)
+
 ##Inherited vs Not inherited per colony
 class<-factor(rep(c("Not Inherited" , "Inherited") , 3),levels = c("Not Inherited","Inherited"))
 
@@ -93,37 +100,42 @@ n_perc<-(100*CAPn)/(CAPn+CAPi)
 i_perc<-(100*CAPi)/(CAPn+CAPi)
 ##We identified post-embryonic SNVs in every parent branch, and we found that on average 35.6% ± 4.1% (1 s.e.m.) SNVs were shared between a parent branch and its respective sperm pool, but significantly more, 64.4% ± 4.1% (1 s.e.m.) post-embryonic SNVs found in a branch were not in the sperm (two-tailed, unpaired t-test, t12 = 4.9092, x, P = 0.00036).##
 t.test(n_percent, i_percent,alternative=c("two.sided"),paired=FALSE)
-colonies<-rep(c(rep("CA56",2),rep("CA60",3),rep("CA65",2)),2)
+colonies<-rep(c(rep("Colony 56",2),rep("Colony 60",3),rep("Colony 65",2)),2)
 inh<-factor(c(rep("Not Inherited",7),rep("Inherited",7)),levels = c("Not Inherited","Inherited"))
 
 samples<-factor(c("CAP6","CAP8","CAP22","CAP23","CAP26","CAP9","CAP11"),
                 levels = c("CAP6","CAP8","CAP22","CAP23","CAP26","CAP9","CAP11"))
 compdf<-data.frame(freqspermillion, colonies, inh,samples)
-compdf$shared<-c(rep("Parent Only",length(nfreqspermillion)),rep("Parent and Sperm",length(ifreqspermillion)))
+compdf$shared<-c(rep("PO",length(nfreqspermillion)),rep("P+S",length(ifreqspermillion)))
+compdf$counts<-c(CA56n, CA60n, CA65n,CA56i, CA60i, CA65i)
 freqspmNI<-subset(compdf, inh=="Not Inherited")
 freqspmI<-subset(compdf, inh=="Inherited")
 freqspmNImean<-mean(freqspmNI$freqspermillion)
 freqspmImean<-mean(freqspmI$freqspermillion)
 proportions<-ifreqspermillion/(nfreqspermillion+ifreqspermillion)
+
 mean(proportions) #average  inherited
-2*se(proportions) #SE inherited
+se(proportions) #SE inherited
 1-proportions
 mean(1-proportions)
 se(1-proportions)
-comparisonplotinh2<-ggplot(compdf, aes(x=samples, y=freqspermillion, fill=shared)) + 
- geom_bar(position="dodge", stat="identity") +
+comparisonplotinh2<-ggplot(compdf, aes(x=samples, y=freqspermillion/1000000, color=shared)) + 
+ geom_point(position="identity", size=5) +#, stat="identity",position_dodge(width = 1)) +
   theme_bw() +
-  scale_fill_manual(values = c("#999999","lightgoldenrod1")) +
-  ylab("# SNVs per Mbp") + xlab("")+
-  theme(axis.text=element_text(size=15, angle = 90),
-        axis.title=element_text(size=15))+
-  theme(legend.text=element_text(size=15), legend.title = element_blank())+
-  facet_wrap(~colonies, strip.position = "bottom", scales = "free_x")+
+  scale_color_manual(values = c("#999999","goldenrod")) +
+  ylab("# SNVs per bp") + xlab("")+
+  theme(axis.text=element_text(size=25), 
+    axis.text.x=element_text(size=25, angle = 90),
+        axis.title=element_text(size=25))+
+  theme(legend.text=element_text(size=25), legend.title = element_blank())+
+  facet_wrap(~colonies, strip.position = "top", scales = "free_x")+
   theme(panel.spacing = unit(0, "lines"), 
         strip.background = element_blank(),
         strip.placement = "outside",
-        strip.text.x = element_text(size = 15))
-
+        strip.text.x = element_text(size = 25))
+cpi2<-comparisonplotinh2+ scale_y_continuous(expand = c(0,0.00000002))+theme(panel.grid.major = element_blank(),
+                            panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"))
+cpi2
 colony<-c(rep("CA56",2),rep("CA60",3),rep("CA65",2))
 
 df_inheritedprops<-data.frame(colony,proportions)
@@ -181,13 +193,36 @@ valuemeanpercent<-c(mean(ifreqpercents),mean(uglmfreqpercents),mean(gglmfreqperc
 valuemeanpercentse<-c(se(ifreqpercents),se(uglmfreqpercents),se(gglmfreqpercents))
 meanpercentdata<-data.frame(valuemeanpercent,valuemeanpercentse,"shared"=factor(c("Parent and Sperm", "Single Sperm Pool Only", "All Sperm Pools"),
                                                                   levels = c("Parent and Sperm","Single Sperm Pool Only","All Sperm Pools")))
+percentdata<-data.frame("percents"=c(ifreqpercents, uglmfreqpercents, gglmfreqpercents),"shared"=factor(c(rep("Parent and Sperm",7), rep("Single Sperm Pool Only",7), rep("All Sperm Pools",7)),
+                                                                                             levels = c("Parent and Sperm","Single Sperm Pool Only","All Sperm Pools")),
+                        "colz"=c(rep("1",7),rep("2",7),rep("3",7)))
+percentdataplot<-ggplot(percentdata, aes(shared, percents)) +
+  geom_jitter(size=3,aes(color=colz,group=shared),
+    position = position_jitter(0.2)
+  )
+#use 20210719
+  meanpercentdataplot2<-ggplot(meanpercentdata, aes(shared,valuemeanpercent))+
+    geom_pointrange(size=1.5,data = meanpercentdata,aes(shared,valuemeanpercent,group=shared, color=shared, ymin=valuemeanpercent-valuemeanpercentse, ymax=valuemeanpercent+valuemeanpercentse))+
+    geom_jitter(data=percentdata,size=3,aes(shared, percents, color=colz,group=shared),
+                position = position_jitter(0.2)
+    )+
+  scale_color_manual(values = c("gray74","mediumpurple2","mediumturquoise","seagreen3", "#999999", "purple")) +
+    theme_bw()+
+  ylab("% of SNV type per sperm pool") + xlab("")+
+    theme(axis.text.x = element_text(size=25,colour=c("#999999","purple","seagreen3")),
+          axis.title=element_text(size=25),
+          axis.text.y = element_text(size=25))+
+    theme(legend.position = "none") +
+    scale_x_discrete(labels=c("Parent and Sperm" = "P+S", "Single Sperm Pool Only" = "SSPO",
+                              "All Sperm Pools" = "ASP"))
+  #geom_errorbar(aes(ymin=valuemeanpercent-valuemeanpercentse, ymax=valuemeanpercent+valuemeanpercentse))
 mutationdata<-data.frame(colony, class, value)
 mutationdata$shared<-factor(rep(c("Parent and Sperm", "Single Sperm Pool Only", "All Sperm Pools") , 3),levels = c("Parent and Sperm","Single Sperm Pool Only","All Sperm Pools"))
 
 inheritedpermillionplot<-ggplot(mutationdata, aes(x=colony, y=value, fill=shared)) + 
   geom_bar(position="dodge", stat="identity") +
   theme_bw() +
-  scale_fill_manual(values = c("black", "light blue", "seagreen3")) +
+  scale_fill_manual(values = c("black", "purple", "seagreen3")) +
   ylab("# SNVs per Mbp") + xlab("")+
   theme(axis.text=element_text(size=15),
         axis.title=element_text(size=15))+
@@ -196,11 +231,12 @@ inheritedpermillionplot<-ggplot(mutationdata, aes(x=colony, y=value, fill=shared
 meanpercentdataplot<-ggplot(meanpercentdata, aes(x=shared, y=valuemeanpercent, fill=shared)) + 
   geom_bar(position="dodge", stat="identity") +
   theme_bw() +
-  scale_fill_manual(values = c("#999999", "light blue", "seagreen3")) +
+  scale_fill_manual(values = c("#999999", "purple", "seagreen3")) +
   ylab("% of SNV type per sperm pool") + xlab("")+
-  geom_errorbar(aes(ymin=valuemeanpercent-valuemeanpercentse, ymax=valuemeanpercent+valuemeanpercentse))+
-  theme(axis.text=element_text(size=15),
-        axis.title=element_text(size=15))+
+  geom_pointrange(aes(ymin=valuemeanpercent-valuemeanpercentse, ymax=valuemeanpercent+valuemeanpercentse))+
+  theme(axis.text.x = element_text(size=25,colour=c("#999999","purple","seagreen3")),
+        axis.title=element_text(size=25),
+        axis.text.y = element_text(size=25))+
   theme(legend.position = "none") +
   scale_x_discrete(labels=c("Parent and Sperm" = "P+S", "Single Sperm Pool Only" = "SSPO",
                             "All Sperm Pools" = "ASP"))
@@ -278,25 +314,31 @@ CA65uglm_coding_LOH<-c(nrow(coding_func(subset(CAS11uglm, GoH_or_LoH == "LoH")))
 
 meanfreqpersampleplot_coding_LOH<-freq_func(CA56n_coding_LOH, CA56denom_coding, CA60n_coding_LOH, CA60denom_coding, CA65n_coding_LOH, CA65denom_coding, 
                                             CA56i_coding_LOH, CA60i_coding_LOH, CA65i_coding_LOH, CA56uglm_coding_LOH, CA60uglm_coding_LOH,CA65uglm_coding_LOH)
-meanfreqpersampleplot_coding_GOH$Type <- "GoH"
-meanfreqpersampleplot_coding_LOH$Type <- "LoH"
+meanfreqpersampleplot_coding_GOH$means$Type <- "GoH"
+meanfreqpersampleplot_coding_LOH$means$Type <- "LoH"
 
-meanfreqpersampleplot_coding_combined <- rbind(meanfreqpersampleplot_coding_GOH, meanfreqpersampleplot_coding_LOH)
-meanfreqpersampleplot_coding_combined$secondgroup <-factor(paste0(meanfreqpersampleplot_coding_combined$colony , meanfreqpersampleplot_coding_combined$Type, meanfreqpersampleplot_coding_combined$type))
+meanfreqpersampleplot_coding_combined_means <- rbind(meanfreqpersampleplot_coding_GOH$means, meanfreqpersampleplot_coding_LOH$means)
+meanfreqpersampleplot_coding_combined_means$secondgroup <-factor(paste0(meanfreqpersampleplot_coding_combined_means$colony , meanfreqpersampleplot_coding_combined_means$Type, meanfreqpersampleplot_coding_combined_means$type))
+#eachdatapoint:
+meanfreqpersampleplot_coding_GOH$eachdatapoint$Type2 <- "GoH2"
+meanfreqpersampleplot_coding_LOH$eachdatapoint$Type2 <- "LoH2"
 
-#coding_combined_plot<-ggplot(meanfreqpersampleplot_coding_combined, 
-  #                             aes(x = type, 
-  #                                 y = meanpersamplefreqs, 
-  #                                 group = secondgroup, colour=group,shape=colony)) +
-  # geom_point(size = 3, position=position_dodge(width=0.6), aes(shape=colony)) +
-  # #geom_point(position="dodge", stat="identity")
-  # geom_errorbar(aes(ymin=meanpersamplefreqs-(2*se), ymax=meanpersamplefreqs+(2*se)),
-  #               width=0.1, position=position_dodge(width=0.6)) +
-  # theme_bw() +
-  # theme(axis.text=element_text(size=15),
-  #       axis.title=element_text(size=15),
-  #       axis.text.x = element_text(angle = 90))+
-  # labs(y="# mutations bp per sample", x="")
+meanfreqpersampleplot_coding_combined_eachdatapoint <- rbind(meanfreqpersampleplot_coding_GOH$eachdatapoint, meanfreqpersampleplot_coding_LOH$eachdatapoint)
+meanfreqpersampleplot_coding_combined_eachdatapoint$secondgroup <-factor(paste0(meanfreqpersampleplot_coding_combined_eachdatapoint$colony , meanfreqpersampleplot_coding_combined_eachdatapoint$Type2, meanfreqpersampleplot_coding_combined_eachdatapoint$Type2))
+
+coding_combined_plot<-ggplot(meanfreqpersampleplot_coding_combined_means,
+                            aes(x = persampletypes,
+                                y = meanpersamplefreqs,
+                                group = secondgroup, color=Type, shape=colony)) +
+geom_point(size = 3, position=position_dodge(width=0.6), aes(shape=colony)) +
+#geom_point(position="dodge", stat="identity")
+geom_errorbar(aes(ymin=meanpersamplefreqs-(2*se), ymax=meanpersamplefreqs+(2*se)),
+              width=0.1, position=position_dodge(width=0.6)) +
+theme_bw() +
+theme(axis.text=element_text(size=15),
+      axis.title=element_text(size=15),
+      axis.text.x = element_text(angle = 90))+
+labs(y="# mutations bp per sample", x="")
 
 CA56n_GOH<-c(nrow(subset(CAP6n, GoHorLoH=="DeNovo")), nrow(subset(CAP8n, GoHorLoH=="DeNovo")))
 CA56i_GOH<-c(nrow(subset(CAP6i, GoHorLoH=="DeNovo")), nrow(subset(CAP8i, GoHorLoH=="DeNovo")))
@@ -328,11 +370,17 @@ CA65uglm_LOH<-c(nrow(subset(CAS11uglm, GoH_or_LoH=="LoH")), nrow(subset(CAS9uglm
 meanfreqpersampleplot_LOH<-freq_func(CA56n_LOH, CA56denom, CA60n_LOH, CA60denom, CA65n_LOH, CA65denom, 
                                      CA56i_LOH, CA60i_LOH, CA65i_LOH, CA56uglm_LOH, CA60uglm_LOH,CA65uglm_LOH)
 
-meanfreqpersampleplot_GOH$Type <- "GoH"
-meanfreqpersampleplot_LOH$Type <- "LoH"
+meanfreqpersampleplot_GOH$means$Type <- "GoH"
+meanfreqpersampleplot_LOH$means$Type <- "LoH"
 
-meanfreqpersampleplot_combined <- rbind(meanfreqpersampleplot_GOH, meanfreqpersampleplot_LOH)
-meanfreqpersampleplot_combined$secondgroup <-factor(paste0(meanfreqpersampleplot_combined$colony , meanfreqpersampleplot_combined$Type, meanfreqpersampleplot_combined$type))
+meanfreqpersampleplot_combined_means <- rbind(meanfreqpersampleplot_GOH$means, meanfreqpersampleplot_LOH$means)
+meanfreqpersampleplot_combined_means$secondgroup <-factor(paste0(meanfreqpersampleplot_combined_means$colony , meanfreqpersampleplot_combined_means$Type, meanfreqpersampleplot_combined_means$type))
+#eachdatapoint:
+meanfreqpersampleplot_GOH$eachdatapoint$Type2 <- "GoH2"
+meanfreqpersampleplot_LOH$eachdatapoint$Type2 <- "LoH2"
+
+meanfreqpersampleplot_combined_eachdatapoint <- rbind(meanfreqpersampleplot_GOH$eachdatapoint, meanfreqpersampleplot_LOH$eachdatapoint)
+meanfreqpersampleplot_combined_eachdatapoint$secondgroup <-factor(paste0(meanfreqpersampleplot_combined_eachdatapoint$colony , meanfreqpersampleplot_combined_eachdatapoint$Type2, meanfreqpersampleplot_combined_eachdatapoint$Type2))
 
 # combined_plot<-ggplot(meanfreqpersampleplot_combined, 
 #                              aes(x = type, 
@@ -348,25 +396,36 @@ meanfreqpersampleplot_combined$secondgroup <-factor(paste0(meanfreqpersampleplot
 #         axis.text.x = element_text(angle = 90))+
 #   labs(y="# mutations bp per sample", x="")
 
-meanfreqpersampleplot_combined$corno<- "Full genome"
-meanfreqpersampleplot_coding_combined$corno<- "Coding region only"
-meanfreqpersampleplot_combined_more<-rbind(meanfreqpersampleplot_combined, meanfreqpersampleplot_coding_combined)
-meanfreqpersampleplot_combined_more$thirdgroup <-factor(paste0(meanfreqpersampleplot_combined_more$secondgroup, meanfreqpersampleplot_combined_more$corno))
-meanfreqpersampleplot_combined_more$fourthgroup <-factor(paste0(meanfreqpersampleplot_combined_more$group, meanfreqpersampleplot_combined_more$corno))
-meanfreqpersampleplot_combined_more$meansamplefreqspermillion<-meanfreqpersampleplot_combined_more$meanpersamplefreqs*1000000
-meanfreqpersampleplot_combined_more$meansamplefreqspermillion_se<-meanfreqpersampleplot_combined_more$se*1000000
-data.frame(meanfreqpersampleplot_combined_more$secondgroup[1:18], rate_props)
-rate_props<-meanfreqpersampleplot_combined$meanpersamplefreqs/meanfreqpersampleplot_coding_combined$meanpersamplefreqs
-meanfreqpersampleplot_combined_more$shared<-rep(c(rep("PO",3), rep("P+S",3),
-                                              rep("SSPO",3)),4)
-
+meanfreqpersampleplot_combined_means$Region<- "Full genome"
+meanfreqpersampleplot_coding_combined_means$Region<- "Coding region only"
+meanfreqpersampleplot_combined_more_means<-rbind(meanfreqpersampleplot_combined_means, meanfreqpersampleplot_coding_combined_means)
+meanfreqpersampleplot_combined_more_means$thirdgroup <-factor(paste0(meanfreqpersampleplot_combined_more_means$secondgroup, meanfreqpersampleplot_combined_more_means$Region))
+meanfreqpersampleplot_combined_more_means$fourthgroup <-factor(paste0(meanfreqpersampleplot_combined_more_means$group, meanfreqpersampleplot_combined_more_means$Region))
+#meanfreqpersampleplot_combined_more_means$meansamplefreqspermillion<-meanfreqpersampleplot_combined_more_means$meanpersamplefreqs*1000000
+#meanfreqpersampleplot_combined_more_means$meansamplefreqspermillion_se<-meanfreqpersampleplot_combined_more_means$se*1000000
+#data.frame(meanfreqpersampleplot_combined_more_means$secondgroup[1:18], rate_props)
+#rate_props<-meanfreqpersampleplot_combined$meanpersamplefreqs/meanfreqpersampleplot_coding_combined$meanpersamplefreqs
+meanfreqpersampleplot_combined_more_means$shared<-rep(c("PO", "P+S",
+                                              "SSPO"),4)
+#eachdatapoint
+meanfreqpersampleplot_combined_eachdatapoint$Region<- "Full genome"
+meanfreqpersampleplot_coding_combined_eachdatapoint$Region<- "Coding region only"
+meanfreqpersampleplot_combined_more_eachdatapoint<-rbind(meanfreqpersampleplot_combined_eachdatapoint, meanfreqpersampleplot_coding_combined_eachdatapoint)
+meanfreqpersampleplot_combined_more_eachdatapoint$thirdgroup <-factor(paste0(meanfreqpersampleplot_combined_more_eachdatapoint$secondgroup, meanfreqpersampleplot_combined_more_eachdatapoint$Region))
+meanfreqpersampleplot_combined_more_eachdatapoint$fourthgroup <-factor(paste0(meanfreqpersampleplot_combined_more_eachdatapoint$group, meanfreqpersampleplot_combined_more_eachdatapoint$Region))
+#meanfreqpersampleplot_combined_more_eachdatapoint$eachdatapointamplefreqspermillion<-meanfreqpersampleplot_combined_more_eachdatapoint$meanpersamplefreqs*1000000
+#meanfreqpersampleplot_combined_more_eachdatapoint$eachdatapointamplefreqspermillion_se<-meanfreqpersampleplot_combined_more_eachdatapoint$se*1000000
+#data.frame(meanfreqpersampleplot_combined_more_eachdatapoint$secondgroup[1:18], rate_props)
+#rate_props<-meanfreqpersampleplot_combined$meanpersamplefreqs/meanfreqpersampleplot_coding_combined$meanpersamplefreqs
+meanfreqpersampleplot_combined_more_eachdatapoint$shared<-rep(c(rep("PO",7), rep("P+S",7),
+                                                        rep("SSPO",7)),4)
 my_breaks <- function(x) { if (max(x) < 1) seq(0, 1,0.25) else seq(0, 4,1) }
 
 combined_plot_faceted<-ggplot(meanfreqpersampleplot_combined_more, 
                       aes(x = shared, 
                           y = meansamplefreqspermillion, 
-                          group = secondgroup, colour=Type,shape=colony)) +
-  geom_point(size = 3, position=position_dodge(width=0.6), aes(shape=colony)) +
+                          group = secondgroup, colour=Type,shape=Region)) +
+  geom_point(size = 3, position=position_dodge(width=0.6), aes(shape=Region)) +
   #geom_point(position="dodge", stat="identity")
   geom_errorbar(aes(ymin=meansamplefreqspermillion-(meansamplefreqspermillion_se), ymax=meansamplefreqspermillion+(meansamplefreqspermillion_se)),
                 width=0.1, position=position_dodge(width=0.6)) +
@@ -374,14 +433,53 @@ combined_plot_faceted<-ggplot(meanfreqpersampleplot_combined_more,
   theme(axis.text=element_text(size=15),
         axis.title=element_text(size=15),
         axis.text.x = element_text(angle = 90),
-        legend.text=element_text(size=15),legend.title=element_text(size=15))+
-  labs(y="# SNVs per Mbp per sample", x="")+
-  facet_wrap(~corno, strip.position = "bottom", scales = "free_y")+
+        legend.text=element_text(size=),legend.title=element_text(size=15))+
+  labs(y="# SNVs per Mbp per sample", x="")#+
+  facet_wrap(~colony, strip.position = "bottom", scales = "free_y")+
   theme(panel.spacing = unit(0, "lines"), 
         #strip.background = element_blank(),
         #strip.placement = "outside",
         strip.text.x = element_text(size = 15))+
   scale_y_continuous(breaks = my_breaks)
+  #figure 2b:
+  combined_plot_faceted<-ggplot(meanfreqpersampleplot_combined_more, 
+                                aes(x = shared, 
+                                    y = persamplemeans, 
+                                    group = secondgroup, colour=Type,shape=Region)) +
+    geom_point(size = 4.5, position=position_dodge(width=0.6), aes(shape=Region)) +
+    #geom_point(position="dodge", stat="identity")
+    geom_errorbar(aes(ymin=persamplemeans-(persampleses), ymax=persamplemeans+(persampleses)),
+                  width=0.1, position=position_dodge(width=0.6)) +
+    theme_bw() +
+    theme(axis.text=element_text(size=25),
+          axis.title=element_text(size=25),
+          axis.text.x = element_text(angle = 0,colour=c("#999999","goldenrod","purple")),
+          legend.text=element_text(size=25),legend.title=element_text(size=25))+
+    labs(y="# SNVs per bp per sample", x="")  
+  combined_plot_faceted2<-ggplot(meanfreqpersampleplot_combined_more_means, 
+                                 aes(x = shared, 
+                                     y = persamplemeans, 
+                                     group = thirdgroup, shape=Region)) +
+    scale_color_manual(values=c("red","coral1","blue","royalblue1"))+
+    
+    geom_pointrange(size=1.5,position=position_dodge(width=0.6), aes(color=Type, shape=Region,ymin=persamplemeans-(persampleses), ymax=persamplemeans+(persampleses))) +
+    geom_jitter(data=meanfreqpersampleplot_combined_more_eachdatapoint,size=3,position = position_jitterdodge(
+      jitter.width = 0.1,
+      jitter.height = 0,
+      dodge.width = 0.6,
+      seed = NA
+    ),
+                aes(shared, persample, 
+                    group = thirdgroup, color=Type2,shape=Region))+
+    theme_bw() +
+    theme(axis.text=element_text(size=25),
+          axis.title=element_text(size=25),
+          axis.text.x = element_text(angle = 0,colour=c("#999999","goldenrod","purple")),
+          legend.text=element_text(size=25),legend.title=element_text(size=25))+
+    labs(y="# SNVs per bp per sample", x="")  
+  
+  
+  meanfreqpersampleplot_combined_more$permillion<-meanfreqpersampleplot_combined_more$persamplemeans*1000000
 #for ahya:
 meanfreqpersampleplot_combined$shared<-rep(c(rep("PO",3), rep("P+S",3),
                                                   rep("SSPO",3)),2)
@@ -399,7 +497,7 @@ justfull<-ggplot(meanfreqpersampleplot_combined,
         axis.text.x = element_text(angle = 90),
         legend.text=element_text(size=15),legend.title=element_text(size=15))+
   labs(y="# SNVs per Mbp per sample", x="")#+
- # facet_wrap(~corno, strip.position = "bottom", scales = "free_y")+
+ # facet_wrap(~Region, strip.position = "bottom", scales = "free_y")+
   #theme(panel.spacing = unit(0, "lines"), 
         #strip.background = element_blank(),
         #strip.placement = "outside",
@@ -456,6 +554,8 @@ ratiosplot<-ggplot(ratios_frame,
   geom_errorbar(aes(ymin=mean-SE, ymax=mean+SE),
                 width=0.1, position=position_dodge(width=0.6)) +
   theme_bw()
+
+persampleaveragesplot<-
 ##this is figure2:
 (meanfreqpersampleplot | meanfreqpersampleplot_coding) /(comparisonplotinh2 & theme(strip.placement = NULL) / inheritedpermillionplot)
 ##this is figure2:
@@ -467,8 +567,14 @@ ratiosplot<-ggplot(ratios_frame,
   
 Figure2<-  (comparisonplotinh2 & theme(strip.placement = NULL) | persampleaveragesplot) /(meanpercentdataplot | z2)
 Figure2_fordiss<- (comparisonplotinh2 & theme(strip.placement = NULL) ) /(meanpercentdataplot | z2)
+
+#Figure 2, 6/2021:
+fig2b<-combined_plot_faceted+ theme(axis.line = element_line(colour = "black")) 
+#Figure 2, 20210716
+(comparisonplotinh2 +labs(tag="a.")+theme(plot.tag=element_text(face="bold",size=30)) & theme(strip.placement = NULL) | meanpercentdataplot2+labs(tag="b.")+theme(plot.tag=element_text(face="bold",size=30)) ) / (combined_plot_faceted2 +labs(tag="c.")+theme(plot.tag=element_text(face="bold",size=30)) | z2+labs(tag="d.")+theme(plot.tag=element_text(face="bold",size=30)))
 #for ahya:
-(comparisonplotinh2 & theme(strip.placement = NULL) | justfull) /(meanpercentdataplot | z2)
+(comparisonplotinh2 & theme(strip.placement = NULL) | justfull+labs(tag="b.")+theme(plot.tag=element_text(face="bold",size=30))) /(meanpercentdataplot | z2)
+justfull+labs(tag="b.")#+theme(plot.tag=element_text(face="bold",size=30))
   #png("myplot.png")
   #print(Figure2)
   #dev.off()  
@@ -520,9 +626,32 @@ supptable2_gglm<-allcol_gglm
 supptable2_gglm$Inheritance<-rep("N/A",nrow(supptable2_gglm))
 
 everything<-rbind(suppCA56n, suppCA56i,suppCA60n,suppCA60i,suppCA65n,suppCA65i,suppCA56uglm, suppCA60uglm, suppCA65uglm, suppCA56gglm,  suppCA60gglm, suppCA65gglm)
-
+#suppCA56n, suppCA56i,suppCA60n,suppCA60i,suppCA65n,suppCA65i,suppCA56uglm, suppCA60uglm, suppCA65uglm, suppCA56gglm,  suppCA60gglm, suppCA65gglm
+unique_mut_count<-nrow(suppCA56n)/10 + nrow(suppCA56i)/10 +nrow(suppCA60n)/12 +nrow(suppCA60i)/12 +nrow(suppCA65n)/10 +nrow(suppCA65i)/10 + 
+nrow(suppCA56uglm)/10 + nrow(suppCA60uglm)/12 + nrow(suppCA65uglm)/10 + nrow(suppCA56gglm)/10 +  nrow(suppCA60gglm)/12 + nrow(suppCA65gglm)/10
 everything_forsupp<-subset(everything, select = -c(mutant_allele_depth,TrueorFalse,totaldepth.y,GQscore.y,totaldepth,GQscore) )
 #write.table(everything_forsupp, file="~/Documents/GitHub/CoralGermline/suppfiles/SupplementaryTable2_mappedtoahya.txt",sep="\t",quote=FALSE, row.name=FALSE)
-write.table(everything_forsupp, file="~/Documents/Dissertation/Chapter2_SupplementaryTableS2.txt",sep="\t",quote=FALSE, row.name=FALSE)
+#write.table(everything_forsupp, file="~/Documents/Dissertation/Chapter2_SupplementaryTableS2.txt",sep="\t",quote=FALSE, row.name=FALSE)
+#6/25 supplementary file:
+#write.table(everything_forsupp, file="~/Documents/CoralGermlineManuscript/SupplementaryTable2_20210625.txt",sep="\t",quote=FALSE, row.name=FALSE)
+
 uniqueeverything<-everything[match(unique(everything$chrom.pos), everything$chrom.pos),]
 
+CAP11notinhLOH
+CAP22notinhLOH
+CAP23notinhLOH
+CAP26notinhLOH
+CAP6notinhLOH
+CAP8notinhLOH
+CAP9notinhLOH
+nrow(subset(CAS11gglm, GoH_or_LoH == "LoH"))
+nrow(subset(CAS22uglm, GoH_or_LoH == "LoH"))
+nrow(subset(CAS23uglm, GoH_or_LoH == "LoH"))
+nrow(subset(CAS26uglm, GoH_or_LoH == "LoH"))
+nrow(subset(CAS6uglm, GoH_or_LoH == "LoH"))
+nrow(subset(CAS8uglm, GoH_or_LoH == "LoH"))
+nrow(subset(CAS9uglm, GoH_or_LoH == "LoH"))
+
+nrow(subset(gglmCA56df, GoH_or_LoH == "LoH"))
+nrow(subset(CAS22uglm, GoH_or_LoH == "LoH"))
+nrow(subset(CAS23uglm, GoH_or_LoH == "LoH"))
