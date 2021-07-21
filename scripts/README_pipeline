@@ -1,0 +1,157 @@
+
+
+#Bioinformatic pipeline
+#Pipeline that will take you from the raw fastq.gz up to the ann.txt . The ann.txt files are then read into the R scripts to complete the analyses and generate figures.
+
+#First, make SNPeff database:
+#Snpeff make database:
+ml load java
+cd /pathto/snpEff/data
+mkdir Ahyacinthus
+cd Ahyacinthus
+mv Ahyacinthus.all.maker.gff3 .
+mv Ahyacinthus.proteins.fasta .
+mv Ahyacinthus.chrsV1.fasta .
+mv Ahyacinthus.all.maker.gff3 genes.gff
+mv Ahyacinthus.proteins.fasta protein.fa
+mv Ahyacinthus.chrsV1.fasta sequences.fa
+java -jar snpEff.jar build -gff3 -v Ahyacinthus
+
+#trim:
+java -Xmx64g -jar /home/groups/spalumbi/programs/Trimmomatic-0.39/trimmomatic-0.39.jar PE ../../BikiniSequencing/NovaSeqS1_20200224/$1_R1.fastq.gz ../../BikiniSequencing/NovaSeqS1_20200224/$1_R2.fastq.gz $1_forward_paired.fq.gz  $1_forward_unpaired.fq.gz $1_reverse_paired.fq.gz $1_reverse_unpaired.fastq.gz ILLUMINACLIP:/home/groups/spalumbi/programs/Trimmomatic-0.39/adapters/TruSeq3-PE.fa:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:36
+
+#map:
+hisat2 --very-sensitive --no-spliced-alignment -p 3 -X 1500 --rg-id $1 --rg SM:$1 -x /oak/stanford/groups/spalumbi/Ahya_genome/jasmine-sta1387-mb-hirise-eyx9u_12-15-2020__final_assembly -1 ../$1_forward_paired.fq.gz -2 ../$1_reverse_paired.fq.gz > $1.sam
+
+#sam to bam:
+samtools view -bS $1.sam > $1.BTVS-UNSORTED.bam
+
+#sort bam:
+samtools sort $1.BTVS-UNSORTED.bam > $1.UNDEDUP.bam
+
+#remove duplicates:
+java -Xmx64g -jar /share/PI/spalumbi/programs/picard.jar MarkDuplicates REMOVE_DUPLICATES=true INPUT=$1.UNDEDUP.bam OUTPUT=$1.bam METRICS_FILE=$1.metrics.txt VALIDATION_STRINGENCY=LENIENT
+
+#index bam:
+samtools index $1.bam
+
+#DepthofCoverage (had to use GATK3.7-0 for this):
+ 
+java -Xmx128g -jar $PI_HOME/programs/GenomeAnalysisTK.jar \
+        -T DepthOfCoverage \
+        -R /scratch/users/elora/BiohubSequencing/refs/Amil_v2.01/Amil.v2.01.chrs.fasta \
+        -o $1_allchrs_DoC \
+        -I $1.bam \
+        -L chr1 \
+        -L chr2 \
+        -L chr3 \
+        -L chr4 \
+        -L chr5 \
+        -L chr6 \
+        -L chr7 \
+        -L chr8 \
+        -L chr9 \
+        -L chr10 \
+        -L chr11 \
+        -L chr12 \
+        -L chr13 \
+        -L chr14
+
+
+## haplotypecaller:
+ml load java
+ml load biology gatk/4.1.0.0
+gatk HaplotypeCaller \
+    -R  /scratch/users/elora/BiohubSequencing/refs/Amil_v2.01/Amil.v2.01.chrs.fasta \
+    -I $1.bam \
+    -ERC GVCF \
+    --genotyping-mode DISCOVERY \
+    -L $2 \
+    -O $1_$2.g.vcf
+ 
+##CombineGVCFs:
+ml load biology gatk/4.1.0.0
+gatk CombineGVCFs \
+        -R /oak/stanford/groups/spalumbi/Ahya_genome/jasmine-sta1387-mb-hirise-eyx9u_12-15-2020__final_assembly.fasta \
+                --variant CAP12-1_S46_$2.g.vcf \
+                --variant CAP12-2_S62_$2.g.vcf \
+                --variant CAP6-1_S47_$2.g.vcf \
+                --variant CAP6-2_S63_$2.g.vcf \
+                --variant CAP8-1_S40_$2.g.vcf \
+                --variant CAP8-2_S56_$2.g.vcf \
+                --variant CAS6-2_S9_$2.g.vcf \
+                --variant CAS6_S73_$2.g.vcf \
+                --variant CAS8-2_S2_$2.g.vcf \
+                --variant CAS8_S66_$2.g.vcf \
+                -O CA56_$2.g.vcf
+
+##genotypeGVCFs (allsites):
+ml load biology gatk/4.1.0.0
+gatk GenotypeGVCFs \
+        -R /scratch/users/elora/BiohubSequencing/refs/Amil_v2.01/Amil.v2.01.chrs.fasta \
+        --variant CA56_$2.g.vcf \
+        --include-non-variant-sites \
+        -O CA56_$2_genotyped_allsites.vcf
+
+##remove sites with missing genotypes:
+grep -vF './.' CA56_$2_genotyped_allsites.vcf | grep -vF '.|.' > CA56_$2_genotyped_allsites.vcf_nomissing.vcf
+
+##selectvariants based on upper and lower depth thresholds. these thresholds were determined by running DepthofCoverage, then finding the Poisson distribution around the mean for each sample and setting the cutoff where p>0.0001 (as in Wu et al. 2020)
+ml load biology gatk/4.1.0.0
+gatk SelectVariants \
+     -R /oak/stanford/groups/spalumbi/Ahya_genome/jasmine-sta1387-mb-hirise-eyx9u_12-15-2020__final_assembly.fasta \
+     -V CA56_$1_genotyped_allsites.vcf_nomissing.vcf \
+     -select '(vc.getGenotype("'CAP12-1_S46'").getDP()<69 && vc.getGenotype("'CAP12-2_S62'").getDP()<67 && vc.getGenotype("'CAP6-1_S47'").getDP()<69 && vc.getGenotype("'CAP6-2_S63'").getDP()<80 && vc.getGenotype("'CAP8-1_S40'").getDP()<92 && vc.getGenotype("'CAP8-2_S56'").getDP()<50 && vc.getGenotype("'CAS6-2_S9'").getDP()<104 && vc.getGenotype("'CAS6_S73'").getDP()<68 && vc.getGenotype("'CAS8-2_S2'").getDP()<108 && vc.getGenotype("'CAS8_S66'").getDP()<109)' \
+     -O CA56_$1_genotyped_allsites.vcf_nomissing.vcf_DPupper.vcf
+
+gatk SelectVariants \
+     -R /oak/stanford/groups/spalumbi/Ahya_genome/jasmine-sta1387-mb-hirise-eyx9u_12-15-2020__final_assembly.fasta \
+     -V CA56_$1_genotyped_allsites.vcf_nomissing.vcf_DPupper.vcf \
+     -select '(vc.getGenotype("'CAP12-1_S46'").getDP()>21 && vc.getGenotype("'CAP12-2_S62'").getDP()>20 && vc.getGenotype("'CAP6-1_S47'").getDP()>20 && vc.getGenotype("'CAP6-2_S63'").getDP()>27 && vc.getGenotype("'CAP8-1_S40'").getDP()>34 && vc.getGenotype("'CAP8-2_S56'").getDP()>11 && vc.getGenotype("'CAS6-2_S9'").getDP()>42 && vc.getGenotype("'CAS6_S73'").getDP()>20 && vc.getGenotype("'CAS8-2_S2'").getDP()>45 && vc.getGenotype("'CAS8_S66'").getDP()>45)' \
+     -O CA56_$1_genotyped_allsites.vcf_nomissing.vcf_DPupper.vcf_DPlower.vcf
+
+##remove sites where QUAL (for nonvariant sites) or GQ (for variant sites) is less than 30:
+ml load biology bcftools
+bcftools filter --exclude 'QUAL<30 || GQ<30' CA56_$1_genotyped_allsites.vcf_nomissing.vcf_DPupper.vcf_DPlower.vcf > CA56_$1_genotyped_allsites.vcf_nomissing.vcf_DPupper.vcf_DPlower.vcf.vcfqualgq30.vcf
+
+#keep just biallelic SNPs:
+bcftools view -m2 -M2 -v snps CA56_$1_genotyped_allsites.vcf_nomissing.vcf_DPupper.vcf_DPlower.vcf.vcfqualgq30.vcf > CA56_$1_genotyped_allsites.vcf_nomissing.vcf_DPupper.vcf_DPlower.vcf.vcfqualgq30.vcf_biSNPs.vcf
+
+##gather all VCFs for a cohort into one single VCF:
+gatk GatherVcfs \
+    -I CA56_chr1_genotyped_allsites.vcf_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf_biSNPs.vcf \
+    -I CA56_chr2_genotyped_allsites.vcf_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf_biSNPs.vcf \
+    -I CA56_chr3_genotyped_allsites.vcf_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf_biSNPs.vcf \
+    -I CA56_chr4_genotyped_allsites.vcf_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf_biSNPs.vcf \
+    -I CA56_chr5_genotyped_allsites.vcf_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf_biSNPs.vcf \
+    -I CA56_chr6_genotyped_allsites.vcf_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf_biSNPs.vcf \
+    -I CA56_chr7_genotyped_allsites.vcf_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf_biSNPs.vcf \
+    -I CA56_chr8_genotyped_allsites.vcf_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf_biSNPs.vcf \
+    -I CA56_chr9_genotyped_allsites.vcf_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf_biSNPs.vcf \
+    -I CA56_chr10_genotyped_allsites.vcf_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf_biSNPs.vcf \
+    -I CA56_chr11_genotyped_allsites.vcf_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf_biSNPs.vcf \
+    -I CA56_chr12_genotyped_allsites.vcf_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf_biSNPs.vcf \
+    -I CA56_chr13_genotyped_allsites.vcf_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf_biSNPs.vcf \
+    -I CA56_chr14_genotyped_allsites.vcf_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf_biSNPs.vcf \
+    -O CA56_GATHERED_genotyped_allsites.vcf_nomissing.vcf_DPupper.vcf_DPlower.vcfqualgq30.vcf_biSNPs.vcf
+
+##Annotate VCF with snpEff:
+ml load java
+java -Xmx64g -jar /scratch/users/elora/snpEff/snpEff.jar -v -c /scratch/users/elora/snpEff/snpEff.config Ahyacinthus CA56_GATHERED_genotyped_allsites.vcf_nomissing.vcf_DPupper.vcf_DPlower.vcf.vcfqualgq30.vcf_biSNPs_chrs.vcf > CA56_GATHERED_genotyped_allsites.vcf_nomissing.vcf_DPupper.vcf_DPlower.vcf.vcfqualgq30.vcf_biSNPs_chrs.vcf.ann.vcf
+
+##run inheritanceinvestigator.py
+python3 inheritanceinvestigator20201203.py CA56_GATHERED_genotyped_allsites.vcf_nomissing.vcf_DPupper.vcf_DPlower.vcf.vcfqualgq30.vcf_biSNPs.vcf 0 1 6 4 0 > CA56_ii_20210107.txt
+#melt.R
+
+#definemutationtypes.py
+python3 definemutationtypes20201210.py CA56_ii_20210107.txt meltedCA56_ii_20210107.txt 6 4 population_file > CA56_dm_20210107.txt
+
+#MatchVerifiedMutswithAnnotatedVCF:
+python3 MatchVerifiedMutswithAnnotatedVCF.py CA56_dm_20210107.txt CA56_GATHERED_genotyped_allsites.vcf_nomissing.vcf_DPupper.vcf_DPlower.vcf.vcfqualgq30.vcf_biSNPs.vcf.ann.vcf > CA56_dm_20210107.txt.ann.txt
+
+
+
+
+
+
+
