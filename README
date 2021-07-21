@@ -1,0 +1,11 @@
+README
+
+This repository holds the code and some of the data used to run the analyses in:
+López-Nandam EH, Albright R, Hanson EA, Sheets EA, Palumbi SR (2021). Mutations in coral soma and sperm imply lifelong stem cell differentiation. (in review)
+
+In /scripts you can find the code used to process the data and generate figures.
+
+in /genome_annotations you can find the code used to annotate the new, chromosome-level Acropora hyacinthus genome assembly.
+
+In /datafiles you can find the .txt files used starting at the inheritanceinvestigator.py step (see README in /scripts for pipeline). The raw fastq files for this paper are accessioned at NCBI SRA under BioProject PRJNA707502 under accession numbers SAMN18207983-SAMN18208014. The new, chromosome-level genome assembly generated for this paper is also under BioProject PRJNA707502, with accession number SAMN20335437 
+
