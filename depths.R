@@ -669,12 +669,12 @@ uglm_LOH_coding<-c(CA56uglm_coding_LOH/CA56denom_coding, CA60uglm_coding_LOH/CA6
 vars<-c(var(n_GOH), var(i_GOH), var(uglm_GOH), var(n_LOH), var(i_LOH), var(uglm_LOH))
 vars_coding<-c(var(n_GOH_coding), var(i_GOH_coding), var(uglm_GOH_coding), var(n_LOH_coding), var(i_LOH_coding), var(uglm_LOH_coding))
 ##The rate of SNVs per Mbp was significantly higher across the full callable genome (see Methods for calculation of callable genome size) than the rate of SNVs in the callable coding regions of the genome all SNV types except for LOH shared by parent and sperm (see Supplementary for all t-test results) (Fig. 2b). 
-t.test(n_GOH*1000000, n_GOH_coding*1000000, alternative=c("two.sided"),paired=TRUE)
-t.test(i_GOH*1000000, i_GOH_coding*1000000, alternative=c("two.sided"),paired=TRUE)
-t.test(uglm_GOH*1000000, uglm_GOH_coding*1000000, alternative=c("two.sided"),paired=TRUE)
-t.test(n_LOH*1000000, n_LOH_coding*1000000, alternative=c("two.sided"),paired=TRUE)
-t.test(i_LOH*1000000, i_LOH_coding*1000000, alternative=c("two.sided"),paired=TRUE)
-t.test(uglm_LOH*1000000, uglm_LOH_coding*1000000, alternative=c("two.sided"),paired=TRUE)
+wilcox.test(n_GOH, n_GOH_coding, alternative=c("two.sided"),paired=TRUE)
+wilcox.test(i_GOH, i_GOH_coding, alternative=c("two.sided"),paired=TRUE)
+wilcox.test(uglm_GOH, uglm_GOH_coding, alternative=c("two.sided"),paired=TRUE)
+wilcox.test(n_LOH, n_LOH_coding, alternative=c("two.sided"),paired=TRUE)
+wilcox.test(i_LOH, i_LOH_coding, alternative=c("two.sided"),paired=TRUE)
+wilcox.test(uglm_LOH, uglm_LOH_coding, alternative=c("two.sided"),paired=TRUE)
 
 meanpercolony<-data.frame("mean"=persampleaverages*1000000,"se"=persampleses*1000000,"Type"=c(rep("GOH",3),rep("LOH",3)),
                           "Region"=c(rep("Full genome",6),rep("Coding only",6)),"shared"=rep(c("PO","P+S","SSPO"),2))
