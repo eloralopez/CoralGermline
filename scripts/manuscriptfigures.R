@@ -203,10 +203,10 @@ percentdataplot<-ggplot(percentdata, aes(shared, percents)) +
 #use 20210719
   meanpercentdataplot2<-ggplot(meanpercentdata, aes(shared,valuemeanpercent))+
     geom_pointrange(size=1.5,data = meanpercentdata,aes(shared,valuemeanpercent,group=shared, color=shared, ymin=valuemeanpercent-valuemeanpercentse, ymax=valuemeanpercent+valuemeanpercentse))+
-    geom_jitter(data=percentdata,size=3,aes(shared, percents, color=colz,group=shared),
+    geom_jitter(data=percentdata,size=3,alpha=0.5,aes(shared, percents, color=shared,group=shared),
                 position = position_jitter(0.2)
     )+
-  scale_color_manual(values = c("gray74","mediumpurple2","mediumturquoise","seagreen3", "#999999", "purple")) +
+  scale_color_manual(values = c("#999999","purple","seagreen3")) +
     theme_bw()+
   ylab("% of SNV type per sperm pool") + xlab("")+
     theme(axis.text.x = element_text(size=25,colour=c("#999999","purple","seagreen3")),
@@ -320,11 +320,11 @@ meanfreqpersampleplot_coding_LOH$means$Type <- "LoH"
 meanfreqpersampleplot_coding_combined_means <- rbind(meanfreqpersampleplot_coding_GOH$means, meanfreqpersampleplot_coding_LOH$means)
 meanfreqpersampleplot_coding_combined_means$secondgroup <-factor(paste0(meanfreqpersampleplot_coding_combined_means$colony , meanfreqpersampleplot_coding_combined_means$Type, meanfreqpersampleplot_coding_combined_means$type))
 #eachdatapoint:
-meanfreqpersampleplot_coding_GOH$eachdatapoint$Type2 <- "GoH2"
-meanfreqpersampleplot_coding_LOH$eachdatapoint$Type2 <- "LoH2"
+meanfreqpersampleplot_coding_GOH$eachdatapoint$Type <- "GoH"
+meanfreqpersampleplot_coding_LOH$eachdatapoint$Type <- "LoH"
 
 meanfreqpersampleplot_coding_combined_eachdatapoint <- rbind(meanfreqpersampleplot_coding_GOH$eachdatapoint, meanfreqpersampleplot_coding_LOH$eachdatapoint)
-meanfreqpersampleplot_coding_combined_eachdatapoint$secondgroup <-factor(paste0(meanfreqpersampleplot_coding_combined_eachdatapoint$colony , meanfreqpersampleplot_coding_combined_eachdatapoint$Type2, meanfreqpersampleplot_coding_combined_eachdatapoint$Type2))
+meanfreqpersampleplot_coding_combined_eachdatapoint$secondgroup <-factor(paste0(meanfreqpersampleplot_coding_combined_eachdatapoint$colony , meanfreqpersampleplot_coding_combined_eachdatapoint$Type, meanfreqpersampleplot_coding_combined_eachdatapoint$Type))
 
 coding_combined_plot<-ggplot(meanfreqpersampleplot_coding_combined_means,
                             aes(x = persampletypes,
@@ -376,11 +376,11 @@ meanfreqpersampleplot_LOH$means$Type <- "LoH"
 meanfreqpersampleplot_combined_means <- rbind(meanfreqpersampleplot_GOH$means, meanfreqpersampleplot_LOH$means)
 meanfreqpersampleplot_combined_means$secondgroup <-factor(paste0(meanfreqpersampleplot_combined_means$colony , meanfreqpersampleplot_combined_means$Type, meanfreqpersampleplot_combined_means$type))
 #eachdatapoint:
-meanfreqpersampleplot_GOH$eachdatapoint$Type2 <- "GoH2"
-meanfreqpersampleplot_LOH$eachdatapoint$Type2 <- "LoH2"
+meanfreqpersampleplot_GOH$eachdatapoint$Type <- "GoH"
+meanfreqpersampleplot_LOH$eachdatapoint$Type <- "LoH"
 
 meanfreqpersampleplot_combined_eachdatapoint <- rbind(meanfreqpersampleplot_GOH$eachdatapoint, meanfreqpersampleplot_LOH$eachdatapoint)
-meanfreqpersampleplot_combined_eachdatapoint$secondgroup <-factor(paste0(meanfreqpersampleplot_combined_eachdatapoint$colony , meanfreqpersampleplot_combined_eachdatapoint$Type2, meanfreqpersampleplot_combined_eachdatapoint$Type2))
+meanfreqpersampleplot_combined_eachdatapoint$secondgroup <-factor(paste0(meanfreqpersampleplot_combined_eachdatapoint$colony , meanfreqpersampleplot_combined_eachdatapoint$Type, meanfreqpersampleplot_combined_eachdatapoint$Type))
 
 # combined_plot<-ggplot(meanfreqpersampleplot_combined, 
 #                              aes(x = type, 
@@ -460,17 +460,17 @@ combined_plot_faceted<-ggplot(meanfreqpersampleplot_combined_more,
                                  aes(x = shared, 
                                      y = persamplemeans, 
                                      group = thirdgroup, shape=Region)) +
-    scale_color_manual(values=c("red","coral1","blue","royalblue1"))+
+    scale_color_manual(values=c("red","blue"))+
     
     geom_pointrange(size=1.5,position=position_dodge(width=0.6), aes(color=Type, shape=Region,ymin=persamplemeans-(persampleses), ymax=persamplemeans+(persampleses))) +
-    geom_jitter(data=meanfreqpersampleplot_combined_more_eachdatapoint,size=3,position = position_jitterdodge(
+    geom_jitter(data=meanfreqpersampleplot_combined_more_eachdatapoint,alpha=0.5,size=3,position = position_jitterdodge(
       jitter.width = 0.1,
       jitter.height = 0,
       dodge.width = 0.6,
       seed = NA
     ),
                 aes(shared, persample, 
-                    group = thirdgroup, color=Type2,shape=Region))+
+                    group = thirdgroup, color=Type,shape=Region))+
     theme_bw() +
     theme(axis.text=element_text(size=25),
           axis.title=element_text(size=25),
@@ -570,7 +570,7 @@ Figure2_fordiss<- (comparisonplotinh2 & theme(strip.placement = NULL) ) /(meanpe
 
 #Figure 2, 6/2021:
 fig2b<-combined_plot_faceted+ theme(axis.line = element_line(colour = "black")) 
-#Figure 2, 20210716
+#Figure 2, 20210720
 (comparisonplotinh2 +labs(tag="a.")+theme(plot.tag=element_text(face="bold",size=30)) & theme(strip.placement = NULL) | meanpercentdataplot2+labs(tag="b.")+theme(plot.tag=element_text(face="bold",size=30)) ) / (combined_plot_faceted2 +labs(tag="c.")+theme(plot.tag=element_text(face="bold",size=30)) | z2+labs(tag="d.")+theme(plot.tag=element_text(face="bold",size=30)))
 #for ahya:
 (comparisonplotinh2 & theme(strip.placement = NULL) | justfull+labs(tag="b.")+theme(plot.tag=element_text(face="bold",size=30))) /(meanpercentdataplot | z2)
