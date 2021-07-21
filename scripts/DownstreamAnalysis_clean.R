@@ -360,7 +360,7 @@ threedfs_func<- function(files) {
 #ahya ref:
 #threedfs_CA56<-threedfs_func(list.files(path="~/Documents/GitHub/CoralGermline/mappedtoahya", pattern="*56_dm_20210107.txt", full.names=T, recursive=FALSE))
 #ahya ref WITH ANNOTATIONS:
-threedfs_CA56<-threedfs_func(list.files(path="~/Documents/GitHub/CoralGermline/mappedtoahya", pattern="*56_dm_20210107_chrs.txt.ann.txt", full.names=T, recursive=FALSE))
+threedfs_CA56<-threedfs_func(list.files(path="~/Documents/GitHub/CoralGermline/datafiles", pattern="*56_dm_20210107_chrs.txt.ann.txt", full.names=T, recursive=FALSE))
 somaticCA56df<-threedfs_CA56$somatic
 uglmCA56df<-threedfs_CA56$uglm
 uniqueuglmCA56df<-uglmCA56df[match(unique(uglmCA56df$chrom.pos), 					uglmCA56df$chrom.pos),]
@@ -369,7 +369,7 @@ metadatadf.0CA56<-threedfs_CA56$metadatadf.0
 
 #threedfs_CA60<-threedfs_func(list.files(path="~/Documents/GitHub/CoralGermline/cleanpipeline", pattern="*60_dm_20201210.txt.ann.txt", full.names=T, recursive=FALSE))
 #threedfs_CA60<-threedfs_func(list.files(path="~/Documents/GitHub/CoralGermline/mappedtoahya", pattern="*60_dm_20210107.txt", full.names=T, recursive=FALSE))
-threedfs_CA60<-threedfs_func(list.files(path="~/Documents/GitHub/CoralGermline/mappedtoahya", pattern="*60_dm_20210107_chrs.txt.ann.txt", full.names=T, recursive=FALSE))
+threedfs_CA60<-threedfs_func(list.files(path="~/Documents/GitHub/CoralGermline/datafiles", pattern="*60_dm_20210107_chrs.txt.ann.txt", full.names=T, recursive=FALSE))
 
 somaticCA60df<-threedfs_CA60$somatic
 uglmCA60df<-threedfs_CA60$uglm
@@ -379,7 +379,7 @@ metadatadf.0CA60<-threedfs_CA60$metadatadf.0
 
 #threedfs_CA65<-threedfs_func(list.files(path="~/Documents/GitHub/CoralGermline/cleanpipeline", pattern="*65_dm_20201210.txt.ann.txt", full.names=T, recursive=FALSE))
 #threedfs_CA65<-threedfs_func(list.files(path="~/Documents/GitHub/CoralGermline/mappedtoahya", pattern="*65_dm_20210107.txt", full.names=T, recursive=FALSE))
-threedfs_CA65<-threedfs_func(list.files(path="~/Documents/GitHub/CoralGermline/mappedtoahya", pattern="*65_dm_20210326_chrs.txt.ann.txt", full.names=T, recursive=FALSE))
+threedfs_CA65<-threedfs_func(list.files(path="~/Documents/GitHub/CoralGermline/datafiles", pattern="*65_dm_20210326_chrs.txt.ann.txt", full.names=T, recursive=FALSE))
 
 somaticCA65df<-threedfs_CA65$somatic
 uglmCA65df<-threedfs_CA65$uglm
@@ -846,7 +846,7 @@ meanLOHgglmprop<- mean(LOHgglmprop)
 subsetz<-factor(c(rep("all somatic",2), rep("inherited",2),rep("not inherited",2), rep("uglm",2), rep("gglm",2)),level=c("all somatic","inherited","not inherited","uglm","gglm"))
 means<-c(meanGOHallsom, meanLOHallsom, meanGOHinh, meanLOHinh, mean(GOHnotinh), mean(LOHnotinh), meanGOHuglmprop, meanLOHuglmprop, meanGOHgglmprop, meanLOHgglmprop)
 allse<-c(seGOHallsom, seLOHallsom, seGOHinh, se(LOHinh),se(GOHnotinh), se(LOHnotinh), se(GOHuglmprop), se(LOHuglmprop), se(GOHgglmprop), se(LOHgglmprop))
-typez2<-rep(c("GoH","LoH"),5)
+type<-rep(c("GoH","LoH"),5)
 #human sperm from Wang et al. 2012 Cell:
 GOHcounts<-c(36,
              30,
@@ -871,7 +871,7 @@ meanLOHprop<-mean(LOHprop)
 seGOH<-se(GOHprop)
 seLOH<-se(LOHprop)
 
-df<-data.frame(subsetz, typez2, means, allse )
+df<-data.frame(subsetz, type, means, allse )
 df$meanspercent<-100*df$means
 df$allsepercent<-100*allse
 df$shared<-factor(c(rep("All Parent",2),rep("P+S",2),rep("PO",2),rep("SSPO",2),rep("ASP",2)),
@@ -881,18 +881,18 @@ df_withoutallsom<-df[-(1:2),]
 df_eachdatapoint<-data.frame("percents"=c(GOHallsom, LOHallsom, GOHinh, LOHinh, GOHnotinh, LOHnotinh, GOHuglmprop, LOHuglmprop, GOHgglmprop, LOHgglmprop),
                              "shared"=factor(c(rep("All Parent",14),rep("P+S",14),rep("PO",14),rep("SSPO",14),rep("ASP",6)),
                                              levels=c("All Parent","PO","P+S","SSPO","ASP")),
-                             "typez"=c(rep(c(rep("GoH2",7),rep("LoH2",7)),4),rep("GoH2",3),rep("LoH2",3)))
+                             "type"=c(rep(c(rep("GoH",7),rep("LoH",7)),4),rep("GoH",3),rep("LoH",3)))
 z2<-ggplot(df, aes(x=shared, y=meanspercent)) +
-  scale_color_manual(values=c("red","coral1","blue","royalblue1"))+
-  geom_pointrange(data=df, size=1.5, position=position_dodge(width=0.6), aes(color=typez2,ymin=meanspercent-(allsepercent), ymax=meanspercent+(allsepercent))) +
+  scale_color_manual(values=c("red","blue"))+
+  geom_pointrange(data=df, size=1.5, position=position_dodge(width=0.6), aes(color=type,ymin=meanspercent-(allsepercent), ymax=meanspercent+(allsepercent))) +
   
-  geom_jitter(data=df_eachdatapoint,size=3,position = position_jitterdodge(
+  geom_jitter(data=df_eachdatapoint,size=3,alpha=0.5,position = position_jitterdodge(
     jitter.width = 0.1,
     jitter.height = 0,
     dodge.width = 0.6,
     seed = NA
   ),
-  aes(shared, percents*100,colour=typez
+  aes(shared, percents*100,colour=type
       ))+
 
   theme_bw() +
@@ -936,6 +936,12 @@ df
 
 ##test differences in mean GOH by grouping:
 t.test(GOHinh, GOHnotinh, alternative=c("two.sided"),paired=TRUE)
+ggqqplot(GOHnotinh)
+ggdensity(GOHinh)
+shapiro.test(GOHinh)
+#use wilcox test instead!!
+wilcox.test(GOHinh, GOHnotinh, paired = TRUE, alternative = "two.sided")
+
 t.test(GOHinh, GOHuglm, alternative=c("two.sided"),paired=TRUE)
 t.test(GOHnotinh, GOHuglm, alternative=c("two.sided"),paired=TRUE)
 t.test(GOHgglm, GOHuglm, alternative=c("two.sided"),paired=TRUE)
@@ -993,6 +999,17 @@ ratiopoint2<-ggplot(ratio_df, aes(x = ratiosamples, y = ratios*100, color=ratiot
   ylab("% of coding mutations that are missense")+xlab("")+
   theme_bw()+
   theme(legend.title=element_blank(), axis.title = element_text(size=25),axis.text = element_text(size=25),legend.text = element_text(size=25))
+#use this 20210720:
+ratiopoint<-ggplot(ratios_forgeompoint, aes(x = types, y = ratiomeans*100))+
+  scale_color_manual(values=c("black","red","blue","green"))+
+  
+  geom_pointrange(size=1.5,position=position_dodge(width=0.6), aes(color=types, ymin=100*(ratiomeans-ratioses), ymax=100*(ratiomeans+ratioses))) +
+  geom_jitter(data=ratio_df,alpha=0.5,size=3,aes(ratiotypes, 100*ratios, color=ratiotypes),
+              position = position_jitter(0.2)
+  )+
+  ylab("% of coding mutations that are missense")+xlab("")+
+  theme_bw()+
+  theme(legend.title=element_blank(), axis.title = element_text(size=25),axis.text = element_text(size=25),legend.text = element_text(size=25))
 counts<-c(allsom_mis_counts,n_mis_counts, i_mis_counts, uglm_mis_counts,
           allsom_syn_counts,n_syn_counts, i_syn_counts, uglm_syn_counts)
 mean(allsom_mis_counts+allsom_syn_counts)
@@ -1011,9 +1028,13 @@ countsplot<-ggplot(counts_df, aes(x = samples, y = counts, color=types, shape=mu
   geom_hline(yintercept=mean(allsom_mis_counts+allsom_syn_counts),color="black",linetype="dashed")+geom_hline(yintercept=mean(n_mis_counts+n_syn_counts),color="blue",linetype="dashed")+geom_hline(yintercept=mean(i_mis_counts+i_syn_counts),color="red",linetype="dashed")+geom_hline(yintercept=mean(uglm_mis_counts+uglm_syn_counts),color="green",linetype="dashed")+
   theme(legend.title=element_blank(), axis.title = element_text(size=25),axis.text = element_text(size=25),legend.text = element_text(size=25))
 
-  
-(countsplot+ labs(tag = "a.")+theme(plot.tag=element_text(face="bold",size=30))) / (ratiopoint2+ labs(tag = "b.")+theme(plot.tag=element_text(face="bold",size=30)) | ratiopoint1 +labs(tag = "c.")+theme(plot.tag=element_text(face="bold",size=30)))
-t.test(iratio,uglmratio)
+ #suppfig6 20210720: 
+(countsplot+ labs(tag = "a.")+theme(plot.tag=element_text(face="bold",size=30))) | (ratiopoint+ labs(tag = "b.")+theme(plot.tag=element_text(face="bold",size=30))) 
+wilcox.test(iratio,uglmratio)
+wilcox.test(iratio, uglmratio, paired = TRUE, alternative = "two.sided")
+wilcox.test(nratio, uglmratio, paired = TRUE, alternative = "two.sided")
+wilcox.test(allsomratio, uglmratio, paired = TRUE, alternative = "two.sided")
+
 t.test(nratio,uglmratio)
 t.test(allsomratio,uglmratio)
 
