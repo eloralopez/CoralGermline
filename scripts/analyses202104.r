@@ -1,5 +1,5 @@
 #ahya ref:
-threedfs_CA56<-threedfs_func(list.files(path="/Users/eloralopez/Documents/GitHub/CoralGermline/mappedtoahya", pattern="*56_dm_onelib_20210409_1_chrs.txt.ann.txt", full.names=T, recursive=FALSE))
+threedfs_CA56<-threedfs_func(list.files(path="~/Documents/CoralGermlineManuscript", pattern="*56_dm_onelib_20210409_1_chrs.txt", full.names=T, recursive=FALSE))
 
 somaticCA56df<-threedfs_CA56$somatic
 uglmCA56df<-threedfs_CA56$uglm
@@ -8,7 +8,7 @@ gglmCA56df<-threedfs_CA56$gglm
 metadatadf.0CA56<-threedfs_CA56$metadatadf.0
 
 #threedfs_CA60<-threedfs_func(list.files(path="~/Documents/GitHub/CoralGermline/cleanpipeline", pattern="*60_dm_20201210.txt.ann.txt", full.names=T, recursive=FALSE))
-threedfs_CA60<-threedfs_func(list.files(path="~/Documents/CoralGermlineManuscript", pattern="*60_dm_onelib_20210409_1_chrs.txt.ann.txt", full.names=T, recursive=FALSE))
+threedfs_CA60<-threedfs_func(list.files(path="~/Documents/CoralGermlineManuscript", pattern="*60_dm_onelib_20210409_1_chrs.txt", full.names=T, recursive=FALSE))
 
 somaticCA60df<-threedfs_CA60$somatic
 uglmCA60df<-threedfs_CA60$uglm
@@ -17,7 +17,7 @@ gglmCA60df<-threedfs_CA60$gglm
 metadatadf.0CA60<-threedfs_CA60$metadatadf.0
 
 #threedfs_CA65<-threedfs_func(list.files(path="~/Documents/GitHub/CoralGermline/cleanpipeline", pattern="*65_dm_20201210.txt.ann.txt", full.names=T, recursive=FALSE))
-threedfs_CA65<-threedfs_func(list.files(path="~/Documents/CoralGermlineManuscript", pattern="*65_dm_onelib_20210409_1_chrs.txt.ann.txt", full.names=T, recursive=FALSE))
+threedfs_CA65<-threedfs_func(list.files(path="~/Documents/CoralGermlineManuscript", pattern="*65_dm_onelib_20210409_1_chrs.txt", full.names=T, recursive=FALSE))
 
 somaticCA65df<-threedfs_CA65$somatic
 uglmCA65df<-threedfs_CA65$uglm
@@ -45,43 +45,53 @@ uniqueonelib_CA65_somatic<-onelib_CA65_somatic[match(unique(onelib_CA65_somatic$
 uniqueCA65_matched<-CA65_matched[match(unique(CA65_matched$chrom.pos), CA65_matched$chrom.pos),]
 
 oneandtwo<-rbind(uniqueonelib_CA56_somatic, uniqueCA56_matched, uniqueonelib_CA60_somatic, uniqueCA60_matched, uniqueonelib_CA65_somatic, uniqueCA65_matched)
-oneandtwo$lib<-c(rep("one",nrow(uniqueonelib_CA56_somatic)),rep("matched",nrow(uniqueCA56_matched)),
-                 rep("one",nrow(uniqueonelib_CA60_somatic)),rep("matched",nrow(uniqueCA60_matched)),
-                 rep("one",nrow(uniqueonelib_CA65_somatic)),rep("matched",nrow(uniqueCA65_matched)))
+oneandtwo$Replicates<-factor(c(rep("without",nrow(uniqueonelib_CA56_somatic)),rep("with",nrow(uniqueCA56_matched)),
+                 rep("without",nrow(uniqueonelib_CA60_somatic)),rep("with",nrow(uniqueCA60_matched)),
+                 rep("without",nrow(uniqueonelib_CA65_somatic)),rep("with",nrow(uniqueCA65_matched))),levels=c("without","with"))
 oneandtwo$lib2<-c(rep("one2",nrow(uniqueonelib_CA56_somatic)),rep("matched2",nrow(uniqueCA56_matched)),
                  rep("one2",nrow(uniqueonelib_CA60_somatic)),rep("matched2",nrow(uniqueCA60_matched)),
                  rep("one2",nrow(uniqueonelib_CA65_somatic)),rep("matched2",nrow(uniqueCA65_matched)))
 ###this is your supp fig boxplots:
 avggq<-ggplot(oneandtwo,aes(x=ColonyName))+
   
-  geom_sina(aes(color=lib, y=GQscore.y),size=1)+
+  geom_sina(aes(color=Replicates, y=GQscore.y),size=1)+
   geom_boxplot(fill = NA, aes(color=lib2, y=GQscore.y),size=1 )+
-  scale_color_manual(values = c("one"="pink", "matched"="green", "one2" ="black","matched2" = "black"))+
+  scale_color_manual(values = c("without"="#56B4E9", "with"="#D55E00", "one2" ="black","matched2" = "black"))+
   ylab("Average GQ score at locus")+
-  theme_bw()
+  theme_bw()+
+  theme(axis.text=element_text(size=25),axis.title=element_text(size=25),legend.title = element_text(size=25),legend.text = element_text(size=25))
+
 avgdp<-ggplot(oneandtwo,aes(x=ColonyName))+
   
-  geom_sina(aes(color=lib, y=totaldepth.y),size=1)+
+  geom_sina(aes(color=Replicates, y=totaldepth.y),size=1)+
   geom_boxplot(fill = NA, aes(color=lib2, y=totaldepth.y),size=1 )+
-  scale_color_manual(values = c("one"="pink", "matched"="green", "one2" ="black","matched2" = "black"))+
+  scale_color_manual(values = c("without"="#56B4E9", "with"="#D55E00", "one2" ="black","matched2" = "black"))+
   ylab("Average read depth at locus")+
-  theme_bw()
+  theme_bw()+
+  theme(axis.text=element_text(size=25),axis.title=element_text(size=25),legend.title = element_text(size=25),legend.text = element_text(size=25))
+
 mingq<-ggplot(oneandtwo,aes(x=ColonyName))+
   
-  geom_sina(aes(color=lib, y=GQscore),size=1)+
+  geom_sina(aes(color=Replicates, y=GQscore),size=1)+
   geom_boxplot(fill = NA, aes(color=lib2, y=GQscore),size=1 )+
-  scale_color_manual(values = c("one"="pink", "matched"="green", "one2" ="black","matched2" = "black"))+
+  scale_color_manual(values = c("without"="#56B4E9", "with"="#D55E00", "one2" ="black","matched2" = "black"))+
   ylab("Lowest GQ score at locus")+
-  theme_bw()
+  theme_bw()+
+  theme(axis.text=element_text(size=25),axis.title=element_text(size=25),legend.title = element_text(size=25),legend.text = element_text(size=25))
+#mingq  
+"#D55E00","#E69F00","#0072B2","#56B4E9"
 mindp<-ggplot(oneandtwo,aes(x=ColonyName))+
   
-  geom_sina(aes(color=lib, y=totaldepth),size=1)+
+  geom_sina(aes(color=Replicates, y=totaldepth),size=1)+
   geom_boxplot(fill = NA, aes(color=lib2, y=totaldepth),size=1 )+
-  scale_color_manual(values = c("one"="pink", "matched"="green", "one2" ="black","matched2" = "black"))+
+  scale_color_manual(values = c("without"="#56B4E9", "with"="#D55E00", "one2" ="black","matched2" = "black"))+
   ylab("Lowest read depth at locus")+
-  theme_bw()
-(avggq | avgdp )/ (mingq | mindp )
-
+  theme_bw()+
+  theme(axis.text=element_text(size=25),axis.title=element_text(size=25),legend.title = element_text(size=25),legend.text = element_text(size=25))
+mindp
+#suppfig4 20210720
+(avggq +labs(tag = "a.")+theme(plot.tag=element_text(face = "bold",size=30))| avgdp +labs(tag = "b.")+theme(plot.tag=element_text(face = "bold",size=30)))/ (mingq +labs(tag = "c.")+theme(plot.tag=element_text(face = "bold",size=30))| mindp +labs(tag = "d.")+theme(plot.tag=element_text(face = "bold",size=30)))
+#height = 1251, width = 2500
 #CA56_matched_inverse<-na.omit(twolibs[match(twolibs$chrom.pos, metadatadf.0CA56$chrom.pos),])
 twolibs_CA60<-subset(twolibs, ColonyName=="CA60")
 CA60_matched<-na.omit(somaticCA60df[match(somaticCA60df$chrom.pos, twolibs_CA60$chrom.pos),])
@@ -150,9 +160,9 @@ CA56_notinherited<-subset(CA56_, Inheritance=="notinherited")
 CA56_loh<-subset(CA56_, GoHorLoH=="LoH")
 CA56_denovo<-subset(CA56_, GoHorLoH=="DeNovo")
 
-inheriteddenovoCA56_<-subset(CA56_, GoHorLoH=="DeNovo" & (s1>0 & s2>0))
+inheriteddenovoCA56_<-subset(CA56_, SpermAverage>0 &ParentAverage>=0.1 &ParentAverage<1)
 inheritedlohCA56_<-subset(CA56_, GoHorLoH=="LoH" & SpermAverage==1 & ParentAverage==1)
-notinheriteddenovoCA56_<-subset(CA56_, GoHorLoH=="DeNovo" & (s1==0 | s2==0))
+notinheriteddenovoCA56_<-subset(CA56_, GoHorLoH=="DeNovo" & SpermAverage==0)
 notinheritedlohCA56_<-subset(CA56_, GoHorLoH=="LoH" & SpermAverage<1)
 inheritedcountCA56_<-nrow(inheriteddenovoCA56_)+nrow(inheritedlohCA56_)
 inheritedpropCA56_<- inheritedcountCA56_/nrow(CA56_)
@@ -540,6 +550,19 @@ sL2<-mean(subset(countframe, inhe=="shared" & gl=="LOH" & lib=="two")$counts)
 uG2<-mean(subset(countframe, inhe=="uglm" & gl=="GOH" & lib=="two")$counts)
 uL2<-mean(subset(countframe, inhe=="uglm" & gl=="LOH" & lib=="two")$counts)
 
+nsG1edp<-(subset(countframe, inhe=="not shared" & gl=="GOH" & lib=="one")$counts)
+nsL1edp<-(subset(countframe, inhe=="not shared" & gl=="LOH" & lib=="one")$counts)
+sG1edp<-(subset(countframe, inhe=="shared" & gl=="GOH" & lib=="one")$counts)
+sL1edp<-(subset(countframe, inhe=="shared" & gl=="LOH" & lib=="one")$counts)
+uG1edp<-(subset(countframe, inhe=="uglm" & gl=="GOH" & lib=="one")$counts)
+uL1edp<-(subset(countframe, inhe=="uglm" & gl=="LOH" & lib=="one")$counts)
+nsG2edp<-(subset(countframe, inhe=="not shared" & gl=="GOH" & lib=="two")$counts)
+nsL2edp<-(subset(countframe, inhe=="not shared" & gl=="LOH" & lib=="two")$counts)
+sG2edp<-(subset(countframe, inhe=="shared" & gl=="GOH" & lib=="two")$counts)
+sL2edp<-(subset(countframe, inhe=="shared" & gl=="LOH" & lib=="two")$counts)
+uG2edp<-(subset(countframe, inhe=="uglm" & gl=="GOH" & lib=="two")$counts)
+uL2edp<-(subset(countframe, inhe=="uglm" & gl=="LOH" & lib=="two")$counts)
+
 nsG1se<-se(subset(countframe, inhe=="not shared" & gl=="GOH" & lib=="one")$counts)
 nsL1se<-se(subset(countframe, inhe=="not shared" & gl=="LOH" & lib=="one")$counts)
 sG1se<-se(subset(countframe, inhe=="shared" & gl=="GOH" & lib=="one")$counts)
@@ -557,23 +580,79 @@ means<-c(nsG1, nsL1, sG1, sL1, uG1, uL1,
          nsG2, nsL2, sG2, sL2, uG2, uL2) 
 ses<-c(nsG1se, nsL1se, sG1se, sL1se, uG1se, uL1se, 
        nsG2se, nsL2se, sG2se, sL2se, uG2se, uL2se)  
-i<-factor(rep(c("not shared", "not shared", "shared", "shared", "uglm","uglm"),2),levels = c("not shared","shared","uglm"))
+i<-factor(rep(c("PO, ", "PO, ", "P+S, ", "P+S, ", "SSPO, ","SSPO, "),2),levels = c("PO, ","P+S, ","SSPO, "))
 gl<-rep(c("GOH","LOH"),6)
-l<-c(rep("one",6),rep("two",6))
-f<-data.frame(means,ses, i ,gl,l)
-f$ne<-factor(paste0(gl,i))
-ggplot(f, aes(x=ne, y=means, fill=l))+
+Replicates<-factor(c(rep("without",6),rep("with",6)),levels=c("without","with"))
+f<-data.frame(means,ses, i ,gl,Replicates)
+f_edp<-data.frame("counts"=c(nsG1edp, nsL1edp, sG1edp, sL1edp, uG1edp, uL1edp, nsG2edp, nsL2edp, sG2edp, sL2edp, uG2edp, uL2edp),
+                  "i"=factor(rep(c(rep("PO, ",14),rep("P+S, ",14), rep("SSPO, ",14)),2),levels = c("PO, ","P+S, ","SSPO, ")),
+                  "gl"=rep(c(rep("GOH",7),rep("LOH",7)),6),
+                  "Replicates"=factor(c(rep("without",42),rep("with",42)),levels=c("without","with"))
+)
+f$ne<-factor(paste0(i,gl))
+f_edp$ne<-factor(paste0(i,gl))
+
+#supp fig 20210625:
+ggplot(f, aes(x=ne, y=means, fill=Replicates))+
   geom_bar(position="dodge", stat="identity")+
   theme_bw()+
   ylab("Mutation count") + 
   xlab("")+
   #theme(legend.title = element_text("Libraries per sample"))+
   geom_errorbar(position=position_dodge(width=0.9), aes(ymin=means-ses, ymax=means+ses))+
-  scale_fill_manual(values=c("pink","green"))+
-  theme(axis.text.x=element_text(size=15, angle = 90), axis.text.y=element_text(size=15, angle = 0),
-        axis.title=element_text(size=15))#+
+  scale_fill_manual(values=c("pink","gray"))+
+  theme(axis.text.x=element_text(size=25, angle = 90), axis.text.y=element_text(size=25, angle = 0),
+        axis.title=element_text(size=25),
+        legend.text = element_text(size=25), legend.title = element_text(size=25))+
   scale_y_continuous(trans='log10')
-
+#suppfig2 20210720:
+ggplot(f, aes(x=ne, y=means))+
+  scale_color_manual(values=c("#D55E00","#56B4E9"))+
+  geom_pointrange(data=f, size=1.5, position=position_dodge(width=0.6),aes(color=Replicates, ymin=means-ses, ymax=means+ses))+
+  theme_bw()+
+  geom_jitter(data=f_edp,size=3,alpha=0.5,position = position_jitterdodge(
+    jitter.width = 0.1,
+    jitter.height = 0,
+    dodge.width = 0.6,
+    seed = NA
+  ),
+  aes(ne, counts,colour=Replicates
+  ))+
+  ylab("Mutation count") + 
+  xlab("")+
+  theme(axis.text.x=element_text(size=25, angle = 90), axis.text.y=element_text(size=25, angle = 0),
+        axis.title=element_text(size=25),
+        legend.text = element_text(size=25), legend.title = element_text(size=25))+
+  scale_y_continuous(trans='log10')
+  ylab("Mutation count") + 
+  xlab("")+
+  #theme(legend.title = element_text("Libraries per sample"))+
+  geom_errorbar(position=position_dodge(width=0.9), aes(ymin=means-ses, ymax=means+ses))+
+  scale_fill_manual(values=c("pink","gray"))+
+  theme(axis.text.x=element_text(size=25, angle = 90), axis.text.y=element_text(size=25, angle = 0),
+        axis.title=element_text(size=25),
+        legend.text = element_text(size=25), legend.title = element_text(size=25))+
+  scale_y_continuous(trans='log10')
+meanpercentplot2<-ggplot(percentframe, aes(x=percentinhe, y=percentmeans))+
+  scale_color_manual(values=c("red","coral1","blue","royalblue1"))+
+  geom_pointrange(data=percentframe, size=1.5, position=position_dodge(width=0.6),aes(color=percentgl, ymin=percentmeans-percentses, ymax=percentmeans+percentses))+
+  geom_jitter(data=percentframe_eachdatapoint,size=3,position = position_jitterdodge(
+    jitter.width = 0.1,
+    jitter.height = 0,
+    dodge.width = 0.6,
+    seed = NA
+  ),
+  aes(percentinhe, percents,colour=percentgl2
+  ))+
+  theme_bw()+
+  #scale_fill_manual(values = c("red","blue"))+
+  ylab("Mutation count with replicates as a percent of mutation count without replicates") + 
+  xlab("")+
+  theme(legend.title = element_blank())+
+  #geom_errorbar(position=position_dodge(width=0.9), aes(ymin=percentmeans-percentses, ymax=percentmeans+percentses))+
+  
+  theme(axis.text.x=element_text(size=25, angle = 0), axis.text.y=element_text(size=25, angle = 0),
+        axis.title=element_text(size=25),legend.text=element_text(size=25))
 
 ggplot(countframe, aes(x=sample, y=counts, group=new, fill=lib))+
     geom_bar(position="dodge", stat="identity")+
@@ -604,6 +683,15 @@ meanLOHuglm<-mean(subset(countframe, lib == "one" & new== "LOHuglm")$percent)
 meanGOHgglm<-mean(100*c(9,5,5)/c(CA56gglmGOH, CA60gglmGOH, CA65gglmGOH))
 meanLOHgglm<-mean(100*c(7,0,16)/c(CA56gglmLOH, CA60gglmLOH, CA65gglmLOH))
 
+GOHnotshared<-(subset(countframe, lib == "one" & new== "GOHnot shared")$percent)
+LOHnotshared<-(subset(countframe, lib == "one" & new== "LOHnot shared")$percent)
+GOHshared<-(subset(countframe, lib == "one" & new== "GOHshared")$percent)
+LOHshared<-(subset(countframe, lib == "one" & new== "LOHshared")$percent)
+GOHuglm<-(subset(countframe, lib == "one" & new== "GOHuglm")$percent)
+LOHuglm<-(subset(countframe, lib == "one" & new== "LOHuglm")$percent)
+GOHgglm<-(100*c(9,5,5)/c(CA56gglmGOH, CA60gglmGOH, CA65gglmGOH))
+LOHgglm<-(100*c(7,0,16)/c(CA56gglmLOH, CA60gglmLOH, CA65gglmLOH))
+
 seGOHnotshared<-se(subset(countframe, lib == "one" & new== "GOHnot shared")$percent)
 seLOHnotshared<-se(subset(countframe, lib == "one" & new== "LOHnot shared")$percent)
 seGOHshared<-se(subset(countframe, lib == "one" & new== "GOHshared")$percent)
@@ -617,9 +705,17 @@ seLOHgglm<-se(100*c(7,0,16)/c(CA56gglmLOH, CA60gglmLOH, CA65gglmLOH))
 
 percentmeans<-c(meanGOHnotshared, meanLOHnotshared, meanGOHshared, meanLOHshared, meanGOHuglm, meanLOHuglm, meanGOHgglm, meanLOHgglm)
 percentses<-c(seGOHnotshared, seLOHnotshared, seGOHshared, seLOHshared, seGOHuglm, seLOHuglm, seGOHgglm, seLOHgglm)
-percentinhe<-factor(c("not shared", "not shared", "shared", "shared", "uglm","uglm", "gglm","gglm"),levels = c("not shared","shared","uglm","gglm"))
-percentgl<-c("GOH","LOH","GOH","LOH","GOH","LOH", "GOH","LOH")
+percentinhe<-factor(c("PO", "PO", "P+S", "P+S", "SSPO","SSPO", "ASP","ASP"),levels = c("PO","P+S","SSPO","ASP"))
+percentgl<-c("GoH","LoH","GoH","LoH","GoH","LoH", "GoH","LoH")
 percentframe<-data.frame(percentmeans, percentses, percentinhe, percentgl)
+"shared"=factor(c(rep("All Parent",14),rep("P+S",14),rep("PO",14),rep("SSPO",14),rep("ASP",6)),
+                levels=c("All Parent","PO","P+S","SSPO","ASP")),
+"typez"=c(rep(c(rep("GoH2",7),rep("LoH2",7)),4),rep("GoH2",3),rep("LoH2",3)))
+
+percentframe_eachdatapoint<-data.frame("percents"=c(GOHnotshared, LOHnotshared, GOHshared, LOHshared, GOHuglm, LOHuglm, GOHgglm, LOHgglm),
+                                       "percentinhe"=factor(c(rep("PO",14),rep("P+S",14),rep("SSPO",14),rep("ASP",6)),levels = c("PO","P+S","SSPO","ASP")),
+                                       "percentgl"=c(rep(c(rep("GoH",7),rep("LoH",7)),3),rep("GoH",3),rep("LoH",3)))
+
 meanpercentplot<-ggplot(percentframe, aes(x=percentinhe, y=percentmeans, fill=percentgl))+
   geom_bar(position="dodge", stat="identity")+
   theme_bw()+
@@ -629,7 +725,27 @@ meanpercentplot<-ggplot(percentframe, aes(x=percentinhe, y=percentmeans, fill=pe
   theme(legend.title = element_blank())+
   geom_errorbar(position=position_dodge(width=0.9), aes(ymin=percentmeans-percentses, ymax=percentmeans+percentses))+
 
-  theme(axis.text.x=element_text(size=15, angle = 0), axis.text.y=element_text(size=15, angle = 0),
-        axis.title=element_text(size=12))
+  theme(axis.text.x=element_text(size=25, angle = 0), axis.text.y=element_text(size=25, angle = 0),
+        axis.title=element_text(size=25),legend.text=element_text(size=25))
 meanpercentplot
+#suppfig3 20210720:
+meanpercentplot2<-ggplot(percentframe, aes(x=percentinhe, y=percentmeans))+
+  scale_color_manual(values=c("red","blue"))+
+  geom_pointrange(data=percentframe, size=1.5, position=position_dodge(width=0.6),aes(color=percentgl, ymin=percentmeans-percentses, ymax=percentmeans+percentses))+
+  geom_jitter(data=percentframe_eachdatapoint,size=3,alpha=0.5,position = position_jitterdodge(
+    jitter.width = 0.1,
+    jitter.height = 0,
+    dodge.width = 0.6,
+    seed = NA
+  ),
+  aes(percentinhe, percents,colour=percentgl
+  ))+
+  theme_bw()+
+  #scale_fill_manual(values = c("red","blue"))+
+  ylab("Mutation count with replicates as a percent of mutation count without replicates") + 
+  xlab("")+
+  theme(legend.title = element_blank())+
+  #geom_errorbar(position=position_dodge(width=0.9), aes(ymin=percentmeans-percentses, ymax=percentmeans+percentses))+
   
+  theme(axis.text.x=element_text(size=25, angle = 0), axis.text.y=element_text(size=25, angle = 0),
+        axis.title=element_text(size=25),legend.text=element_text(size=25))
