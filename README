@@ -1,7 +1,7 @@
 README
 
-This repository holds the code and some of the data used to run the analyses in:
-López-Nandam EH, Albright R, Hanson EA, Sheets EA, Palumbi SR (2021). Mutations in coral soma and sperm imply lifelong stem cell differentiation. (in review)
+This repository holds the code and the data used to run the analyses in:
+López-Nandam EH, Albright R, Hanson EA, Sheets EA, Palumbi SR (2023). Mutations in coral soma and sperm imply lifelong stem cell renewal and cell lineage selection. Proceedings of the Royal Society B 290:20221766. DOI: 10.1098/rspb.2022.1766
 
 In /scripts you can find the code used to process the data and generate figures.
 
